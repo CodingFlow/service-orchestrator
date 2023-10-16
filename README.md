@@ -9,17 +9,19 @@ discrete configuratable steps with narrowly-defined responsibility.
 
 ```mermaid
 flowchart LR
+    transformRequest["transform"]
+    mapRequest["map"]
     transformResponse["transform"]
     mapResponse["map"]
 
-    request --> transform
-    map --> service
+    request --> transformRequest
+    mapRequest --> service
     service --> transformResponse
     mapResponse --> response
     
     subgraph Workflow
         direction LR
-        transform --> map
+        transformRequest --> mapRequest
         transformResponse --> mapResponse
     end
 ```
@@ -29,12 +31,15 @@ service.
 
 ```mermaid
 flowchart LR
+    mapRequest["map"]
+    serviceB["service"]
+
     request --> transform
-    service --> transform
-    map --> response
+    serviceB --> transform
+    mapRequest --> service
 
     subgraph Workflow
         direction LR
-        transform --> map
+        transform --> mapRequest
     end
 ```
