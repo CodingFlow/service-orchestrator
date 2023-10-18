@@ -7,6 +7,29 @@ Service orchestrator without the boilerplate.
 Each endpoint of the orchestrator is defined with a workflow. A workflow has
 discrete configuratable steps with narrowly-defined responsibility.
 
+Through configuration, a request to the workflow can mapped to a request to a
+service. The response from the service can mapped to the response returned by
+the workflow:
+
+```mermaid
+flowchart LR
+    request --> mapRequest
+    mapRequest --> service
+    service --> mapResponse
+    mapResponse --> response
+    
+    subgraph Workflow
+        direction LR
+        mapRequest["map"]
+        mapResponse["map"]
+    end
+```
+
+In addition to external services, local transform functions can be defined to
+create new values from workflow requests, service responses, and transform
+output. The output of transforms can be mapped to service requests or workflow
+responses just like service responses:
+
 ```mermaid
 flowchart LR
     transformRequest["transform"]
@@ -15,8 +38,10 @@ flowchart LR
     mapResponse["map"]
 
     request --> transformRequest
+    request --> mapRequest
     mapRequest --> service
     service --> transformResponse
+    service --> mapResponse
     mapResponse --> response
     
     subgraph Workflow
@@ -40,6 +65,7 @@ flowchart LR
 
     subgraph Workflow
         direction LR
+        serviceB --> mapRequest
         transform --> mapRequest
     end
 ```
@@ -87,16 +113,15 @@ Potential Example of Workflow Specification:
 ```yaml
 Workflow A:
     transform:
-        inputSum: add(input 1, input 2)
+        inputSum:
+            add:
+                - input 1
+                - input 2
     Service A:
-        request:
-            map:
-                input A: inputSum
+        input A: inputSum
     Service B:
-        request:
-            map:
-                input A: "Service A: input B"
-                input B: input 2
+        input A: "Service A: input B"
+        input B: input 2
     response:
         output1: "Service B: output A"
         output2: "Service A: output A"
