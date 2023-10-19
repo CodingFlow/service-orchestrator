@@ -120,7 +120,7 @@ Workflow A:
     Service A:
         input A: inputSum
     Service B:
-        input A: "Service A: input B"
+        input A: "Service A: output B"
         input B: input 2
     response:
         output1: "Service B: output A"
@@ -137,7 +137,7 @@ sequenceDiagram
     Workflow ->> Service A: add(input 1, input 2)
     Service A -->> Workflow: output A, output B
 
-    Workflow ->> Service B: Service A: input B, input 2
+    Workflow ->> Service B: Service A: output B, input 2
     Service B -->> Workflow: output A
 
     Workflow -->> API Consumer: Service B: output A, Service A: output A, Service A: output B
