@@ -1,0 +1,42 @@
+openapi: 3.1.0
+info:
+  title: Service Orchestrator Example API
+  description: |-
+    Workflow API
+  version: 1.0.0
+paths:
+  /cat/{id}:
+    get:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: maxResults
+          in: query
+          schema:
+            type: number
+      responses:
+        200:
+          description: got the cat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tailLength:
+                    description: length of cat's tail
+                    type: number
+                    minimum: 0
+                    maximum: 100
+                  furLength:
+                    description: length of cat's fur
+                    type: number
+                    minimum: 0
+                    maximum: 100
+                  numberOfLegs:
+                    description: number of legs the cat has
+                    type: number
+                    minimum: 0
+                    maximum: 100
