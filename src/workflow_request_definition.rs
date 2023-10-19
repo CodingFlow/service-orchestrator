@@ -51,7 +51,7 @@ fn define_query(
 }
 
 fn parse_config() -> oas3::Spec {
-    let spec = match oas3::from_path("./src/workflow_request.yaml") {
+    let spec = match oas3::from_path("./src/workflow_spec.yaml") {
         Ok(spec) => spec,
         Err(_) => panic!("unable to read open API spec file"),
     };
