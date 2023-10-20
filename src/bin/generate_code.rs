@@ -17,38 +17,44 @@ fn main() {
 fn generate_code(path_string: &String, path_item: &PathItem, method: Method) {
     let mut scope = Scope::new();
 
-    scope.import("oas3", "Spec");
     scope.import("warp::reject", "Rejection");
     scope.import("warp", "Filter");
+    scope.import("std::collections", "HashMap");
 
+    generate_define_request(&mut scope);
     generate_define_method(&mut scope, method);
-    generate_define_paths(&mut scope, path_string, path_item);
+    generate_define_paths(&mut scope, path_string);
+    generate_define_query(&mut scope, path_item);
 
     println!("{}", scope.to_string());
 
     write_file(scope.to_string());
 }
 
-fn generate_define_method(scope: &mut Scope, method: Method) {
-    let mut path_item_match = Block::new("let path_item = match spec.paths.first_key_value()");
-
-    path_item_match
-        .line("Some(item) => item.1,")
-        .line("None => panic!(\"Endpoint method missing\")")
-        .after(";");
-
-    let function = scope
-        .new_fn("define_method")
-        .arg("spec", "Spec")
-        .ret("impl Filter<Extract = (), Error = Rejection> + Copy")
-        .push_block(path_item_match);
-
-    add_http_method(method, function);
+fn generate_define_request(scope: &mut Scope) {
+    scope.new_fn("define_request")
+    .vis("pub")
+    .ret("impl Filter<Extract = (String, HashMap<String, String>), Error = warp::Rejection> + Clone")
+    .line("let http_method = define_method();")
+    .line("let with_paths = define_paths(http_method);")
+    .line("let with_query = define_query(with_paths);")
+    .line("with_query");
 }
 
-fn generate_define_paths(scope: &mut Scope, path_string: &String, path_item: &PathItem) {
+fn generate_define_method(scope: &mut Scope, method: Method) {
+    let function = scope
+        .new_fn("define_method")
+        .vis("pub")
+        .ret("impl Filter<Extract = (), Error = Rejection> + Copy");
+
+    let method = method.as_str().to_lowercase();
+    function.line(format!("warp::{}()", method));
+}
+
+fn generate_define_paths(scope: &mut Scope, path_string: &String) {
     let function = scope
         .new_fn("define_paths")
+        .vis("pub")
         .arg(
             "http_method",
             "impl Filter<Extract = (), Error = warp::reject::Rejection> + Copy",
@@ -67,9 +73,16 @@ fn generate_define_paths(scope: &mut Scope, path_string: &String, path_item: &Pa
     }
 }
 
-fn add_http_method(method: Method, function: &mut Function) {
-    let method = method.as_str().to_lowercase();
-    function.line(format!("warp::{}()", method));
+fn generate_define_query(scope: &mut Scope, path_item: &PathItem) {
+    scope
+        .new_fn("define_query")
+        .vis("pub")
+        .arg(
+            "with_paths",
+            "impl Filter<Extract = (String,), Error = Rejection> + Copy",
+        )
+        .ret("impl Filter<Extract = (String, HashMap<String, String>), Error = Rejection> + Copy")
+        .line("with_paths.and(warp::query::<HashMap<String, String>>())");
 }
 
 fn write_file(code: String) {

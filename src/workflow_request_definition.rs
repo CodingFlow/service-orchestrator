@@ -9,9 +9,7 @@ struct WorkflowRequestConfig {}
 
 pub fn define_request(
 ) -> impl Filter<Extract = (String, HashMap<String, String>), Error = warp::Rejection> + Clone {
-    let spec = ();
-
-    let http_method = define_method(spec);
+    let http_method = define_method();
 
     let with_paths = define_paths(http_method);
 
@@ -20,17 +18,8 @@ pub fn define_request(
     with_query
 }
 
-fn define_method(spec: Spec) -> impl Filter<Extract = (), Error = Rejection> + Copy {
-    let path_item = match spec.paths.first_key_value() {
-        Some(item) => item.1,
-        None => panic!("Endpoint method missing"),
-    };
-
-    if path_item.get.is_some() {
-        return warp::get();
-    }
-
-    panic!("could not get endpoint method");
+fn define_method() -> impl Filter<Extract = (), Error = Rejection> + Copy {
+    warp::get()
 }
 
 fn define_paths(
