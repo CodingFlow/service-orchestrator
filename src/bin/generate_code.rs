@@ -1,6 +1,6 @@
 use std::fs::{self};
 
-use codegen::{Block, Function, Scope};
+use codegen::Scope;
 use http::Method;
 use oas3::spec::PathItem;
 
@@ -44,7 +44,6 @@ fn generate_define_request(scope: &mut Scope) {
 fn generate_define_method(scope: &mut Scope, method: Method) {
     let function = scope
         .new_fn("define_method")
-        .vis("pub")
         .ret("impl Filter<Extract = (), Error = Rejection> + Copy");
 
     let method = method.as_str().to_lowercase();
@@ -54,7 +53,6 @@ fn generate_define_method(scope: &mut Scope, method: Method) {
 fn generate_define_paths(scope: &mut Scope, path_string: &String) {
     let function = scope
         .new_fn("define_paths")
-        .vis("pub")
         .arg(
             "http_method",
             "impl Filter<Extract = (), Error = warp::reject::Rejection> + Copy",
@@ -71,12 +69,13 @@ fn generate_define_paths(scope: &mut Scope, path_string: &String) {
             _ => function,
         };
     }
+
+    function.line(".and(warp::path::end())");
 }
 
 fn generate_define_query(scope: &mut Scope, path_item: &PathItem) {
     scope
         .new_fn("define_query")
-        .vis("pub")
         .arg(
             "with_paths",
             "impl Filter<Extract = (String,), Error = Rejection> + Copy",
@@ -86,7 +85,7 @@ fn generate_define_query(scope: &mut Scope, path_item: &PathItem) {
 }
 
 fn write_file(code: String) {
-    let _ = fs::write("./src/test.rs", code);
+    let _ = fs::write("./src/workflow_request_definition.rs", code);
 }
 
 fn parse_config() -> oas3::Spec {
