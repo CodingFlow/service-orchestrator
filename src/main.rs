@@ -1,3 +1,4 @@
+mod test;
 mod workflow_request_definition;
 mod workflow_response_definition;
 
