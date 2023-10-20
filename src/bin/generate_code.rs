@@ -9,18 +9,27 @@ fn main() {
 
     for path in spec.paths {
         for method in path.1.methods() {
-            generate_code(&path.1, method.0);
+            generate_code(&path.0, &path.1, method.0);
         }
     }
 }
 
-fn generate_code(path_item: &PathItem, method: Method) {
+fn generate_code(path_string: &String, path_item: &PathItem, method: Method) {
     let mut scope = Scope::new();
 
     scope.import("oas3", "Spec");
     scope.import("warp::reject", "Rejection");
     scope.import("warp", "Filter");
 
+    generate_define_method(&mut scope, method);
+    generate_define_paths(&mut scope, path_string, path_item);
+
+    println!("{}", scope.to_string());
+
+    write_file(scope.to_string());
+}
+
+fn generate_define_method(scope: &mut Scope, method: Method) {
     let mut path_item_match = Block::new("let path_item = match spec.paths.first_key_value()");
 
     path_item_match
@@ -35,14 +44,31 @@ fn generate_code(path_item: &PathItem, method: Method) {
         .push_block(path_item_match);
 
     add_http_method(method, function);
+}
 
-    println!("{}", scope.to_string());
+fn generate_define_paths(scope: &mut Scope, path_string: &String, path_item: &PathItem) {
+    let function = scope
+        .new_fn("define_paths")
+        .arg(
+            "http_method",
+            "impl Filter<Extract = (), Error = warp::reject::Rejection> + Copy",
+        )
+        .ret("impl Filter<Extract = (String,), Error = warp::reject::Rejection> + Copy")
+        .line("http_method");
 
-    write_file(scope.to_string());
+    let path_parts = path_string.split('/');
+
+    for path_part in path_parts {
+        match (path_part.get(..1), path_part.chars().rev().nth(0)) {
+            (Some("{"), Some('}')) => function.line(".and(warp::path::param::<String>())"),
+            (Some(_), Some(_)) => function.line(format!(".and(warp::path(\"{}\"))", path_part)),
+            _ => function,
+        };
+    }
 }
 
 fn add_http_method(method: Method, function: &mut Function) {
-    let method = method.as_str();
+    let method = method.as_str().to_lowercase();
     function.line(format!("warp::{}()", method));
 }
 
