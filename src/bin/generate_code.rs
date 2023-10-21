@@ -1,6 +1,8 @@
 mod generate_workflow_request;
+mod generate_workflow_response;
 
 use generate_workflow_request::generate_workflow_request;
+use generate_workflow_response::generate_workflow_response;
 use http::Method;
 use oas3::{
     spec::{Operation, PathItem},
@@ -10,9 +12,9 @@ use oas3::{
 fn main() {
     let spec = parse_config();
 
-    for path in &spec.paths {
-        for method in path.1.methods() {
-            generate_code(&path.0, &path.1, method, &spec);
+    for (path_string, path_item) in &spec.paths {
+        for method in path_item.methods() {
+            generate_code(&path_string, &path_item, method, &spec);
         }
     }
 }
@@ -33,4 +35,5 @@ fn generate_code(
     spec: &Spec,
 ) {
     generate_workflow_request(path_item, operation, spec, method, path_string);
+    generate_workflow_response(operation, spec);
 }
