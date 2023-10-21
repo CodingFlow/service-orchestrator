@@ -33,10 +33,11 @@ fn generate_code(
 
     all_parameters.extend(operation.parameters.to_vec());
 
-    let mut parameter_types_with_name: Vec<(String, &str)> = all_parameters
+    let parameter_types_with_name: Vec<(String, &str)> = all_parameters
         .iter()
         .map(|reference| -> Parameter { reference.resolve(&spec).unwrap() })
         .filter(|parameter| -> bool { parameter.location == "path" })
+        .map(|parameter| -> Parameter { parameter.clone() })
         .map(|parameter| -> (String, Schema) { (parameter.name, parameter.schema.unwrap()) })
         .map(|(name, schema)| -> (String, oas3::spec::SchemaType) {
             (name, schema.schema_type.unwrap())
@@ -56,6 +57,7 @@ fn generate_code(
         .collect();
 
     let parameter_types: Vec<&str> = parameter_types_with_name
+        .to_vec()
         .iter()
         .map(|(_, schema_type)| -> &str { schema_type })
         .collect();
