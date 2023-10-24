@@ -4,7 +4,7 @@ use oas3::{spec::SchemaType, Schema, Spec};
 pub struct ParsedSchema {
     name: String,
     schema_type: SchemaType,
-    properties: Option<Vec<(String, ParsedSchema)>>,
+    properties: Option<Vec<ParsedSchema>>,
 }
 
 pub fn parse_schema(
@@ -27,11 +27,9 @@ pub fn parse_schema(
                 )
                 .collect();
 
-            let parsed_properties: Vec<(String, ParsedSchema)> = parse_schema(properties, &spec)
+            let parsed_properties: Vec<ParsedSchema> = parse_schema(properties, &spec)
                 .iter()
-                .map(|(name, parsed_schema)| -> (String, ParsedSchema) {
-                    (name.as_deref().unwrap().to_string(), parsed_schema.clone())
-                })
+                .map(|(name, parsed_schema)| -> ParsedSchema { parsed_schema.clone() })
                 .collect();
 
             (
