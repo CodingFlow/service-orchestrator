@@ -10,10 +10,10 @@ pub struct ParsedSchema {
 pub fn parse_schema(
     named_schemas: Vec<(Option<String>, Schema)>,
     spec: &Spec,
-) -> Vec<(Option<String>, ParsedSchema)> {
+) -> Vec<ParsedSchema> {
     named_schemas
         .iter()
-        .map(|(name, schema)| -> (Option<String>, ParsedSchema) {
+        .map(|(name, schema)| -> ParsedSchema {
             let properties: Vec<(Option<String>, Schema)> = schema
                 .properties
                 .iter()
@@ -29,17 +29,14 @@ pub fn parse_schema(
 
             let parsed_properties: Vec<ParsedSchema> = parse_schema(properties, &spec)
                 .iter()
-                .map(|(name, parsed_schema)| -> ParsedSchema { parsed_schema.clone() })
+                .map(|parsed_schema| -> ParsedSchema { parsed_schema.clone() })
                 .collect();
 
-            (
-                name.clone(),
-                ParsedSchema {
-                    name: name.as_deref().unwrap().to_string(),
-                    properties: Some(parsed_properties),
-                    schema_type: schema.schema_type.unwrap(),
-                },
-            )
+            ParsedSchema {
+                name: name.as_deref().unwrap().to_string(),
+                properties: Some(parsed_properties),
+                schema_type: schema.schema_type.unwrap(),
+            }
         })
         .collect()
 }
