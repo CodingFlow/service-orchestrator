@@ -14,6 +14,9 @@ pub fn generate_workflow_response(
 ) {
     let mut scope = Scope::new();
 
+    scope.import("serde", "Serialize");
+    scope.import("serde", "Deserialize");
+
     let response_values: BTreeMap<String, Response> =
         extract_response_values_from_spec(responses, spec);
 
@@ -32,35 +35,37 @@ fn generate_response_structure(
 ) -> Vec<(String, String)> {
     let responses: Vec<(String, String, Struct)> = response_values
         .iter()
-        .map(
-            |(status_code, response_value)| -> (&String, Vec<ParsedSchema>) {
-                let btree_map = &mut response_value.content.clone();
-                let first_entry = btree_map.first_entry();
-                let occupied_entry = &first_entry.unwrap();
-                let json_response = occupied_entry.get();
-                let properties = parse_schema(
-                    vec![(
-                        None,
-                        json_response.schema.clone().unwrap().resolve(spec).unwrap(),
-                    )],
-                    spec,
-                );
+        .map(|(status_code, response_value)| -> (&String, ParsedSchema) {
+            let btree_map = &mut response_value.content.clone();
+            let first_entry = btree_map.first_entry();
+            let occupied_entry = &first_entry.unwrap();
+            let json_response = occupied_entry.get();
+            let parsed_schemas = parse_schema(
+                vec![(
+                    Some(status_code.to_string()),
+                    json_response.schema.clone().unwrap().resolve(spec).unwrap(),
+                )],
+                spec,
+            );
 
-                (status_code, properties)
-            },
-        )
+            (status_code, parsed_schemas.first().unwrap().clone())
+        })
         .enumerate()
         .map(
-            |(index, (status_code, schemas))| -> (String, String, Struct) {
+            |(index, (status_code, parsed_schema))| -> (String, String, Struct) {
                 let struct_name = &format!("WorkflowResponse{}", index);
                 let mut new_struct = Struct::new(struct_name);
 
-                let fields: Vec<Field> = schemas
+                new_struct.derive("Serialize").derive("Deserialize");
+
+                let fields: Vec<Field> = parsed_schema
+                    .properties
+                    .unwrap()
                     .iter()
-                    .map(|schema| -> Field {
+                    .map(|property_schema| -> Field {
                         Field::new(
-                            schema.name.clone().unwrap().as_str(),
-                            to_string_schema_type_primitive(schema.schema_type),
+                            &property_schema.name.clone().unwrap(),
+                            to_string_schema_type_primitive(property_schema.schema_type), // assumes no nested objects in response
                         )
                     })
                     .collect();
@@ -105,5 +110,5 @@ fn extract_response_values_from_spec(
 }
 
 fn write_file(code: String) {
-    let _ = fs::write("./src/workflow_response_definition.rs", code);
+    let _ = fs::write("./src/workflow_response_definition_test.rs", code);
 }
