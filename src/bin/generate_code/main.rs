@@ -1,5 +1,6 @@
 mod generate_workflow_request;
 mod generate_workflow_response;
+pub mod spec_parsing;
 
 use generate_workflow_request::generate_workflow_request;
 use generate_workflow_response::generate_workflow_response;
@@ -35,5 +36,5 @@ fn generate_code(
     spec: &Spec,
 ) {
     generate_workflow_request(path_item, operation, spec, method, path_string);
-    generate_workflow_response(operation, spec);
+    generate_workflow_response(operation.responses.clone(), spec);
 }
