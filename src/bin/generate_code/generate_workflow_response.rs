@@ -2,12 +2,11 @@ use std::collections::BTreeMap;
 use std::fs;
 
 use codegen::{Field, Scope, Struct};
-use http::StatusCode;
-use oas3::{Spec, Schema};
+use oas3::Spec;
 
 use oas3::spec::{ObjectOrReference, Response};
 
-use crate::spec_parsing::parse_schema;
+use crate::spec_parsing::{parse_schema, to_string_schema_type_primitive, ParsedSchema};
 
 pub fn generate_workflow_response(
     responses: BTreeMap<String, ObjectOrReference<Response>>,
@@ -18,43 +17,75 @@ pub fn generate_workflow_response(
     let response_values: BTreeMap<String, Response> =
         extract_response_values_from_spec(responses, spec);
 
-    generate_response_structure(response_values, &mut scope, &spec);
+    let status_code_struct_name_pairs =
+        generate_response_structure(response_values, &mut scope, &spec);
 
     println!("{}", scope.to_string());
 
     write_file(scope.to_string());
 }
 
-fn generate_response_structure(response_values: BTreeMap<String, Response>, scope: &mut Scope, spec: &Spec) {
-    let response = scope.new_struct("WorkflowResponse");
-
-    let responses: Vec<Struct> = response_values
+fn generate_response_structure(
+    response_values: BTreeMap<String, Response>,
+    scope: &mut Scope,
+    spec: &Spec,
+) -> Vec<(String, String)> {
+    let responses: Vec<(String, String, Struct)> = response_values
         .iter()
-        .map(|(status_code, response_value)| -> (&String, BTreeMap<String, ObjectOrReference<Schema>>) { 
-            let json_response = response_value.content.first_entry().unwrap().get();
-            let properties = parse_schema(vec![(None, json_response.schema.unwrap().resolve(spec).unwrap())], spec);
+        .map(
+            |(status_code, response_value)| -> (&String, Vec<ParsedSchema>) {
+                let btree_map = &mut response_value.content.clone();
+                let first_entry = btree_map.first_entry();
+                let occupied_entry = &first_entry.unwrap();
+                let json_response = occupied_entry.get();
+                let properties = parse_schema(
+                    vec![(
+                        None,
+                        json_response.schema.clone().unwrap().resolve(spec).unwrap(),
+                    )],
+                    spec,
+                );
 
-            (status_code, properties)
-         })
-         .map(|(status_code, wrapped_properties)| -> (String, Struct){
-            let fields: Vec<Field> = wrapped_properties
-            .iter()
-            .map(|reference_property| -> Field {
-                let property_wrapped = reference_property.1.resolve(spec).unwrap().items.unwrap();
-                let property = property_wrapped.resolve(spec).unwrap();
+                (status_code, properties)
+            },
+        )
+        .enumerate()
+        .map(
+            |(index, (status_code, schemas))| -> (String, String, Struct) {
+                let struct_name = &format!("WorkflowResponse{}", index);
+                let mut new_struct = Struct::new(struct_name);
 
-                Field::new(property., )
-            })
-            .collect();
+                let fields: Vec<Field> = schemas
+                    .iter()
+                    .map(|schema| -> Field {
+                        Field::new(
+                            schema.name.clone().unwrap().as_str(),
+                            to_string_schema_type_primitive(schema.schema_type),
+                        )
+                    })
+                    .collect();
 
-            let response = Struct::new("WorkflowResponse");
+                for field in fields {
+                    new_struct.push_field(field);
+                }
 
-            for field in fields {
-                response.field(field., ty)
-            }
-
-         })
+                (status_code.to_string(), struct_name.to_string(), new_struct)
+            },
+        )
         .collect();
+
+    let final_result = responses
+        .iter()
+        .map(|(status_code, struct_name, _)| -> (String, String) {
+            (status_code.to_string(), struct_name.to_string())
+        })
+        .collect();
+
+    for (_, _, structure) in responses {
+        scope.push_struct(structure);
+    }
+
+    final_result
 }
 
 fn extract_response_values_from_spec(

@@ -2,9 +2,9 @@ use oas3::{spec::SchemaType, Schema, Spec};
 
 #[derive(Clone, Debug)]
 pub struct ParsedSchema {
-    name: Option<String>,
-    schema_type: SchemaType,
-    properties: Option<Vec<ParsedSchema>>,
+    pub name: Option<String>,
+    pub schema_type: SchemaType,
+    pub properties: Option<Vec<ParsedSchema>>,
 }
 
 pub fn parse_schema(
@@ -52,7 +52,7 @@ fn parse_object(schema: &Schema, spec: &Spec, name: &Option<String>) -> ParsedSc
     }
 }
 
-fn to_string_schema_type_primitive(schema_type: SchemaType) -> &'static str {
+pub fn to_string_schema_type_primitive(schema_type: SchemaType) -> &'static str {
     match schema_type {
         SchemaType::Boolean => "bool",
         SchemaType::Integer => "i32",
