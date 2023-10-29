@@ -7,7 +7,7 @@ use super::format_tuple;
 
 pub fn generate_define_paths(
     scope: &mut Scope,
-    path_string: &String,
+    path_string: String,
     path_parameters: Vec<(String, SchemaType)>,
 ) {
     let formatted_parameters: Vec<&str> = path_parameters

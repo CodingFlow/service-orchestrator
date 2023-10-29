@@ -17,7 +17,7 @@ use oas3::spec::SchemaType;
 
 pub fn generate_workflow_request<'a>(
     method: Method,
-    path_string: &'a String,
+    path_string: String,
     (path_parameters, query_parameters): (Vec<(String, SchemaType)>, Vec<(String, SchemaType)>),
 ) -> &'a str {
     let mut scope = Scope::new();
