@@ -3,6 +3,8 @@ use oas3::spec::SchemaType;
 
 use crate::spec_parsing::to_string_schema_type_primitive;
 
+const QUERY_STRUCT_NAME: &str = "QueryParameters";
+
 pub fn generate_query_struct(
     scope: &mut Scope,
     query_parameters: Vec<(String, SchemaType)>,
@@ -12,11 +14,12 @@ pub fn generate_query_struct(
         Field::new(name, format!("Option<{}>", converted_type))
     });
 
-    let mut new_struct = Struct::new("QueryParameters");
+    let mut new_struct = Struct::new(QUERY_STRUCT_NAME);
 
-    new_struct.vis("pub");
-
-    new_struct.derive("Serialize").derive("Deserialize");
+    new_struct
+        .vis("pub")
+        .derive("Serialize")
+        .derive("Deserialize");
 
     for field in fields {
         new_struct.push_field(field);
@@ -24,5 +27,5 @@ pub fn generate_query_struct(
 
     scope.push_struct(new_struct);
 
-    "QueryParameters"
+    QUERY_STRUCT_NAME
 }
