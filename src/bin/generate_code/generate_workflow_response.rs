@@ -16,16 +16,13 @@ pub fn generate_workflow_response(
 ) {
     let mut scope = Scope::new();
 
-    scope.import("serde", "Serialize");
-    scope.import("serde", "Deserialize");
-    scope.import("warp::reply", "self");
-    scope.import("warp::reply", "Json");
-    scope.import("crate::workflow_request_definition", query_struct_name);
+    generate_imports(&mut scope, query_struct_name);
 
     let response_values = parse_responses(responses, spec);
 
     let status_code_struct_name_pairs =
         generate_response_structure(response_values.to_vec(), &mut scope);
+
     generate_map_response(
         status_code_struct_name_pairs,
         &mut scope,
@@ -38,6 +35,14 @@ pub fn generate_workflow_response(
     println!("{}", scope.to_string());
 
     write_file(scope.to_string());
+}
+
+fn generate_imports(scope: &mut Scope, query_struct_name: &str) {
+    scope.import("serde", "Serialize");
+    scope.import("serde", "Deserialize");
+    scope.import("warp::reply", "self");
+    scope.import("warp::reply", "Json");
+    scope.import("crate::workflow_request_definition", query_struct_name);
 }
 
 fn parse_responses(
