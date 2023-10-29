@@ -22,25 +22,7 @@ pub fn generate_workflow_response(
     scope.import("warp::reply", "Json");
     scope.import("crate::workflow_request_definition", query_struct_name);
 
-    let binding = extract_response_values_from_spec(responses, spec);
-    let response_values: Vec<(&String, ParsedSchema)> = binding
-        .iter()
-        .map(|(status_code, response_value)| -> (&String, ParsedSchema) {
-            let btree_map = &mut response_value.content.clone();
-            let first_entry = btree_map.first_entry();
-            let occupied_entry = &first_entry.unwrap();
-            let json_response = occupied_entry.get();
-            let parsed_schemas = parse_schema(
-                vec![(
-                    Some(status_code.to_string()),
-                    json_response.schema.clone().unwrap().resolve(spec).unwrap(),
-                )],
-                spec,
-            );
-
-            (status_code, parsed_schemas.first().unwrap().clone())
-        })
-        .collect();
+    let response_values = parse_responses(responses, spec);
 
     let status_code_struct_name_pairs =
         generate_response_structure(response_values.to_vec(), &mut scope);
@@ -58,13 +40,43 @@ pub fn generate_workflow_response(
     write_file(scope.to_string());
 }
 
+fn parse_responses(
+    responses: BTreeMap<String, ObjectOrReference<Response>>,
+    spec: &Spec,
+) -> Vec<(String, ParsedSchema)> {
+    let extracted_responses = extract_response_values_from_spec(responses, spec);
+    let response_values: Vec<(String, ParsedSchema)> = extracted_responses
+        .iter()
+        .map(|(status_code, response_value)| -> (String, ParsedSchema) {
+            let btree_map = &mut response_value.content.clone();
+            let first_entry = btree_map.first_entry();
+            let occupied_entry = &first_entry.unwrap();
+            let json_response = occupied_entry.get();
+            let parsed_schemas = parse_schema(
+                vec![(
+                    Some(status_code.to_string()),
+                    json_response.schema.clone().unwrap().resolve(spec).unwrap(),
+                )],
+                spec,
+            );
+
+            (
+                status_code.to_string(),
+                parsed_schemas.first().unwrap().clone(),
+            )
+        })
+        .collect();
+
+    response_values
+}
+
 fn generate_map_response(
     status_code_struct_name_pairs: Vec<(String, String)>,
     scope: &mut Scope,
     path_parameters: Vec<(String, SchemaType)>,
     query_parameters: Vec<(String, SchemaType)>,
     query_struct_name: &str,
-    response_values: Vec<(&String, ParsedSchema)>,
+    response_values: Vec<(String, ParsedSchema)>,
 ) {
     let map_functions: Vec<Function> = status_code_struct_name_pairs
         .iter()
@@ -93,7 +105,7 @@ fn generate_map_response(
             let parsed_schema = &response_values
                 .iter()
                 .find(|(parsed_schema_status_code, _)| -> bool {
-                    status_code == *parsed_schema_status_code
+                    status_code == parsed_schema_status_code
                 })
                 .unwrap()
                 .1;
@@ -114,7 +126,7 @@ fn generate_map_response(
 }
 
 fn generate_response_structure(
-    response_values: Vec<(&String, ParsedSchema)>,
+    response_values: Vec<(String, ParsedSchema)>,
     scope: &mut Scope,
 ) -> Vec<(String, String)> {
     let responses: Vec<(String, String, Struct)> = response_values
