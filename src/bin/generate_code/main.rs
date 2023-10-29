@@ -23,12 +23,10 @@ fn main() {
 }
 
 fn parse_config() -> oas3::Spec {
-    let spec = match oas3::from_path("./src/workflow_spec.yaml") {
+    match oas3::from_path("./src/workflow_spec.yaml") {
         Ok(spec) => spec,
         Err(_) => panic!("unable to read open API spec file"),
-    };
-
-    spec
+    }
 }
 
 fn generate_code(
