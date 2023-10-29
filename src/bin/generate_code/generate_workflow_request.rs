@@ -1,4 +1,3 @@
-mod extract_request_values_from_spec;
 mod generate_define_method;
 mod generate_define_paths;
 mod generate_define_query;
@@ -8,7 +7,6 @@ mod generate_query_struct;
 use std::fs::{self};
 
 use codegen::Scope;
-use extract_request_values_from_spec::extract_request_values_from_spec;
 use generate_define_method::generate_define_method;
 use generate_define_paths::generate_define_paths;
 use generate_define_query::generate_define_query;
@@ -16,26 +14,24 @@ use generate_define_request::generate_define_request;
 use generate_query_struct::generate_query_struct;
 use http::Method;
 use oas3::{
-    spec::{Operation, PathItem},
+    spec::{Operation, PathItem, SchemaType},
     Spec,
 };
 
-pub fn generate_workflow_request(
-    path_item: &PathItem,
-    operation: &Operation,
-    spec: &Spec,
+pub fn generate_workflow_request<'a>(
+    path_item: &'a PathItem,
+    operation: &'a Operation,
+    spec: &'a Spec,
     method: Method,
-    path_string: &String,
-) {
+    path_string: &'a String,
+    (path_parameters, query_parameters): (Vec<(String, SchemaType)>, Vec<(String, SchemaType)>),
+) -> &'a str {
     let mut scope = Scope::new();
 
     scope.import("warp::reject", "Rejection");
     scope.import("warp", "Filter");
     scope.import("serde", "Serialize");
     scope.import("serde", "Deserialize");
-
-    let (path_parameters, query_parameters) =
-        extract_request_values_from_spec(path_item, operation, spec);
 
     let query_struct_name = generate_query_struct(&mut scope, query_parameters);
 
@@ -47,6 +43,8 @@ pub fn generate_workflow_request(
     println!("{}", scope.to_string());
 
     write_file(scope.to_string());
+
+    query_struct_name
 }
 
 fn format_tuple(input: Vec<&str>) -> String {

@@ -8,10 +8,13 @@ pub fn generate_query_struct(
     query_parameters: Vec<(String, SchemaType)>,
 ) -> &'static str {
     let fields = query_parameters.iter().map(|(name, schema_type)| -> Field {
-        Field::new(name, to_string_schema_type_primitive(*schema_type))
+        let converted_type = to_string_schema_type_primitive(*schema_type);
+        Field::new(name, format!("Option<{}>", converted_type))
     });
 
     let mut new_struct = Struct::new("QueryParameters");
+
+    new_struct.vis("pub");
 
     new_struct.derive("Serialize").derive("Deserialize");
 

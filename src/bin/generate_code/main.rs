@@ -1,7 +1,9 @@
+mod extract_request_values_from_spec;
 mod generate_workflow_request;
 mod generate_workflow_response;
 pub mod spec_parsing;
 
+use extract_request_values_from_spec::extract_request_values_from_spec;
 use generate_workflow_request::generate_workflow_request;
 use generate_workflow_response::generate_workflow_response;
 use http::Method;
@@ -35,6 +37,19 @@ fn generate_code(
     (method, operation): (Method, &Operation),
     spec: &Spec,
 ) {
-    generate_workflow_request(path_item, operation, spec, method, path_string);
-    generate_workflow_response(operation.responses.clone(), spec);
+    let request_values_from_spec = extract_request_values_from_spec(path_item, operation, spec);
+    let query_struct_name = generate_workflow_request(
+        path_item,
+        operation,
+        spec,
+        method,
+        path_string,
+        request_values_from_spec.clone(),
+    );
+    generate_workflow_response(
+        operation.responses.clone(),
+        spec,
+        request_values_from_spec,
+        query_struct_name,
+    );
 }
