@@ -38,14 +38,8 @@ fn generate_code(
     spec: &Spec,
 ) {
     let request_values_from_spec = extract_request_values_from_spec(path_item, operation, spec);
-    let query_struct_name = generate_workflow_request(
-        path_item,
-        operation,
-        spec,
-        method,
-        path_string,
-        request_values_from_spec.clone(),
-    );
+    let query_struct_name =
+        generate_workflow_request(method, path_string, request_values_from_spec.clone());
     generate_workflow_response(
         operation.responses.clone(),
         spec,

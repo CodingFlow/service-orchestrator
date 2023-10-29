@@ -13,15 +13,9 @@ use generate_define_query::generate_define_query;
 use generate_define_request::generate_define_request;
 use generate_query_struct::generate_query_struct;
 use http::Method;
-use oas3::{
-    spec::{Operation, PathItem, SchemaType},
-    Spec,
-};
+use oas3::spec::SchemaType;
 
 pub fn generate_workflow_request<'a>(
-    path_item: &'a PathItem,
-    operation: &'a Operation,
-    spec: &'a Spec,
     method: Method,
     path_string: &'a String,
     (path_parameters, query_parameters): (Vec<(String, SchemaType)>, Vec<(String, SchemaType)>),
