@@ -11,7 +11,10 @@ pub fn generate_query_struct(
 ) -> &'static str {
     let fields = query_parameters.iter().map(|(name, schema_type)| -> Field {
         let converted_type = to_string_schema_type_primitive(*schema_type);
-        Field::new(name, format!("Option<{}>", converted_type))
+        Field::new(
+            &format!("pub {}", name),
+            format!("Option<{}>", converted_type),
+        )
     });
 
     let mut new_struct = Struct::new(QUERY_STRUCT_NAME);

@@ -1,0 +1,15 @@
+Workflow A:
+  transform:
+    inputSum:
+      add:
+        - id
+        - maxResults
+  Service A:
+    input A: inputSum
+  Service B:
+    input A: "Service A: output B"
+    input B: input 2
+  response:
+    tailLength: id
+    furLength: maxResults
+    numberOfLegs: maxResults
