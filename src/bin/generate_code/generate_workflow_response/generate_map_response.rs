@@ -67,6 +67,22 @@ pub fn generate_map_response(
     }
 }
 
+fn format_query_destructure(
+    query_struct_name: &str,
+    query_parameters: Vec<(String, SchemaType)>,
+) -> String {
+    let variables: Vec<String> = query_parameters
+        .iter()
+        .map(|(name, _)| -> String { format!("mut {}", name) })
+        .collect();
+
+    format!(
+        "let {} {{ {} }} = parameters;",
+        query_struct_name,
+        variables.join(",")
+    )
+}
+
 fn format_response_fields(
     response_property: ParsedSchema,
     input_map: &Map<String, Value>,
@@ -102,22 +118,6 @@ fn format_response_field_value(
         ),
         false => mapped_value_name.to_string(),
     }
-}
-
-fn format_query_destructure(
-    query_struct_name: &str,
-    query_parameters: Vec<(String, SchemaType)>,
-) -> String {
-    let variables: Vec<String> = query_parameters
-        .iter()
-        .map(|(name, _)| -> String { format!("mut {}", name) })
-        .collect();
-
-    format!(
-        "let {} {{ {} }} = parameters;",
-        query_struct_name,
-        variables.join(",")
-    )
 }
 
 fn convert_type_to_default_value(schema_type: SchemaType) -> String {
