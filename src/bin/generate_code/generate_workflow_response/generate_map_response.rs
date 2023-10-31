@@ -2,7 +2,7 @@ use codegen::{Function, Scope};
 use oas3::spec::SchemaType;
 use serde_json::{Map, Value};
 
-use crate::spec_parsing::{to_string_schema_type_primitive, ParsedSchema};
+use crate::spec_parsing::{to_string_schema, ParsedSchema};
 
 pub fn generate_map_response(
     status_code_struct_name_pairs: Vec<(String, String)>,
@@ -20,10 +20,10 @@ pub fn generate_map_response(
 
             function.vis("pub");
 
-            let path_parameters_info: Vec<(&str, &str)> = path_parameters
+            let path_parameters_info: Vec<(&str, String)> = path_parameters
                 .iter()
-                .map(|(name, schema_type)| -> (&str, &str) {
-                    (name, to_string_schema_type_primitive(*schema_type))
+                .map(|(name, schema_type)| -> (&str, String) {
+                    (name, to_string_schema(*schema_type, None))
                 })
                 .collect();
 

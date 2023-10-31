@@ -1,6 +1,6 @@
 use codegen::{Field, Scope, Struct};
 
-use crate::spec_parsing::{to_string_schema_type_primitive, ParsedSchema};
+use crate::spec_parsing::{to_string_schema, ParsedSchema};
 
 pub fn generate_response_structure(
     response_values: Vec<(String, ParsedSchema)>,
@@ -22,7 +22,7 @@ pub fn generate_response_structure(
                 .map(|property_schema| -> Field {
                     Field::new(
                         &property_schema.name.clone().unwrap(),
-                        to_string_schema_type_primitive(property_schema.schema_type), // assumes no nested objects in response
+                        to_string_schema(property_schema.schema_type, property_schema.name.clone()), // assumes no nested objects in response
                     )
                 })
                 .collect();
