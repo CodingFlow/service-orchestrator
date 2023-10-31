@@ -17,6 +17,10 @@ paths:
           in: query
           schema:
             type: number
+        - name: eyeColor
+          in: query
+          schema:
+            type: string
       responses:
         200:
           description: got the cat
@@ -40,3 +44,8 @@ paths:
                     type: number
                     minimum: 0
                     maximum: 100
+                  eyes:
+                    type: object
+                    schema:
+                      properties:
+                        color: string

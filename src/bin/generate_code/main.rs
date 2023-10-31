@@ -2,6 +2,7 @@ mod extract_request_values_from_spec;
 mod generate_workflow_request;
 mod generate_workflow_response;
 pub mod spec_parsing;
+pub mod traversal;
 
 use extract_request_values_from_spec::extract_request_values_from_spec;
 use generate_workflow_request::generate_workflow_request;

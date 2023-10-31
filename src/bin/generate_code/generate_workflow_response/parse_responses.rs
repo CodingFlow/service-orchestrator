@@ -16,7 +16,7 @@ pub fn parse_responses(
         .iter()
         .map(|(status_code, response_value)| -> (String, ParsedSchema) {
             let btree_map = &mut response_value.content.clone();
-            let first_entry = btree_map.first_entry();
+            let first_entry = btree_map.first_entry(); // Only handle first media-type, assuming it is application/json
             let occupied_entry = &first_entry.unwrap();
             let json_response = occupied_entry.get();
             let parsed_schemas = parse_schema(

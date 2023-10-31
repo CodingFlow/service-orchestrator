@@ -1,7 +1,7 @@
 use codegen::Scope;
 use oas3::spec::SchemaType;
 
-use crate::spec_parsing::to_string_schema_type_primitive;
+use crate::spec_parsing::to_string_schema;
 
 use super::format_tuple;
 
@@ -10,9 +10,11 @@ pub fn generate_define_query(
     path_parameters: Vec<(String, SchemaType)>,
     query_struct_name: &str,
 ) {
-    let mut all_parameters_return_value: Vec<&str> = path_parameters
+    let mut all_parameters_return_value: Vec<String> = path_parameters
         .iter()
-        .map(|(_, schema_type)| -> &str { to_string_schema_type_primitive(*schema_type) })
+        .map(|(name, schema_type)| -> String {
+            to_string_schema(*schema_type, Some(name.to_string()))
+        })
         .collect();
 
     let function = scope.new_fn("define_query").arg(
@@ -23,7 +25,7 @@ pub fn generate_define_query(
         ),
     );
 
-    all_parameters_return_value.append(&mut vec![query_struct_name]);
+    all_parameters_return_value.append(&mut vec![query_struct_name.to_string()]);
 
     function
         .ret(format!(

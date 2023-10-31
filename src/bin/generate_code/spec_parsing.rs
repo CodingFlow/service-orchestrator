@@ -1,5 +1,7 @@
 use oas3::{spec::SchemaType, Schema, Spec};
 
+use crate::traversal::nested_traverse_general;
+
 #[derive(Clone, Debug)]
 pub struct ParsedSchema {
     pub name: Option<String>,
@@ -52,13 +54,13 @@ fn parse_object(schema: &Schema, spec: &Spec, name: &Option<String>) -> ParsedSc
     }
 }
 
-pub fn to_string_schema_type_primitive(schema_type: SchemaType) -> &'static str {
+pub fn to_string_schema(schema_type: SchemaType, struct_name: Option<String>) -> String {
     match schema_type {
-        SchemaType::Boolean => "bool",
-        SchemaType::Integer => "i32",
-        SchemaType::Number => "f32",
-        SchemaType::String => "String",
-        SchemaType::Array => "array",
-        SchemaType::Object => panic!("function does not handle schema type object"),
+        SchemaType::Boolean => "bool".to_string(),
+        SchemaType::Integer => "i32".to_string(),
+        SchemaType::Number => "f32".to_string(),
+        SchemaType::String => "String".to_string(),
+        SchemaType::Array => panic!("function does not handle schema type \"array\""),
+        SchemaType::Object => struct_name.unwrap(),
     }
 }

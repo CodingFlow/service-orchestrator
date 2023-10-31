@@ -1,19 +1,21 @@
 use codegen::Scope;
 use oas3::spec::SchemaType;
 
-use crate::spec_parsing::to_string_schema_type_primitive;
+use crate::spec_parsing::to_string_schema;
 
 pub fn generate_define_request(
     scope: &mut Scope,
     path_parameters: Vec<(String, SchemaType)>,
     query_struct_name: &str,
 ) {
-    let mut parameters = path_parameters
+    let mut parameters: Vec<String> = path_parameters
         .iter()
-        .map(|(_, schema_type)| -> &str { to_string_schema_type_primitive(*schema_type) })
-        .collect::<Vec<&str>>();
+        .map(|(name, schema_type)| -> String {
+            to_string_schema(*schema_type, Some(name.to_string()))
+        })
+        .collect();
 
-    parameters.push(query_struct_name);
+    parameters.push(query_struct_name.to_string());
 
     let formatted_parameters = parameters.join(",");
 

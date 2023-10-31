@@ -13,3 +13,5 @@ Workflow A:
     tailLength: id
     furLength: maxResults
     numberOfLegs: maxResults
+    eyes:
+      color: eyeColor

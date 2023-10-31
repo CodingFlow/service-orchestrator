@@ -41,7 +41,7 @@ pub fn generate_workflow_response(
         query_parameters,
         query_struct_name,
         response_values,
-        input_map,
+        input_map.clone(),
     );
 
     println!("{}", scope.to_string());

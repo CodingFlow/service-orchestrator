@@ -41,7 +41,7 @@ pub fn generate_workflow_request<'a>(
     query_struct_name
 }
 
-fn format_tuple(input: Vec<&str>) -> String {
+fn format_tuple(input: Vec<String>) -> String {
     match input.len() {
         1 => format!("({},)", input.join(",")),
         _ => format!("({})", input.join(",")),
