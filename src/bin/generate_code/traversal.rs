@@ -15,9 +15,10 @@ pub fn traverse_nested_type<T: Clone, R: Clone>(
     let action_result = action(current.clone());
     let mut nested_results = None;
 
-    if let Some(ref children) = nested_reference(current.clone()) {
+    if let Some(children) = nested_reference(current.clone()) {
         nested_results = Some(
             children
+                .to_vec()
                 .iter()
                 .map(|child| -> NestedNode<R> {
                     nested_action(child.clone(), action_result.clone());
@@ -31,6 +32,17 @@ pub fn traverse_nested_type<T: Clone, R: Clone>(
         current: action_result,
         children: nested_results,
     }
+}
+
+/// Maps contents of [NestedNode] structure.
+pub fn map_nested_node<T: Clone, R: Clone>(
+    current: NestedNode<T>,
+    action: impl Fn(NestedNode<T>) -> R,
+    nested_action: fn(child: NestedNode<T>, parent_result: R),
+) -> NestedNode<R> {
+    traverse_nested_type(current.clone(), action, nested_action, |current| {
+        current.clone().children
+    })
 }
 
 /// Traverses a nested hierachy of [NestedNode]s and processes them.
