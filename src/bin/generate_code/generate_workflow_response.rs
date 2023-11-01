@@ -27,10 +27,10 @@ pub fn generate_workflow_response(
 
     generate_imports(&mut scope, query_struct_name);
 
-    let response_values = parse_responses(responses, spec);
+    let parsed_spec_responses = parse_responses(responses, spec);
 
     let status_code_struct_name_pairs =
-        generate_response_structure(response_values.to_vec(), &mut scope);
+        generate_response_structure(parsed_spec_responses.to_vec(), &mut scope);
 
     let input_map = create_input_map();
 
@@ -40,7 +40,7 @@ pub fn generate_workflow_response(
         path_parameters,
         query_parameters,
         query_struct_name,
-        response_values,
+        parsed_spec_responses,
         input_map.clone(),
     );
 
