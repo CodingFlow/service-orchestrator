@@ -1,7 +1,5 @@
 use oas3::{spec::SchemaType, Schema, Spec};
 
-use crate::traversal::traverse_nested_type;
-
 #[derive(Clone, Debug)]
 pub struct ParsedSchema {
     pub name: Option<String>,

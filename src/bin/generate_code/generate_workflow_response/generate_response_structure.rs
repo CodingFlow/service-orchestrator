@@ -27,7 +27,7 @@ pub fn generate_response_structure(
                 },
                 |child_node, parent_result| {},
                 |current_node| -> Option<Vec<NestedNode<(String, String, Struct)>>> {
-                    current_node.clone().children
+                    current_node.children
                 },
             )
         })

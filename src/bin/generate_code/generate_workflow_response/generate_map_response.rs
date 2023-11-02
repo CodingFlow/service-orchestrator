@@ -21,9 +21,9 @@ pub fn generate_map_response(
 ) {
     let map_functions: Vec<Function> = status_code_struct_name_pairs
         .iter()
-        .map(|node| -> Function {
+        .map(|status_code_struct_name_node| -> Function {
             map_function(
-                node.clone(),
+                status_code_struct_name_node.clone(),
                 path_parameters.to_vec(),
                 query_parameters.to_vec(),
                 query_struct_name,
@@ -39,14 +39,14 @@ pub fn generate_map_response(
 }
 
 fn map_function(
-    node: NestedNode<(String, String)>,
+    status_code_struct_name_node: NestedNode<(String, String)>,
     path_parameters: Vec<(String, SchemaType)>,
     query_parameters: Vec<(String, SchemaType)>,
     query_struct_name: &str,
-    response_values: Vec<(String, ParsedSchema)>,
+    parsed_spec_responses: Vec<(String, ParsedSchema)>,
     input_map: Map<String, Value>,
 ) -> Function {
-    let (status_code, struct_name) = node.current.clone();
+    let (status_code, struct_name) = status_code_struct_name_node.current.clone();
 
     let mut function = Function::new("map_response");
 
@@ -56,9 +56,8 @@ fn map_function(
 
     create_reply(
         &mut function,
-        struct_name,
-        response_values,
-        status_code,
+        status_code_struct_name_node.clone(),
+        parsed_spec_responses,
         input_map,
         query_parameters,
     );
