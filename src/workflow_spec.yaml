@@ -46,6 +46,6 @@ paths:
                     maximum: 100
                   eyes:
                     type: object
-                    schema:
-                      properties:
-                        color: string
+                    properties:
+                      color:
+                        type: string
