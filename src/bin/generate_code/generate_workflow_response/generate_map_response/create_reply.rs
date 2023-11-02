@@ -38,16 +38,24 @@ fn create_properties(
         find_response_schema_with_matching_status_code(parsed_spec_responses, status_code);
 
     for (index, response_property) in parsed_schema.properties.clone().unwrap().iter().enumerate() {
-        let status_code_struct_name_child_node = status_code_struct_name_node
-            .children
-            .clone()
-            .unwrap()
-            .get(index)
-            .unwrap()
-            .clone();
+        let status_code_struct_name_child_node = match status_code_struct_name_node.children.clone()
+        {
+            Some(children) => match children.get(index) {
+                Some(child) => child.clone(),
+                None => NestedNode {
+                    current: (String::new(), String::new()),
+                    children: None,
+                },
+            },
+            None => NestedNode {
+                current: (String::new(), String::new()),
+                children: None,
+            }, // empty value that won't be used since field is not an object.
+        };
+
         create_response_field(
             function,
-            status_code_struct_name_child_node,
+            status_code_struct_name_child_node.clone(),
             response_property.clone(),
             &input_map,
             &query_parameters,
@@ -116,31 +124,26 @@ fn create_response_field_object(
             let child_properties = child_properties.iter().enumerate();
 
             for (index, child_response_property) in child_properties {
-                let child_status_code_struct_name_node = status_code_struct_name_node
-                    .children
-                    .clone()
-                    .unwrap()
-                    .get(index)
-                    .unwrap()
-                    .clone();
-
-                let child_input_map = mapped_value_map
-                    .get(&child_response_property.name.clone().unwrap())
-                    .unwrap()
-                    .as_object()
-                    .unwrap();
+                let child_status_code_struct_name_node =
+                    match status_code_struct_name_node.children.clone() {
+                        Some(children) => children.get(index).unwrap().clone(),
+                        None => NestedNode {
+                            current: (String::new(), String::new()),
+                            children: None,
+                        }, // empty value that won't be used since field is not an object.
+                    };
 
                 create_response_field(
                     function,
                     child_status_code_struct_name_node,
                     child_response_property.clone(),
-                    child_input_map,
+                    mapped_value_map,
                     query_parameters,
                 );
             }
         }
 
-        function.line("}},");
+        function.line("},");
     };
 }
 
@@ -174,11 +177,18 @@ fn format_response_field_value(
         let response_property_schema_type = response_property_schema_type;
         let mapped_value_name = mapped_value_name;
         match is_query_parameter(query_parameters, mapped_value_name) {
-            true => format!(
-                "*{}.get_or_insert({})",
-                mapped_value_name,
-                convert_type_to_default_value(response_property_schema_type)
-            ),
+            true => match response_property_schema_type {
+                SchemaType::String => format!(
+                    "{}.get_or_insert({}).to_string()",
+                    mapped_value_name,
+                    convert_type_to_default_value(response_property_schema_type)
+                ),
+                _ => format!(
+                    "*{}.get_or_insert({})",
+                    mapped_value_name,
+                    convert_type_to_default_value(response_property_schema_type)
+                ),
+            },
             false => mapped_value_name.to_string(),
         }
     }
@@ -198,7 +208,7 @@ fn convert_type_to_default_value(schema_type: SchemaType) -> String {
         SchemaType::Boolean => "false".to_string(),
         SchemaType::Integer => "0".to_string(),
         SchemaType::Number => "0.0".to_string(),
-        SchemaType::String => "".to_string(),
+        SchemaType::String => "String::new()".to_string(),
         SchemaType::Array => todo!(),
         SchemaType::Object => todo!(),
     }

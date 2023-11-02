@@ -21,7 +21,7 @@ pub fn parse_responses(
             let json_response = occupied_entry.get();
             let parsed_schemas = parse_schema(
                 vec![(
-                    Some(status_code.to_string()),
+                    None,
                     json_response.schema.clone().unwrap().resolve(spec).unwrap(),
                 )],
                 spec,
@@ -41,9 +41,9 @@ fn extract_response_values_from_spec(
     responses: BTreeMap<String, ObjectOrReference<Response>>,
     spec: &Spec,
 ) -> BTreeMap<String, Response> {
-    let a = responses.clone();
-
-    a.iter()
+    responses
+        .clone()
+        .iter()
         .map(|(status_code, wrapped_response)| -> (String, Response) {
             (
                 status_code.to_string(),

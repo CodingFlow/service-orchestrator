@@ -6,23 +6,45 @@ pub struct NestedNode<T> {
 
 /// Traverses a nested hierachy of types, processes them,
 /// and creates a hiearchy of [NestedNode] with the same structure.
-pub fn traverse_nested_type<T: Clone, R: Clone>(
+pub fn traverse_nested_type<T: Clone, R: Clone, U>(
     current: T,
-    action: fn(T) -> R,
-    nested_action: fn(child: T, parent_result: R),
+    action: fn(T, &mut U) -> R,
+    nested_action: fn(child: T, parent_result: &mut R, &mut U),
     nested_reference: fn(current: T) -> Option<Vec<T>>,
+    additional_action_input: &mut U,
+    recurse_only_if_child_has_children: bool,
 ) -> NestedNode<R> {
-    let action_result = action(current.clone());
+    let mut action_result = action(current.clone(), additional_action_input);
     let mut nested_results = None;
 
     if let Some(children) = nested_reference(current.clone()) {
-        nested_results = fun_name(
-            children,
-            nested_action,
-            &action_result,
-            action,
-            nested_reference,
-        );
+        nested_results = {
+            let mut result = vec![];
+
+            for child in children {
+                let child = child.clone();
+                nested_action(child.clone(), &mut action_result, additional_action_input);
+
+                if !recurse_only_if_child_has_children || nested_reference(child.clone()).is_some()
+                {
+                    let child_result = traverse_nested_type(
+                        child.clone(),
+                        action,
+                        nested_action,
+                        nested_reference,
+                        additional_action_input,
+                        recurse_only_if_child_has_children,
+                    );
+
+                    result.push(child_result);
+                }
+            }
+
+            match result.len().gt(&0) {
+                true => Some(result),
+                false => None,
+            }
+        };
     }
 
     NestedNode {
@@ -31,49 +53,16 @@ pub fn traverse_nested_type<T: Clone, R: Clone>(
     }
 }
 
-fn fun_name<T: Clone, R: Clone>(
-    children: Vec<T>,
-    nested_action: fn(T, R),
-    action_result: &R,
-    action: fn(T) -> R,
-    nested_reference: fn(T) -> Option<Vec<T>>,
-) -> Option<Vec<NestedNode<R>>> {
-    let mut result = vec![];
-
-    for child in children {
-        result.push(inner_fn(
-            child.clone(),
-            action_result.clone(),
-            action,
-            nested_action,
-            nested_reference,
-        ));
-    }
-
-    Some(result)
-}
-
-fn inner_fn<T: Clone, R: Clone>(
-    child: T,
-    action_result: R,
-    action: fn(T) -> R,
-    nested_action: fn(child: T, parent_result: R),
-    nested_reference: fn(current: T) -> Option<Vec<T>>,
-) -> NestedNode<R> {
-    nested_action(child.clone(), action_result.clone());
-    traverse_nested_type(child.clone(), action, nested_action, nested_reference)
-}
-
 /// Maps contents of [NestedNode] structure.
-pub fn map_nested_node<T: Clone, R: Clone>(
-    current: NestedNode<T>,
-    action: fn(NestedNode<T>) -> R,
-    nested_action: fn(child: NestedNode<T>, parent_result: R),
-) -> NestedNode<R> {
-    traverse_nested_type(current.clone(), action, nested_action, |current| {
-        current.clone().children
-    })
-}
+// pub fn map_nested_node<T: Clone, R: Clone>(
+//     current: NestedNode<T>,
+//     action: fn(NestedNode<T>) -> R,
+//     nested_action: fn(child: NestedNode<T>, parent_result: R),
+// ) -> NestedNode<R> {
+//     traverse_nested_type(current.clone(), action, nested_action, |current| {
+//         current.clone().children
+//     })
+// }
 
 /// Traverses a nested hierachy of [NestedNode]s and processes them.
 pub fn traverse_nested_node<T: Clone, R: Clone>(
