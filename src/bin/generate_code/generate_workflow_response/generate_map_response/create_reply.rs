@@ -6,14 +6,17 @@ use crate::{spec_parsing::ParsedSchema, traversal::NestedNode};
 
 pub fn create_reply(
     function: &mut Function,
-    status_code_struct_name_node: (String, NestedNode<String>),
+    status_code_struct_name_node: (String, NestedNode<Option<String>>),
     parsed_spec_responses: Vec<(String, ParsedSchema)>,
     input_map: Map<String, Value>,
     query_parameters: Vec<(String, SchemaType)>,
 ) {
     let (_, struct_name_node) = status_code_struct_name_node.clone();
 
-    function.line(format!("reply::json(&{} {{", struct_name_node.current));
+    function.line(format!(
+        "reply::json(&{} {{",
+        struct_name_node.current.unwrap() // Top level node always has a struct so can unwrap safely.
+    ));
 
     create_properties(
         parsed_spec_responses,
@@ -28,7 +31,7 @@ pub fn create_reply(
 
 fn create_properties(
     parsed_spec_responses: Vec<(String, ParsedSchema)>,
-    status_code_struct_name_node: (String, NestedNode<String>),
+    status_code_struct_name_node: (String, NestedNode<Option<String>>),
     function: &mut Function,
     input_map: Map<String, Value>,
     query_parameters: Vec<(String, SchemaType)>,
@@ -38,23 +41,17 @@ fn create_properties(
         find_response_schema_with_matching_status_code(parsed_spec_responses, status_code);
 
     for (index, response_property) in parsed_schema.properties.clone().unwrap().iter().enumerate() {
-        let struct_name_child_node = match struct_name_node.children.clone() {
-            Some(children) => match children.get(index) {
-                Some(child) => child.clone(),
-                None => NestedNode {
-                    current: String::new(),
-                    children: None,
-                },
-            },
-            None => NestedNode {
-                current: String::new(),
-                children: None,
-            }, // empty value that won't be used since field is not an object.
-        };
+        let struct_name_child_node = struct_name_node
+            .children
+            .clone()
+            .unwrap()
+            .get(index)
+            .unwrap()
+            .clone();
 
         create_response_field(
             function,
-            struct_name_child_node.clone(),
+            struct_name_child_node,
             response_property.clone(),
             &input_map,
             &query_parameters,
@@ -79,7 +76,7 @@ fn find_response_schema_with_matching_status_code(
 
 fn create_response_field(
     function: &mut Function,
-    struct_name_node: NestedNode<String>,
+    struct_name_node: NestedNode<Option<String>>,
     response_property: ParsedSchema,
     input_map: &Map<String, Value>,
     query_parameters: &Vec<(String, SchemaType)>,
@@ -106,7 +103,7 @@ fn create_response_field_object(
     function: &mut Function,
     response_property: ParsedSchema,
     input_map: &Map<String, Value>,
-    struct_name_node: NestedNode<String>,
+    struct_name_node: NestedNode<Option<String>>,
     query_parameters: &Vec<(String, SchemaType)>,
 ) {
     let property_name = response_property.name.clone().unwrap();
@@ -115,7 +112,7 @@ fn create_response_field_object(
     {
         let property_name = property_name;
         let response_property = response_property;
-        let struct_name = struct_name_node.current;
+        let struct_name = struct_name_node.current.unwrap();
 
         function.line(format!("{}:{} {{", property_name, struct_name));
 
@@ -123,13 +120,13 @@ fn create_response_field_object(
             let child_properties = child_properties.iter().enumerate();
 
             for (index, child_response_property) in child_properties {
-                let child_status_code_struct_name_node = match struct_name_node.children.clone() {
-                    Some(children) => children.get(index).unwrap().clone(),
-                    None => NestedNode {
-                        current: String::new(),
-                        children: None,
-                    }, // empty value that won't be used since field is not an object.
-                };
+                let child_status_code_struct_name_node = struct_name_node
+                    .children
+                    .clone()
+                    .unwrap()
+                    .get(index)
+                    .unwrap()
+                    .clone();
 
                 create_response_field(
                     function,

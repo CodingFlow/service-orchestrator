@@ -11,7 +11,7 @@ use oas3::spec::SchemaType;
 use serde_json::{Map, Value};
 
 pub fn generate_map_response(
-    status_code_struct_names: Vec<(String, NestedNode<String>)>,
+    status_code_struct_names: Vec<(String, NestedNode<Option<String>>)>,
     scope: &mut Scope,
     path_parameters: Vec<(String, SchemaType)>,
     query_parameters: Vec<(String, SchemaType)>,
@@ -39,7 +39,7 @@ pub fn generate_map_response(
 }
 
 fn map_function(
-    status_code_struct_name_node: (String, NestedNode<String>),
+    status_code_struct_name_node: (String, NestedNode<Option<String>>),
     path_parameters: Vec<(String, SchemaType)>,
     query_parameters: Vec<(String, SchemaType)>,
     query_struct_name: &str,
