@@ -11,7 +11,7 @@ use oas3::spec::SchemaType;
 use serde_json::{Map, Value};
 
 pub fn generate_map_response(
-    status_code_struct_name_pairs: Vec<NestedNode<(String, String)>>,
+    status_code_struct_names: Vec<(String, NestedNode<String>)>,
     scope: &mut Scope,
     path_parameters: Vec<(String, SchemaType)>,
     query_parameters: Vec<(String, SchemaType)>,
@@ -19,7 +19,7 @@ pub fn generate_map_response(
     parsed_spec_responses: Vec<(String, ParsedSchema)>,
     input_map: Map<String, Value>,
 ) {
-    let map_functions: Vec<Function> = status_code_struct_name_pairs
+    let map_functions: Vec<Function> = status_code_struct_names
         .iter()
         .map(|status_code_struct_name_node| -> Function {
             map_function(
@@ -39,15 +39,13 @@ pub fn generate_map_response(
 }
 
 fn map_function(
-    status_code_struct_name_node: NestedNode<(String, String)>,
+    status_code_struct_name_node: (String, NestedNode<String>),
     path_parameters: Vec<(String, SchemaType)>,
     query_parameters: Vec<(String, SchemaType)>,
     query_struct_name: &str,
     parsed_spec_responses: Vec<(String, ParsedSchema)>,
     input_map: Map<String, Value>,
 ) -> Function {
-    let (status_code, struct_name) = status_code_struct_name_node.current.clone();
-
     let mut function = Function::new("map_response");
 
     create_function_signature(&mut function, path_parameters, query_struct_name);
@@ -56,7 +54,7 @@ fn map_function(
 
     create_reply(
         &mut function,
-        status_code_struct_name_node.clone(),
+        status_code_struct_name_node,
         parsed_spec_responses,
         input_map,
         query_parameters,

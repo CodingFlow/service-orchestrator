@@ -29,13 +29,13 @@ pub fn generate_workflow_response(
 
     let parsed_spec_responses = parse_responses(responses, spec);
 
-    let status_code_struct_name_pairs =
+    let status_code_struct_names =
         generate_response_structure(parsed_spec_responses.to_vec(), &mut scope);
 
     let input_map = create_input_map();
 
     generate_map_response(
-        status_code_struct_name_pairs,
+        status_code_struct_names,
         &mut scope,
         path_parameters,
         query_parameters,
