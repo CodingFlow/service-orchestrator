@@ -18,33 +18,30 @@ pub fn traverse_nested_type<T: Clone, R: Clone, U>(
     let mut nested_results = None;
 
     if let Some(children) = nested_reference(current.clone()) {
-        nested_results = {
-            let mut result = vec![];
+        let mut result = vec![];
 
-            for child in children {
-                let child = child.clone();
-                nested_action(child.clone(), &mut action_result, additional_action_input);
+        for child in children {
+            let child = child.clone();
+            nested_action(child.clone(), &mut action_result, additional_action_input);
 
-                if !recurse_only_if_child_has_children || nested_reference(child.clone()).is_some()
-                {
-                    let child_result = traverse_nested_type(
-                        child.clone(),
-                        action,
-                        nested_action,
-                        nested_reference,
-                        additional_action_input,
-                        recurse_only_if_child_has_children,
-                    );
+            if !recurse_only_if_child_has_children || nested_reference(child.clone()).is_some() {
+                let child_result = traverse_nested_type(
+                    child.clone(),
+                    action,
+                    nested_action,
+                    nested_reference,
+                    additional_action_input,
+                    recurse_only_if_child_has_children,
+                );
 
-                    result.push(child_result);
-                }
+                result.push(child_result);
             }
+        }
 
-            match result.len().gt(&0) {
-                true => Some(result),
-                false => None,
-            }
-        };
+        nested_results = match result.len().gt(&0) {
+            true => Some(result),
+            false => None,
+        }
     }
 
     NestedNode {

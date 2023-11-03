@@ -62,18 +62,7 @@ fn nested_process(parent: &(String, ParsedSchema)) -> (String, NestedNode<(Strin
         schema.clone(),
         process_parent,
         process_child,
-        |schema| -> Option<Vec<ParsedSchema>> {
-            if let Some(schema_properties) = schema.properties {
-                Some(
-                    schema_properties
-                        .iter()
-                        .map(|child_schema| -> ParsedSchema { child_schema.clone() })
-                        .collect(),
-                )
-            } else {
-                None
-            }
-        },
+        get_children,
         &mut (),
         true,
     );
@@ -113,4 +102,8 @@ fn process_child<'a>(
     );
 
     parent_struct.push_field(field.clone());
+}
+
+fn get_children(schema: ParsedSchema) -> Option<Vec<ParsedSchema>> {
+    schema.properties
 }
