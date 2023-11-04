@@ -16,7 +16,7 @@ pub fn create_reply(
     let (_, response_node) = status_code_struct_name_node.clone();
 
     function.line(format!(
-        "reply::json(&{} {{",
+        "Ok(reply::json(&{} {{",
         response_node.current.struct_name.unwrap() // Top level node always has a struct so can unwrap safely.
     ));
 
@@ -27,7 +27,7 @@ pub fn create_reply(
         query_parameters,
     );
 
-    function.line("})");
+    function.line("}))");
 }
 
 fn create_properties(

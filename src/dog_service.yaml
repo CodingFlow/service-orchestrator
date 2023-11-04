@@ -1,0 +1,28 @@
+openapi: 3.1.0
+info:
+  title: Dog Service
+  description: |-
+    Workflow API
+  version: 1.0.0
+paths:
+  /dog/{id}:
+    get:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        200:
+          description: got the dog
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  numberHairs:
+                    description: number of hairs
+                    type: number
+                    minimum: 0
+                    maximum: 100

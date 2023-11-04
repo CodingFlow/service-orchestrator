@@ -9,10 +9,11 @@ pub fn create_function_signature(
     query_struct_name: &str,
 ) {
     function.vis("pub");
+    function.set_async(true);
 
     create_function_arguments(path_parameters, function, query_struct_name);
 
-    function.ret("Json");
+    function.ret("Result<impl warp::Reply, warp::Rejection>");
 }
 
 fn create_function_arguments(
