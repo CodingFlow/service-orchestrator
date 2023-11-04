@@ -5,22 +5,29 @@ use crate::{
     traversal::{traverse_nested_type, NestedNode},
 };
 
+#[derive(Clone, Debug)]
+pub struct ResponseWithStructName {
+    pub struct_name: Option<String>,
+    pub schema: ParsedSchema,
+}
+
 pub fn generate_response_structure(
     response_values: Vec<(String, ParsedSchema)>,
     scope: &mut Scope,
-) -> Vec<(String, NestedNode<Option<String>>)> {
+) -> Vec<(String, NestedNode<ResponseWithStructName>)> {
     let responses = create_structs(response_values);
 
     for (_, node) in responses.clone() {
         traverse_nested_type(
             node,
             |current_node, scope| -> () {
-                if let Some((_, structure)) = current_node.current {
+                let (_, structure) = current_node.current;
+                if let Some(structure) = structure {
                     scope.push_struct(structure);
                 }
             },
-            |child_node, parent_result, scope| {},
-            |current_node| -> Option<Vec<NestedNode<Option<(String, Struct)>>>> {
+            |_, _, _| {},
+            |current_node| -> Option<Vec<NestedNode<(ResponseWithStructName, Option<Struct>)>>> {
                 current_node.children
             },
             &mut *scope,
@@ -31,17 +38,16 @@ pub fn generate_response_structure(
     responses
         .iter()
         .map(
-            |(status_code, node)| -> (String, NestedNode<Option<String>>) {
+            |(status_code, node)| -> (String, NestedNode<ResponseWithStructName>) {
                 let new_node = traverse_nested_type(
                     node.clone(),
-                    |current_node, _| -> Option<String> {
-                        match current_node.current {
-                            Some((struct_name, _)) => Some(struct_name),
-                            None => None,
-                        }
+                    |current_node, _| -> ResponseWithStructName {
+                        let (response_with_struct_name, _) = current_node.current;
+
+                        response_with_struct_name
                     },
-                    |child_node, parent_result, _| {},
-                    |current_node| -> Option<Vec<NestedNode<Option<(String, Struct)>>>> {
+                    |_, _, _| {},
+                    |current_node| -> Option<Vec<NestedNode<(ResponseWithStructName, Option<Struct>)>>> {
                         current_node.children
                     },
                     &mut (),
@@ -56,13 +62,13 @@ pub fn generate_response_structure(
 
 fn create_structs(
     response_values: Vec<(String, ParsedSchema)>,
-) -> Vec<(String, NestedNode<Option<(String, Struct)>>)> {
+) -> Vec<(String, NestedNode<(ResponseWithStructName, Option<Struct>)>)> {
     response_values.iter().map(nested_process).collect()
 }
 
 fn nested_process(
     parent: &(String, ParsedSchema),
-) -> (String, NestedNode<Option<(String, Struct)>>) {
+) -> (String, NestedNode<(ResponseWithStructName, Option<Struct>)>) {
     let (status_code, schema) = parent;
 
     let nested_node = traverse_nested_type(
@@ -77,7 +83,10 @@ fn nested_process(
     (status_code.to_string(), nested_node)
 }
 
-fn process_parent(parent_schema: ParsedSchema, _: &mut ()) -> Option<(String, Struct)> {
+fn process_parent(
+    parent_schema: ParsedSchema,
+    _: &mut (),
+) -> (ResponseWithStructName, Option<Struct>) {
     match parent_schema.properties.is_some() {
         true => {
             let struct_name = &format!(
@@ -91,18 +100,32 @@ fn process_parent(parent_schema: ParsedSchema, _: &mut ()) -> Option<(String, St
 
             new_struct.derive("Serialize").derive("Deserialize");
 
-            Some((struct_name.to_string(), new_struct))
+            (
+                ResponseWithStructName {
+                    struct_name: Some(struct_name.to_string()),
+                    schema: parent_schema,
+                },
+                Some(new_struct),
+            )
         }
-        false => None,
+        false => (
+            ResponseWithStructName {
+                struct_name: None,
+                schema: parent_schema,
+            },
+            None,
+        ),
     }
 }
 
 fn process_child<'a>(
     child_schema: ParsedSchema,
-    parent_result: &'a mut Option<(String, Struct)>,
+    parent_result: &'a mut (ResponseWithStructName, Option<Struct>),
     _: &mut (),
 ) {
-    if let Some((_, ref mut parent_struct)) = parent_result {
+    let (_, parent_struct) = parent_result;
+
+    if let Some(parent_struct) = parent_struct {
         let field = Field::new(
             &child_schema.name.clone().unwrap(),
             to_string_schema(

@@ -40,7 +40,6 @@ pub fn generate_workflow_response(
         path_parameters,
         query_parameters,
         query_struct_name,
-        parsed_spec_responses,
         input_map.clone(),
     );
 
