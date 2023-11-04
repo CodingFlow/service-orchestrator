@@ -12,7 +12,6 @@ pub fn traverse_nested_type<T: Clone, R: Clone, U>(
     nested_action: fn(child: T, parent_result: &mut R, &mut U),
     nested_reference: fn(current: T) -> Option<Vec<T>>,
     additional_action_input: &mut U,
-    recurse_only_if_child_has_children: bool,
 ) -> NestedNode<R> {
     let mut action_result = action(current.clone(), additional_action_input);
     let mut nested_results = None;
@@ -24,18 +23,15 @@ pub fn traverse_nested_type<T: Clone, R: Clone, U>(
             let child = child.clone();
             nested_action(child.clone(), &mut action_result, additional_action_input);
 
-            if !recurse_only_if_child_has_children || nested_reference(child.clone()).is_some() {
-                let child_result = traverse_nested_type(
-                    child.clone(),
-                    action,
-                    nested_action,
-                    nested_reference,
-                    additional_action_input,
-                    recurse_only_if_child_has_children,
-                );
+            let child_result = traverse_nested_type(
+                child.clone(),
+                action,
+                nested_action,
+                nested_reference,
+                additional_action_input,
+            );
 
-                result.push(child_result);
-            }
+            result.push(child_result);
         }
 
         nested_results = match result.len().gt(&0) {

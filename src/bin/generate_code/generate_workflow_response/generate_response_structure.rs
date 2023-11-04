@@ -31,7 +31,6 @@ pub fn generate_response_structure(
                 current_node.children
             },
             &mut *scope,
-            false,
         );
     }
 
@@ -51,7 +50,6 @@ pub fn generate_response_structure(
                         current_node.children
                     },
                     &mut (),
-                    false,
                 );
 
                 (status_code.to_string(), new_node)
@@ -77,7 +75,6 @@ fn nested_process(
         process_child,
         get_children,
         &mut (),
-        false,
     );
 
     (status_code.to_string(), nested_node)
