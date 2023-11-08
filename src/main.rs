@@ -1,20 +1,28 @@
-mod workflow_request_definition;
-mod workflow_response_definition;
+mod generated_re_exports;
+
+use std::future::Future;
+
+use generated_re_exports::{
+    workflow_request_definition::define_request, workflow_response_definition::map_response,
+};
 
 use warp::Filter;
-use workflow_request_definition::define_request;
-use workflow_response_definition::map_response;
 
 #[tokio::main]
 async fn main() {
-    // GET /hello/warp => 200 OK with body "Hello, warp!"
     let filter = create_filter();
 
-    set_up_server(filter).await;
+    set_up_server(filter.clone().or(filter)).await;
 }
 
-fn create_filter() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    define_request().map(map_response)
+fn create_filter() -> impl Filter<
+    Extract = impl warp::Reply,
+    Error = warp::Rejection,
+    Future = impl Future<Output = Result<impl warp::Reply, warp::Rejection>>,
+> + Clone {
+    define_request()
+        .and_then(map_response)
+        .or(define_request().and_then(map_response))
 }
 
 async fn set_up_server(

@@ -15,10 +15,13 @@ use generate_query_struct::generate_query_struct;
 use http::Method;
 use oas3::spec::SchemaType;
 
+use crate::generate_re_exports::{ReExports, ReExportsBehavior};
+
 pub fn generate_workflow_request<'a>(
     method: Method,
     path_string: String,
     (path_parameters, query_parameters): (Vec<(String, SchemaType)>, Vec<(String, SchemaType)>),
+    re_exports: &mut ReExports,
 ) -> &'a str {
     let mut scope = Scope::new();
 
@@ -36,7 +39,7 @@ pub fn generate_workflow_request<'a>(
 
     println!("{}", scope.to_string());
 
-    write_file(scope.to_string());
+    re_exports.add("workflow_request_definition".to_string(), scope.to_string());
 
     query_struct_name
 }
@@ -46,8 +49,4 @@ fn format_tuple(input: Vec<String>) -> String {
         1 => format!("({},)", input.join(",")),
         _ => format!("({})", input.join(",")),
     }
-}
-
-fn write_file(code: String) {
-    let _ = fs::write("./src/workflow_request_definition.rs", code);
 }

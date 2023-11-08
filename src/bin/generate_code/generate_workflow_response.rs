@@ -17,11 +17,14 @@ use generate_response_structure::generate_response_structure;
 use oas3::spec::{ObjectOrReference, Response, SchemaType};
 use parse_responses::parse_responses;
 
+use crate::generate_re_exports::{ReExports, ReExportsBehavior};
+
 pub fn generate_workflow_response(
     responses: BTreeMap<String, ObjectOrReference<Response>>,
     spec: &Spec,
     (path_parameters, query_parameters): (Vec<(String, SchemaType)>, Vec<(String, SchemaType)>),
     query_struct_name: &str,
+    re_exports: &mut ReExports,
 ) {
     let mut scope = Scope::new();
 
@@ -45,9 +48,8 @@ pub fn generate_workflow_response(
 
     println!("{}", scope.to_string());
 
-    write_file(scope.to_string());
-}
-
-fn write_file(code: String) {
-    let _ = fs::write("./src/workflow_response_definition.rs", code);
+    re_exports.add(
+        "workflow_response_definition".to_string(),
+        scope.to_string(),
+    );
 }
