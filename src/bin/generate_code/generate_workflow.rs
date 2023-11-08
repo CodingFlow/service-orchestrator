@@ -2,40 +2,46 @@ mod generate_workflow_request;
 mod generate_workflow_response;
 
 use http::Method;
-use oas3::{
-    spec::{Operation, PathItem},
-    Spec,
-};
+use oas3::spec::{Operation, PathItem};
 
 use generate_workflow_request::generate_workflow_request;
 use generate_workflow_response::generate_workflow_response;
 
 use crate::{
     extract_request_values_from_spec::extract_request_values_from_spec,
-    generate_re_exports::ReExports,
+    generate_create_filter::WorkflowDefinitionNames, generate_re_exports::ReExports, SpecInfo,
 };
 
 pub fn generate_workflow(
     path_item: &PathItem,
     operation: &Operation,
-    spec: &Spec,
+    spec_info: &SpecInfo,
     method: Method,
     path_string: &String,
     re_exports: &mut ReExports,
-) {
-    let request_values_from_spec = extract_request_values_from_spec(path_item, operation, spec);
+) -> WorkflowDefinitionNames {
+    let request_values_from_spec =
+        extract_request_values_from_spec(path_item, operation, &spec_info.spec);
 
-    let query_struct_name = generate_workflow_request(
+    let (query_struct_name, request_module_name) = generate_workflow_request(
         method,
         path_string.to_string(),
         request_values_from_spec.clone(),
+        spec_info.name.clone(),
         re_exports,
     );
-    generate_workflow_response(
+
+    let response_module_name = generate_workflow_response(
         operation.responses.clone(),
-        spec,
+        &spec_info,
         request_values_from_spec,
         query_struct_name,
+        request_module_name.clone(),
         re_exports,
     );
+
+    WorkflowDefinitionNames {
+        request_name: request_module_name,
+        response_name: response_module_name,
+    }
 }

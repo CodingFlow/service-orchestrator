@@ -4,8 +4,6 @@ mod generate_define_query;
 mod generate_define_request;
 mod generate_query_struct;
 
-use std::fs::{self};
-
 use codegen::Scope;
 use generate_define_method::generate_define_method;
 use generate_define_paths::generate_define_paths;
@@ -21,8 +19,9 @@ pub fn generate_workflow_request<'a>(
     method: Method,
     path_string: String,
     (path_parameters, query_parameters): (Vec<(String, SchemaType)>, Vec<(String, SchemaType)>),
+    workflow_name: String,
     re_exports: &mut ReExports,
-) -> &'a str {
+) -> (&'a str, String) {
     let mut scope = Scope::new();
 
     scope.import("warp::reject", "Rejection");
@@ -37,11 +36,11 @@ pub fn generate_workflow_request<'a>(
     generate_define_paths(&mut scope, path_string, path_parameters.to_vec());
     generate_define_query(&mut scope, path_parameters, query_struct_name);
 
-    println!("{}", scope.to_string());
+    let module_name = format!("{}_workflow_request_definition", workflow_name);
 
-    re_exports.add("workflow_request_definition".to_string(), scope.to_string());
+    re_exports.add(module_name.clone(), scope.to_string());
 
-    query_struct_name
+    (query_struct_name, module_name)
 }
 
 fn format_tuple(input: Vec<String>) -> String {

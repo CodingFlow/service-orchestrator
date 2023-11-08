@@ -1,49 +1,81 @@
 mod extract_request_values_from_spec;
+mod generate_create_filter;
 mod generate_re_exports;
 mod generate_workflow;
 pub mod spec_parsing;
 pub mod traversal;
 
+use std::{fs::read_dir, path::Path};
+
+use generate_create_filter::generate_create_filter;
 use generate_re_exports::{ReExports, ReExportsBehavior};
 use generate_workflow::generate_workflow;
-use http::Method;
-use oas3::{
-    spec::{Operation, PathItem},
-    Spec,
-};
+use oas3::Spec;
 
 fn main() {
-    let spec = parse_config();
+    let mut re_exports = ReExports::new();
 
-    for (path_string, path_item) in &spec.paths {
-        for method in path_item.methods() {
-            generate_code(&path_string, &path_item, method, &spec);
-        }
-    }
+    let workflow_spec_infos = parse_workflow_specs();
+    generate_workflows(workflow_spec_infos, &mut re_exports);
+
+    re_exports.generate();
 }
 
-fn parse_config() -> oas3::Spec {
-    match oas3::from_path("./src/workflow_spec.yaml") {
+pub struct SpecInfo {
+    name: String,
+    spec: Spec,
+}
+
+fn parse_workflow_specs() -> Vec<SpecInfo> {
+    let files = match read_dir(Path::new("./src/workflow_specs/")) {
+        Ok(files) => files,
+        Err(_) => panic!("Unable to read workflow open api spec files!"),
+    };
+
+    files
+        .map(|dir_entry| -> SpecInfo {
+            let dir_entry = &dir_entry.unwrap();
+
+            SpecInfo {
+                name: dir_entry
+                    .path()
+                    .file_stem()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .to_string(),
+                spec: parse_config(dir_entry.path().as_path()),
+            }
+        })
+        .collect()
+}
+
+fn parse_config(path: &Path) -> oas3::Spec {
+    match oas3::from_path(path) {
         Ok(spec) => spec,
         Err(_) => panic!("unable to read open API spec file"),
     }
 }
 
-fn generate_code(
-    path_string: &String,
-    path_item: &PathItem,
-    (method, operation): (Method, &Operation),
-    spec: &Spec,
-) {
-    let mut re_exports = ReExports::new();
-    generate_workflow(
-        path_item,
-        operation,
-        spec,
-        method,
-        path_string,
-        &mut re_exports,
-    );
+fn generate_workflows(workflow_spec_infos: Vec<SpecInfo>, re_exports: &mut ReExports) {
+    let mut workflow_definition_names = vec![];
 
-    re_exports.generate();
+    for spec_info in workflow_spec_infos {
+        for (path_string, path_item) in &spec_info.spec.paths {
+            for (method, operation) in path_item.methods() {
+                let names = generate_workflow(
+                    &path_item,
+                    operation,
+                    &spec_info,
+                    method,
+                    &path_string,
+                    re_exports,
+                );
+
+                workflow_definition_names.push(names);
+            }
+        }
+    }
+
+    generate_create_filter(workflow_definition_names, re_exports);
 }

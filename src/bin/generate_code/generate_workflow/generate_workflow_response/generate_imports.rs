@@ -1,9 +1,12 @@
 use codegen::Scope;
 
-pub fn generate_imports(scope: &mut Scope, query_struct_name: &str) {
+pub fn generate_imports(scope: &mut Scope, query_struct_name: &str, request_module_name: String) {
     scope.import("serde", "Serialize");
     scope.import("serde", "Deserialize");
     scope.import("warp::reply", "self");
     scope.import("warp::reply", "Json");
-    scope.import("super::workflow_request_definition", query_struct_name);
+    scope.import(
+        format!("super::{}", request_module_name).as_str(),
+        query_struct_name,
+    );
 }

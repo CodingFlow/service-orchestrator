@@ -5,10 +5,8 @@ mod generate_response_structure;
 mod parse_responses;
 
 use std::collections::BTreeMap;
-use std::fs;
 
 use codegen::Scope;
-use oas3::Spec;
 
 use create_input_map::create_input_map;
 use generate_imports::generate_imports;
@@ -17,25 +15,29 @@ use generate_response_structure::generate_response_structure;
 use oas3::spec::{ObjectOrReference, Response, SchemaType};
 use parse_responses::parse_responses;
 
-use crate::generate_re_exports::{ReExports, ReExportsBehavior};
+use crate::{
+    generate_re_exports::{ReExports, ReExportsBehavior},
+    SpecInfo,
+};
 
 pub fn generate_workflow_response(
     responses: BTreeMap<String, ObjectOrReference<Response>>,
-    spec: &Spec,
+    spec_info: &SpecInfo,
     (path_parameters, query_parameters): (Vec<(String, SchemaType)>, Vec<(String, SchemaType)>),
     query_struct_name: &str,
+    request_module_name: String,
     re_exports: &mut ReExports,
-) {
+) -> String {
     let mut scope = Scope::new();
 
-    generate_imports(&mut scope, query_struct_name);
+    generate_imports(&mut scope, query_struct_name, request_module_name);
 
-    let parsed_spec_responses = parse_responses(responses, spec);
+    let parsed_spec_responses = parse_responses(responses, &spec_info.spec);
 
     let status_code_struct_names =
         generate_response_structure(parsed_spec_responses.to_vec(), &mut scope);
 
-    let input_map = create_input_map();
+    let input_map = create_input_map(spec_info.name.clone());
 
     generate_map_response(
         status_code_struct_names,
@@ -46,10 +48,9 @@ pub fn generate_workflow_response(
         input_map.clone(),
     );
 
-    println!("{}", scope.to_string());
+    let module_name = format!("{}_workflow_response_definition", spec_info.name);
 
-    re_exports.add(
-        "workflow_response_definition".to_string(),
-        scope.to_string(),
-    );
+    re_exports.add(module_name.clone(), scope.to_string());
+
+    module_name
 }

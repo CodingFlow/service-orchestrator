@@ -24,14 +24,14 @@ impl InputMapBehavior for InputMap {
     }
 }
 
-pub fn create_input_map() -> Map<String, Value> {
+pub fn create_input_map(workflow_name: String) -> Map<String, Value> {
     let a = InputMap {
         workflow_config: Map::new(),
     };
-    get_workflow_map()
+    get_workflow_map(workflow_name)
 }
 
-fn get_workflow_map() -> Map<String, Value> {
+fn get_workflow_map(workflow_name: String) -> Map<String, Value> {
     let file = match fs::File::open("./src/workflow_mapping.yaml") {
         Ok(file) => file,
         Err(_) => panic!("Unable to read workflow mapping configuration file."),
@@ -41,7 +41,7 @@ fn get_workflow_map() -> Map<String, Value> {
         Err(_) => panic!("Unable to parse workflow mapping configuration file."),
     };
 
-    let workflow_config = config.get("Workflow A").unwrap();
+    let workflow_config = config.get(workflow_name).unwrap();
     let response = workflow_config
         .get("response")
         .unwrap()
