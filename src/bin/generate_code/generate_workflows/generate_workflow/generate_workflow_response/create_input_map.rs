@@ -32,6 +32,7 @@ pub fn create_input_map(workflow_name: String) -> Map<String, Value> {
 }
 
 fn get_workflow_map(workflow_name: String) -> Map<String, Value> {
+    // TODO: Move reading mapping config file to higher level so it is read only once.
     let file = match fs::File::open("./src/workflow_mapping.yaml") {
         Ok(file) => file,
         Err(_) => panic!("Unable to read workflow mapping configuration file."),
