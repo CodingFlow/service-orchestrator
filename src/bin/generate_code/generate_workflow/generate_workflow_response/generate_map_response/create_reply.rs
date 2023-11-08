@@ -3,7 +3,7 @@ use oas3::spec::SchemaType;
 use serde_json::{Map, Value};
 
 use crate::{
-    generate_workflow_response::generate_response_structure::ResponseWithStructName,
+    generate_workflow::generate_workflow_response::generate_response_structure::ResponseWithStructName,
     spec_parsing::ParsedSchema, traversal::NestedNode,
 };
 

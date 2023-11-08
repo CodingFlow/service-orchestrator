@@ -1,16 +1,11 @@
 mod extract_request_values_from_spec;
 mod generate_re_exports;
-mod generate_workflow_request;
-mod generate_workflow_response;
+mod generate_workflow;
 pub mod spec_parsing;
 pub mod traversal;
 
-use std::collections::BTreeMap;
-
-use extract_request_values_from_spec::extract_request_values_from_spec;
 use generate_re_exports::{ReExports, ReExportsBehavior};
-use generate_workflow_request::generate_workflow_request;
-use generate_workflow_response::generate_workflow_response;
+use generate_workflow::generate_workflow;
 use http::Method;
 use oas3::{
     spec::{Operation, PathItem},
@@ -41,19 +36,12 @@ fn generate_code(
     spec: &Spec,
 ) {
     let mut re_exports = ReExports::new();
-    let request_values_from_spec = extract_request_values_from_spec(path_item, operation, spec);
-
-    let query_struct_name = generate_workflow_request(
-        method,
-        path_string.to_string(),
-        request_values_from_spec.clone(),
-        &mut re_exports,
-    );
-    generate_workflow_response(
-        operation.responses.clone(),
+    generate_workflow(
+        path_item,
+        operation,
         spec,
-        request_values_from_spec,
-        query_struct_name,
+        method,
+        path_string,
         &mut re_exports,
     );
 
