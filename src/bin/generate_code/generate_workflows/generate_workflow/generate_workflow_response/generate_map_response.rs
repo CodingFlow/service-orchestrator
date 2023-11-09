@@ -1,12 +1,14 @@
 mod create_function_signature;
 mod create_query_destructure;
 mod create_reply;
+mod create_service_calls;
 
 use crate::traversal::NestedNode;
 use codegen::{Function, Scope};
 use create_function_signature::create_function_signature;
 use create_query_destructure::create_query_destructure;
 use create_reply::create_reply;
+use create_service_calls::create_service_calls;
 use oas3::spec::SchemaType;
 use serde_json::{Map, Value};
 
@@ -50,6 +52,8 @@ fn map_function(
     create_function_signature(&mut function, path_parameters, query_struct_name);
 
     create_query_destructure(&mut function, query_struct_name, &query_parameters);
+
+    create_service_calls(&mut function);
 
     create_reply(
         &mut function,

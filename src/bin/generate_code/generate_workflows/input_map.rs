@@ -9,6 +9,7 @@ pub struct InputMap {
 pub trait InputMapBehavior {
     fn get_workflow_response(&self, workflow_name: String) -> Map<String, Value>;
     fn get_all_workflows(&self) -> BTreeMap<String, Map<String, Value>>;
+    fn get_all_services_for_workflow(&self, workflow_name: String) -> Map<String, Value>;
 }
 
 impl InputMapBehavior for InputMap {
@@ -35,6 +36,18 @@ impl InputMapBehavior for InputMap {
             .map(|(key, value)| -> (String, Map<String, Value>) {
                 (key, value.as_object().unwrap().clone())
             })
+            .collect()
+    }
+
+    fn get_all_services_for_workflow(&self, workflow_name: String) -> Map<String, Value> {
+        self.input_map_config
+            .get(&workflow_name)
+            .unwrap()
+            .as_object()
+            .unwrap()
+            .iter()
+            .filter(|(key, value)| -> bool { **key != "response" })
+            .map(|(key, value)| -> (String, Value) { (*key, *value) })
             .collect()
     }
 }

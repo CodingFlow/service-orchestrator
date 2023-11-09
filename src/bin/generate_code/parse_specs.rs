@@ -7,10 +7,10 @@ pub struct SpecInfo {
     pub spec: Spec,
 }
 
-pub fn parse_workflow_specs() -> Vec<SpecInfo> {
-    let files = match read_dir(Path::new("./src/workflow_specs/")) {
+pub fn parse_specs(specs_directory_path: &str) -> Vec<SpecInfo> {
+    let files = match read_dir(Path::new(specs_directory_path)) {
         Ok(files) => files,
-        Err(_) => panic!("Unable to read workflow open api spec files!"),
+        Err(_) => panic!("Unable to read open api spec files!"),
     };
 
     files
