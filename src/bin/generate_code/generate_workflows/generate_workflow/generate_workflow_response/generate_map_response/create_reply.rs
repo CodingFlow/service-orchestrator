@@ -41,8 +41,11 @@ fn create_properties(
     input_map: Map<String, Value>,
     query_parameters: Vec<(String, SchemaType)>,
 ) {
+    // TODO: Handle different status codes.
+
     let (status_code, struct_name_node) = status_code_struct_name_node;
 
+    // TODO: Update [traverse_nested_type] and use it. Need to support after children action and output from child action.
     for response_property in struct_name_node.children.unwrap() {
         create_response_field(function, response_property, &input_map, &query_parameters);
     }

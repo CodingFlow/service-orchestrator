@@ -1,4 +1,5 @@
 mod generate_workflow;
+mod input_map;
 
 use crate::{
     generate_create_filter::generate_create_filter, generate_re_exports::ReExports,
@@ -6,8 +7,11 @@ use crate::{
 };
 use generate_workflow::generate_workflow;
 
+use self::input_map::create_input_map;
+
 pub fn generate_workflows(workflow_spec_infos: Vec<SpecInfo>, re_exports: &mut ReExports) {
     let mut workflow_definition_names = vec![];
+    let input_map = create_input_map();
 
     for spec_info in workflow_spec_infos {
         for (path_string, path_item) in &spec_info.spec.paths {
@@ -18,6 +22,7 @@ pub fn generate_workflows(workflow_spec_infos: Vec<SpecInfo>, re_exports: &mut R
                     &spec_info,
                     method,
                     &path_string,
+                    &input_map,
                     re_exports,
                 );
 

@@ -12,12 +12,15 @@ use crate::{
     generate_create_filter::WorkflowDefinitionNames, generate_re_exports::ReExports, SpecInfo,
 };
 
+use super::input_map::InputMap;
+
 pub fn generate_workflow(
     path_item: &PathItem,
     operation: &Operation,
     spec_info: &SpecInfo,
     method: Method,
     path_string: &String,
+    input_map: &InputMap,
     re_exports: &mut ReExports,
 ) -> WorkflowDefinitionNames {
     let request_values_from_spec =
@@ -37,6 +40,7 @@ pub fn generate_workflow(
         request_values_from_spec,
         query_struct_name,
         request_module_name.clone(),
+        input_map,
         re_exports,
     );
 

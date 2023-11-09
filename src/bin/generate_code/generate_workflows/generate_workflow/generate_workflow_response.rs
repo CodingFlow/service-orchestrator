@@ -1,4 +1,3 @@
-mod create_input_map;
 mod generate_imports;
 mod generate_map_response;
 mod generate_response_structure;
@@ -8,7 +7,6 @@ use std::collections::BTreeMap;
 
 use codegen::Scope;
 
-use create_input_map::create_input_map;
 use generate_imports::generate_imports;
 use generate_map_response::generate_map_response;
 use generate_response_structure::generate_response_structure;
@@ -17,6 +15,7 @@ use parse_responses::parse_responses;
 
 use crate::{
     generate_re_exports::{ReExports, ReExportsBehavior},
+    generate_workflows::input_map::{InputMap, InputMapBehavior},
     SpecInfo,
 };
 
@@ -26,6 +25,7 @@ pub fn generate_workflow_response(
     (path_parameters, query_parameters): (Vec<(String, SchemaType)>, Vec<(String, SchemaType)>),
     query_struct_name: &str,
     request_module_name: String,
+    input_map: &InputMap,
     re_exports: &mut ReExports,
 ) -> String {
     let mut scope = Scope::new();
@@ -37,15 +37,13 @@ pub fn generate_workflow_response(
     let status_code_struct_names =
         generate_response_structure(parsed_spec_responses.to_vec(), &mut scope);
 
-    let input_map = create_input_map(spec_info.name.clone());
-
     generate_map_response(
         status_code_struct_names,
         &mut scope,
         path_parameters,
         query_parameters,
         query_struct_name,
-        input_map.clone(),
+        input_map.get_workflow_response(spec_info.name.clone()),
     );
 
     let module_name = format!("{}_workflow_response_definition", spec_info.name);

@@ -14,9 +14,8 @@ pub fn create_response_field_object(
 ) {
     let response_property_schema = struct_name_node.current.schema;
     let property_name = response_property_schema.name.clone().unwrap();
-    let mapped_value_map = input_map.get(&property_name).unwrap().as_object().unwrap();
+    let current_value_map = input_map.get(&property_name).unwrap().as_object().unwrap();
 
-    let property_name = property_name;
     let struct_name = struct_name_node.current.struct_name.unwrap();
 
     function.line(format!("{}:{} {{", property_name, struct_name));
@@ -26,7 +25,7 @@ pub fn create_response_field_object(
             create_response_field(
                 function,
                 child_struct_name_node,
-                mapped_value_map,
+                current_value_map,
                 query_parameters,
             );
         }
