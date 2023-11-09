@@ -12,7 +12,8 @@ pub fn parse_responses(
     spec: &Spec,
 ) -> Vec<(String, ParsedSchema)> {
     let extracted_responses = extract_response_values_from_spec(responses, spec);
-    let response_values: Vec<(String, ParsedSchema)> = extracted_responses
+
+    extracted_responses
         .iter()
         .map(|(status_code, response_value)| -> (String, ParsedSchema) {
             let btree_map = &mut response_value.content.clone();
@@ -32,9 +33,7 @@ pub fn parse_responses(
                 parsed_schemas.first().unwrap().clone(),
             )
         })
-        .collect();
-
-    response_values
+        .collect()
 }
 
 fn extract_response_values_from_spec(

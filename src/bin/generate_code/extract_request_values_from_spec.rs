@@ -3,7 +3,7 @@ use oas3::{
     Schema, Spec,
 };
 
-pub fn extract_request_values_from_spec<'a>(
+pub fn extract_request_parameters_from_spec<'a>(
     path_item: &'a PathItem,
     operation: &'a Operation,
     spec: &'a Spec,
