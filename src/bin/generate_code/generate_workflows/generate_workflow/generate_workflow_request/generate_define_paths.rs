@@ -1,19 +1,25 @@
 use codegen::Scope;
-use oas3::spec::SchemaType;
 
-use crate::spec_parsing::to_string_schema;
+use crate::{
+    generate_workflows::extract_request_parameters_from_spec::RequestParameter,
+    spec_parsing::to_string_schema,
+};
 
 use super::format_tuple;
 
 pub fn generate_define_paths(
     scope: &mut Scope,
     path_string: String,
-    path_parameters: Vec<(String, SchemaType)>,
+    path_parameters: Vec<RequestParameter>,
 ) {
     let formatted_parameters: Vec<String> = path_parameters
+        .to_vec()
         .iter()
-        .map(|(name, schema_type)| -> String {
-            to_string_schema(*schema_type, Some(name.to_string()))
+        .map(|parameter| -> String {
+            to_string_schema(
+                parameter.schema_type,
+                Some(parameter.name.original_name.to_string()),
+            )
         })
         .collect();
 
@@ -35,7 +41,7 @@ pub fn generate_define_paths(
         match (path_part.get(..1), path_part.chars().rev().nth(0)) {
             (Some("{"), Some('}')) => function.line(format!(
                 ".and(warp::path::param::<{}>())",
-                get_path_parameter(path_parameters.clone(), path_part)
+                get_path_parameter(path_parameters.to_vec(), path_part)
             )),
             (Some(_), Some(_)) => function.line(format!(".and(warp::path(\"{}\"))", path_part)),
             _ => function,
@@ -45,13 +51,18 @@ pub fn generate_define_paths(
     function.line(".and(warp::path::end())");
 }
 
-fn get_path_parameter(path_parameters: Vec<(String, SchemaType)>, path_part: &str) -> String {
-    let (name, schema_type) = path_parameters
+fn get_path_parameter(path_parameters: Vec<RequestParameter>, path_part: &str) -> String {
+    let request_parameter = path_parameters
         .iter()
-        .find(|(name, _)| -> bool { name.as_str() == remove_first_and_last(path_part) })
+        .find(|parameter| -> bool {
+            parameter.name.original_name == remove_first_and_last(path_part)
+        })
         .unwrap();
 
-    to_string_schema(*schema_type, Some(name.to_string()))
+    to_string_schema(
+        request_parameter.schema_type,
+        Some(request_parameter.name.original_name.to_string()),
+    )
 }
 
 fn remove_first_and_last(value: &str) -> &str {

@@ -2,17 +2,23 @@ use codegen::Function;
 use oas3::spec::SchemaType;
 use serde_json::{Map, Value};
 
-use crate::spec_parsing::ParsedSchema;
+use crate::{
+    generate_workflows::{
+        extract_request_parameters_from_spec::RequestParameter,
+        input_map::{InputMap, InputMapBehavior},
+    },
+    spec_parsing::ParsedSchema,
+};
 
 pub fn create_response_field_primitive(
     function: &mut Function,
     response_property: ParsedSchema,
-    input_map: &Map<String, Value>,
-    query_parameters: &Vec<(String, SchemaType)>,
+    map_object: &Map<String, Value>,
+    query_parameters: Vec<RequestParameter>,
+    input_map: &InputMap,
 ) {
-    let query_parameters = query_parameters.to_vec();
     let property_name = response_property.name.unwrap();
-    let mapped_value_name = input_map.get(&property_name).unwrap().as_str().unwrap();
+    let mapped_value_name = input_map.get_variable_alias(property_name.to_string());
 
     function.line(format!(
         "{}:{},",
@@ -20,18 +26,18 @@ pub fn create_response_field_primitive(
         format_response_field_value(
             response_property.schema_type,
             query_parameters,
-            mapped_value_name
+            &mapped_value_name
         ),
     ));
 }
 
 fn format_response_field_value(
     response_property_schema_type: SchemaType,
-    query_parameters: Vec<(String, SchemaType)>,
+    query_parameters: Vec<RequestParameter>,
     mapped_value_name: &str,
 ) -> String {
     let response_property_schema_type = response_property_schema_type;
-    let mapped_value_name = mapped_value_name;
+
     match is_query_parameter(query_parameters, mapped_value_name) {
         true => match response_property_schema_type {
             SchemaType::String => format!(
@@ -49,13 +55,10 @@ fn format_response_field_value(
     }
 }
 
-fn is_query_parameter(
-    query_parameters: Vec<(String, SchemaType)>,
-    mapped_value_name: &str,
-) -> bool {
+fn is_query_parameter(query_parameters: Vec<RequestParameter>, mapped_value_name: &str) -> bool {
     query_parameters
         .iter()
-        .any(|(name, _)| -> bool { name.to_string() == mapped_value_name })
+        .any(|parameter| -> bool { parameter.name.original_name == mapped_value_name })
 }
 
 fn convert_type_to_default_value(schema_type: SchemaType) -> String {

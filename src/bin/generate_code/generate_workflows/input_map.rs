@@ -4,12 +4,24 @@ use serde_json::{Map, Value};
 
 pub struct InputMap {
     input_map_config: Map<String, Value>,
+    alias_lookup: BTreeMap<String, String>,
+    last_created_alias: u32,
+}
+
+#[derive(Debug, Clone)]
+pub struct Variable {
+    pub original_name: String,
+    pub alias: String,
 }
 
 pub trait InputMapBehavior {
     fn get_workflow_response(&self, workflow_name: String) -> Map<String, Value>;
-    fn get_all_workflows(&self) -> BTreeMap<String, Map<String, Value>>;
-    fn get_all_services_for_workflow(&self, workflow_name: String) -> Map<String, Value>;
+
+    fn get_workflow_services(&self, workflow_name: String) -> Map<String, Value>;
+
+    fn create_variable_alias(&mut self, original_name: String) -> Variable;
+
+    fn get_variable_alias(&self, map_to_key: String) -> String;
 }
 
 impl InputMapBehavior for InputMap {
@@ -29,26 +41,49 @@ impl InputMapBehavior for InputMap {
             .clone()
     }
 
-    fn get_all_workflows(&self) -> BTreeMap<String, Map<String, Value>> {
-        self.input_map_config
-            .clone()
-            .into_iter()
-            .map(|(key, value)| -> (String, Map<String, Value>) {
-                (key, value.as_object().unwrap().clone())
-            })
-            .collect()
-    }
-
-    fn get_all_services_for_workflow(&self, workflow_name: String) -> Map<String, Value> {
+    fn get_workflow_services(&self, workflow_name: String) -> Map<String, Value> {
         self.input_map_config
             .get(&workflow_name)
             .unwrap()
             .as_object()
             .unwrap()
             .iter()
-            .filter(|(key, value)| -> bool { **key != "response" })
-            .map(|(key, value)| -> (String, Value) { (*key, *value) })
+            .filter(|(key, _)| -> bool { **key != "response" })
+            .map(|(key, value)| -> (String, Value) { (key.to_string(), value.clone()) })
             .collect()
+    }
+
+    fn create_variable_alias(&mut self, original_name: String) -> Variable {
+        Variable {
+            original_name: original_name.to_string(),
+            alias: self.create_alias(original_name),
+        }
+    }
+
+    fn get_variable_alias(&self, map_to_key: String) -> String {
+        let map_from_value = match self.input_map_config.get(&map_to_key) {
+            Some(value) => value.as_str().unwrap(),
+            None => panic!("No mapped value found for key '{}'", map_to_key),
+        };
+
+        match self.alias_lookup.get(map_from_value) {
+            Some(alias) => alias.to_string(),
+            None => panic!("Alias not found for key '{}'", map_to_key),
+        }
+    }
+}
+
+impl InputMap {
+    fn create_alias(&mut self, original_name: String) -> String {
+        let new_value = self.last_created_alias + 1;
+        let new_alias = format!("a{}", new_value);
+
+        self.last_created_alias = new_value;
+
+        self.alias_lookup
+            .insert(original_name, new_alias.to_string());
+
+        new_alias.to_string()
     }
 }
 
@@ -64,5 +99,7 @@ pub fn create_input_map() -> InputMap {
 
     InputMap {
         input_map_config: config,
+        alias_lookup: BTreeMap::new(),
+        last_created_alias: 0,
     }
 }

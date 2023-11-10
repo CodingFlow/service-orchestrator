@@ -11,10 +11,10 @@ use crate::{
     generate_create_filter::WorkflowDefinitionNames, generate_re_exports::ReExports, SpecInfo,
 };
 
-use super::input_map::InputMap;
+use super::{extract_request_parameters_from_spec::RequestParameters, input_map::InputMap};
 
 pub fn generate_workflow(
-    request_parameters_from_spec: (Vec<(String, SchemaType)>, Vec<(String, SchemaType)>),
+    request_parameters: RequestParameters,
     operation: &Operation,
     spec_info: &SpecInfo,
     method: Method,
@@ -25,7 +25,7 @@ pub fn generate_workflow(
     let (query_struct_name, request_module_name) = generate_workflow_request(
         method,
         path_string.to_string(),
-        request_parameters_from_spec.clone(),
+        request_parameters.clone(),
         spec_info.name.clone(),
         re_exports,
     );
@@ -33,7 +33,7 @@ pub fn generate_workflow(
     let response_module_name = generate_workflow_response(
         operation.responses.clone(),
         &spec_info,
-        request_parameters_from_spec,
+        request_parameters,
         query_struct_name,
         request_module_name.clone(),
         input_map,

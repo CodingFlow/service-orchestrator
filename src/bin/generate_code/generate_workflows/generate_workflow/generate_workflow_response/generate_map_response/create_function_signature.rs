@@ -1,11 +1,13 @@
 use codegen::Function;
-use oas3::spec::SchemaType;
 
-use crate::spec_parsing::to_string_schema;
+use crate::{
+    generate_workflows::extract_request_parameters_from_spec::RequestParameter,
+    spec_parsing::to_string_schema,
+};
 
 pub fn create_function_signature(
     function: &mut Function,
-    path_parameters: Vec<(String, SchemaType)>,
+    path_parameters: Vec<RequestParameter>,
     query_struct_name: &str,
 ) {
     function.vis("pub");
@@ -17,14 +19,17 @@ pub fn create_function_signature(
 }
 
 fn create_function_arguments(
-    path_parameters: Vec<(String, SchemaType)>,
+    path_parameters: Vec<RequestParameter>,
     function: &mut Function,
     query_struct_name: &str,
 ) {
     let path_parameters_info: Vec<(&str, String)> = path_parameters
         .iter()
-        .map(|(name, schema_type)| -> (&str, String) {
-            (name, to_string_schema(*schema_type, None))
+        .map(|parameter| -> (&str, String) {
+            (
+                &parameter.name.alias,
+                to_string_schema(parameter.schema_type, None),
+            )
         })
         .collect();
 

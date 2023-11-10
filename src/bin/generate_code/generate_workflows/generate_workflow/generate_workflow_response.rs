@@ -15,14 +15,17 @@ use parse_responses::parse_responses;
 
 use crate::{
     generate_re_exports::{ReExports, ReExportsBehavior},
-    generate_workflows::input_map::{InputMap, InputMapBehavior},
+    generate_workflows::{
+        extract_request_parameters_from_spec::RequestParameters,
+        input_map::{InputMap, InputMapBehavior},
+    },
     SpecInfo,
 };
 
 pub fn generate_workflow_response(
     responses: BTreeMap<String, ObjectOrReference<Response>>,
     spec_info: &SpecInfo,
-    (path_parameters, query_parameters): (Vec<(String, SchemaType)>, Vec<(String, SchemaType)>),
+    request_parameters: RequestParameters,
     query_struct_name: &str,
     request_module_name: String,
     input_map: &InputMap,
@@ -40,10 +43,10 @@ pub fn generate_workflow_response(
     generate_map_response(
         status_code_struct_names,
         &mut scope,
-        path_parameters,
-        query_parameters,
+        request_parameters,
         query_struct_name,
         input_map.get_workflow_response(spec_info.name.clone()),
+        input_map,
     );
 
     let module_name = format!("{}_workflow_response_definition", spec_info.name);

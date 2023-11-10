@@ -11,14 +11,16 @@ use generate_define_query::generate_define_query;
 use generate_define_request::generate_define_request;
 use generate_query_struct::generate_query_struct;
 use http::Method;
-use oas3::spec::SchemaType;
 
-use crate::generate_re_exports::{ReExports, ReExportsBehavior};
+use crate::{
+    generate_re_exports::{ReExports, ReExportsBehavior},
+    generate_workflows::extract_request_parameters_from_spec::RequestParameters,
+};
 
 pub fn generate_workflow_request<'a>(
     method: Method,
     path_string: String,
-    (path_parameters, query_parameters): (Vec<(String, SchemaType)>, Vec<(String, SchemaType)>),
+    request_parameters: RequestParameters,
     workflow_name: String,
     re_exports: &mut ReExports,
 ) -> (&'a str, String) {
@@ -28,6 +30,11 @@ pub fn generate_workflow_request<'a>(
     scope.import("warp", "Filter");
     scope.import("serde", "Serialize");
     scope.import("serde", "Deserialize");
+
+    let RequestParameters {
+        path_parameters,
+        query_parameters,
+    } = request_parameters;
 
     let query_struct_name = generate_query_struct(&mut scope, query_parameters);
 

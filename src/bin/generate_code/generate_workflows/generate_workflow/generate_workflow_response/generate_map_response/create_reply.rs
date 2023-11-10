@@ -8,15 +8,20 @@ use oas3::spec::SchemaType;
 use serde_json::{Map, Value};
 
 use crate::{
-    generate_workflows::generate_workflow::generate_workflow_response::generate_response_structure::ResponseWithStructName,
+    generate_workflows::{
+        extract_request_parameters_from_spec::RequestParameter,
+        generate_workflow::generate_workflow_response::generate_response_structure::ResponseWithStructName,
+        input_map::InputMap,
+    },
     traversal::NestedNode,
 };
 
 pub fn create_reply(
     function: &mut Function,
     status_code_struct_name_node: (String, NestedNode<ResponseWithStructName>),
-    input_map: Map<String, Value>,
-    query_parameters: Vec<(String, SchemaType)>,
+    map_object: Map<String, Value>,
+    query_parameters: Vec<RequestParameter>,
+    input_map: &InputMap,
 ) {
     let (_, response_node) = status_code_struct_name_node.clone();
 
@@ -28,8 +33,9 @@ pub fn create_reply(
     create_properties(
         status_code_struct_name_node,
         function,
-        input_map,
+        map_object,
         query_parameters,
+        input_map,
     );
 
     function.line("}))");
@@ -38,8 +44,9 @@ pub fn create_reply(
 fn create_properties(
     status_code_struct_name_node: (String, NestedNode<ResponseWithStructName>),
     function: &mut Function,
-    input_map: Map<String, Value>,
-    query_parameters: Vec<(String, SchemaType)>,
+    map_object: Map<String, Value>,
+    query_parameters: Vec<RequestParameter>,
+    input_map: &InputMap,
 ) {
     // TODO: Handle different status codes.
 
@@ -47,26 +54,38 @@ fn create_properties(
 
     // TODO: Update [traverse_nested_type] and use it. Need to support after children action and output from child action.
     for response_property in struct_name_node.children.unwrap() {
-        create_response_field(function, response_property, &input_map, &query_parameters);
+        create_response_field(
+            function,
+            response_property,
+            &map_object,
+            query_parameters.to_vec(),
+            input_map,
+        );
     }
 }
 
 fn create_response_field(
     function: &mut Function,
     struct_name_node: NestedNode<ResponseWithStructName>,
-    input_map: &Map<String, Value>,
-    query_parameters: &Vec<(String, SchemaType)>,
+    map_object: &Map<String, Value>,
+    query_parameters: Vec<RequestParameter>,
+    input_map: &InputMap,
 ) {
     match struct_name_node.current.schema.schema_type {
         SchemaType::Array => todo!(),
-        SchemaType::Object => {
-            create_response_field_object(function, struct_name_node, input_map, query_parameters)
-        }
+        SchemaType::Object => create_response_field_object(
+            function,
+            struct_name_node,
+            map_object,
+            query_parameters,
+            input_map,
+        ),
         _ => create_response_field_primitive(
             function,
             struct_name_node.current.schema,
-            input_map,
+            map_object,
             query_parameters,
+            input_map,
         ),
     }
 }

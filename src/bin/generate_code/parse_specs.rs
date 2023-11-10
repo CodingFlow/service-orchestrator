@@ -2,6 +2,7 @@ use std::{fs::read_dir, path::Path};
 
 use oas3::Spec;
 
+#[derive(Debug, Clone)]
 pub struct SpecInfo {
     pub name: String,
     pub spec: Spec,

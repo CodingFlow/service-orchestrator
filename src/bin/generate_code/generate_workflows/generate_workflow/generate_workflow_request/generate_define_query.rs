@@ -1,19 +1,24 @@
 use codegen::Scope;
-use oas3::spec::SchemaType;
 
-use crate::spec_parsing::to_string_schema;
+use crate::{
+    generate_workflows::extract_request_parameters_from_spec::RequestParameter,
+    spec_parsing::to_string_schema,
+};
 
 use super::format_tuple;
 
 pub fn generate_define_query(
     scope: &mut Scope,
-    path_parameters: Vec<(String, SchemaType)>,
+    path_parameters: Vec<RequestParameter>,
     query_struct_name: &str,
 ) {
     let mut all_parameters_return_value: Vec<String> = path_parameters
         .iter()
-        .map(|(name, schema_type)| -> String {
-            to_string_schema(*schema_type, Some(name.to_string()))
+        .map(|parameter| -> String {
+            to_string_schema(
+                parameter.schema_type,
+                Some(parameter.name.original_name.to_string()),
+            )
         })
         .collect();
 

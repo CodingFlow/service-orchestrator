@@ -1,20 +1,27 @@
 use codegen::Function;
-use oas3::spec::SchemaType;
 use serde_json::{Map, Value};
 
-use crate::{traversal::NestedNode, generate_workflows::generate_workflow::generate_workflow_response::generate_response_structure::ResponseWithStructName};
+use crate::{
+    generate_workflows::{
+        extract_request_parameters_from_spec::RequestParameter,
+        generate_workflow::generate_workflow_response::generate_response_structure::ResponseWithStructName,
+        input_map::InputMap,
+    },
+    traversal::NestedNode,
+};
 
 use super::create_response_field;
 
 pub fn create_response_field_object(
     function: &mut Function,
     struct_name_node: NestedNode<ResponseWithStructName>,
-    input_map: &Map<String, Value>,
-    query_parameters: &Vec<(String, SchemaType)>,
+    map_object: &Map<String, Value>,
+    query_parameters: Vec<RequestParameter>,
+    input_map: &InputMap,
 ) {
     let response_property_schema = struct_name_node.current.schema;
     let property_name = response_property_schema.name.clone().unwrap();
-    let current_value_map = input_map.get(&property_name).unwrap().as_object().unwrap();
+    let current_value_map = map_object.get(&property_name).unwrap().as_object().unwrap();
 
     let struct_name = struct_name_node.current.struct_name.unwrap();
 
@@ -26,7 +33,8 @@ pub fn create_response_field_object(
                 function,
                 child_struct_name_node,
                 current_value_map,
-                query_parameters,
+                query_parameters.to_vec(),
+                input_map,
             );
         }
     }

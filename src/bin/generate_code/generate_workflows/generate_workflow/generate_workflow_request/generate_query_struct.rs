@@ -1,18 +1,23 @@
 use codegen::{Field, Scope, Struct};
-use oas3::spec::SchemaType;
 
-use crate::spec_parsing::to_string_schema;
+use crate::{
+    generate_workflows::extract_request_parameters_from_spec::RequestParameter,
+    spec_parsing::to_string_schema,
+};
 
 const QUERY_STRUCT_NAME: &str = "QueryParameters";
 
 pub fn generate_query_struct(
     scope: &mut Scope,
-    query_parameters: Vec<(String, SchemaType)>,
+    query_parameters: Vec<RequestParameter>,
 ) -> &'static str {
-    let fields = query_parameters.iter().map(|(name, schema_type)| -> Field {
-        let converted_type = to_string_schema(*schema_type, Some(name.to_string()));
+    let fields = query_parameters.iter().map(|parameter| -> Field {
+        let converted_type = to_string_schema(
+            parameter.schema_type,
+            Some(parameter.name.original_name.to_string()),
+        );
         Field::new(
-            &format!("pub {}", name),
+            &format!("pub {}", parameter.name.original_name),
             format!("Option<{}>", converted_type),
         )
     });

@@ -8,13 +8,7 @@ use crate::parse_specs::SpecInfo;
 
 pub fn get_endpoint_infos_from_specs(
     spec_infos: Vec<SpecInfo>,
-) -> Vec<(
-    &'static SpecInfo,
-    String,
-    PathItem,
-    Method,
-    &'static Operation,
-)> {
+) -> Vec<(SpecInfo, String, PathItem, Method, Operation)> {
     spec_infos
         .iter()
         .flat_map(|spec_info| -> Vec<(&SpecInfo, String, &PathItem)> {
@@ -30,13 +24,13 @@ pub fn get_endpoint_infos_from_specs(
                 .collect()
         })
         .flat_map(
-            |(spec_info, path_string, path_item)| -> Vec<(&SpecInfo, String, PathItem, Method, &Operation)> {
+            |(spec_info, path_string, path_item)| -> Vec<(SpecInfo, String, PathItem, Method, Operation)> {
                 path_item
                     .methods()
                     .into_iter()
                     .map(
-                        |(method, operation)| -> (&SpecInfo, String, PathItem, Method, &Operation) {
-                            (spec_info, path_string.to_string(), path_item.clone(), method, operation)
+                        |(method, operation)| -> (SpecInfo, String, PathItem, Method, Operation) {
+                            (spec_info.clone(), path_string.to_string(), path_item.clone(), method, operation.clone())
                         },
                     )
                     .collect()
