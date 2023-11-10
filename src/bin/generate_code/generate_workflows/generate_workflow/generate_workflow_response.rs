@@ -10,14 +10,13 @@ use codegen::Scope;
 use generate_imports::generate_imports;
 use generate_map_response::generate_map_response;
 use generate_response_structure::generate_response_structure;
-use oas3::spec::{ObjectOrReference, Response, SchemaType};
+use oas3::spec::{ObjectOrReference, Response};
 use parse_responses::parse_responses;
 
 use crate::{
     generate_re_exports::{ReExports, ReExportsBehavior},
     generate_workflows::{
-        extract_request_parameters_from_spec::RequestParameters,
-        input_map::{InputMap, InputMapBehavior},
+        extract_request_parameters_from_spec::RequestParameters, input_map::InputMap,
     },
     SpecInfo,
 };
@@ -45,8 +44,8 @@ pub fn generate_workflow_response(
         &mut scope,
         request_parameters,
         query_struct_name,
-        input_map.get_workflow_response(spec_info.name.clone()),
         input_map,
+        spec_info.name.to_string(),
     );
 
     let module_name = format!("{}_workflow_response_definition", spec_info.name);

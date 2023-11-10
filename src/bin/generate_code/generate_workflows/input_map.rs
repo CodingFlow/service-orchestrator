@@ -3,7 +3,7 @@ use std::{collections::BTreeMap, fs};
 use serde_json::{Map, Value};
 
 pub struct InputMap {
-    input_map_config: Map<String, Value>,
+    input_map_config: Value,
     alias_lookup: BTreeMap<String, String>,
     last_created_alias: u32,
 }
@@ -61,7 +61,7 @@ impl InputMapBehavior for InputMap {
     }
 
     fn get_variable_alias(&self, map_to_key: String) -> String {
-        let map_from_value = match self.input_map_config.get(&map_to_key) {
+        let map_from_value = match self.input_map_config.pointer(&map_to_key) {
             Some(value) => value.as_str().unwrap(),
             None => panic!("No mapped value found for key '{}'", map_to_key),
         };

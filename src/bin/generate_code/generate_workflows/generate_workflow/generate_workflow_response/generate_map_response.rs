@@ -14,7 +14,6 @@ use create_function_signature::create_function_signature;
 use create_query_destructure::create_query_destructure;
 use create_reply::create_reply;
 use create_service_calls::create_service_calls;
-use serde_json::{Map, Value};
 
 use super::generate_response_structure::ResponseWithStructName;
 
@@ -23,8 +22,8 @@ pub fn generate_map_response(
     scope: &mut Scope,
     request_parameters: RequestParameters,
     query_struct_name: &str,
-    map_object: Map<String, Value>,
     input_map: &InputMap,
+    workflow_name: String,
 ) {
     let map_functions: Vec<Function> = status_code_struct_names
         .iter()
@@ -33,8 +32,8 @@ pub fn generate_map_response(
                 status_code_struct_name_node.clone(),
                 request_parameters.clone(),
                 query_struct_name,
-                map_object.clone(),
                 input_map,
+                workflow_name.to_string(),
             )
         })
         .collect();
@@ -48,8 +47,8 @@ fn map_function(
     status_code_struct_name_node: (String, NestedNode<ResponseWithStructName>),
     request_parameters: RequestParameters,
     query_struct_name: &str,
-    map_object: Map<String, Value>,
     input_map: &InputMap,
+    workflow_name: String,
 ) -> Function {
     let mut function = Function::new("map_response");
 
@@ -70,9 +69,9 @@ fn map_function(
     create_reply(
         &mut function,
         status_code_struct_name_node,
-        map_object,
         request_parameters.query_parameters,
         input_map,
+        workflow_name,
     );
 
     function

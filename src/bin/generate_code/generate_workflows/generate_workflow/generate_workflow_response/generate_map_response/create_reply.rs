@@ -5,7 +5,6 @@ use codegen::Function;
 use create_response_field_object::create_response_field_object;
 use create_response_field_primitive::create_response_field_primitive;
 use oas3::spec::SchemaType;
-use serde_json::{Map, Value};
 
 use crate::{
     generate_workflows::{
@@ -19,9 +18,9 @@ use crate::{
 pub fn create_reply(
     function: &mut Function,
     status_code_struct_name_node: (String, NestedNode<ResponseWithStructName>),
-    map_object: Map<String, Value>,
     query_parameters: Vec<RequestParameter>,
     input_map: &InputMap,
+    workflow_name: String,
 ) {
     let (_, response_node) = status_code_struct_name_node.clone();
 
@@ -33,9 +32,9 @@ pub fn create_reply(
     create_properties(
         status_code_struct_name_node,
         function,
-        map_object,
         query_parameters,
         input_map,
+        workflow_name,
     );
 
     function.line("}))");
@@ -44,9 +43,9 @@ pub fn create_reply(
 fn create_properties(
     status_code_struct_name_node: (String, NestedNode<ResponseWithStructName>),
     function: &mut Function,
-    map_object: Map<String, Value>,
     query_parameters: Vec<RequestParameter>,
     input_map: &InputMap,
+    workflow_name: String,
 ) {
     // TODO: Handle different status codes.
 
@@ -57,9 +56,9 @@ fn create_properties(
         create_response_field(
             function,
             response_property,
-            &map_object,
             query_parameters.to_vec(),
             input_map,
+            format!("/{}/response", workflow_name),
         );
     }
 }
@@ -67,25 +66,24 @@ fn create_properties(
 fn create_response_field(
     function: &mut Function,
     struct_name_node: NestedNode<ResponseWithStructName>,
-    map_object: &Map<String, Value>,
     query_parameters: Vec<RequestParameter>,
     input_map: &InputMap,
+    map_pointer: String,
 ) {
     match struct_name_node.current.schema.schema_type {
         SchemaType::Array => todo!(),
         SchemaType::Object => create_response_field_object(
             function,
             struct_name_node,
-            map_object,
             query_parameters,
             input_map,
+            map_pointer,
         ),
         _ => create_response_field_primitive(
             function,
             struct_name_node.current.schema,
-            map_object,
-            query_parameters,
             input_map,
+            map_pointer,
         ),
     }
 }

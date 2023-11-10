@@ -1,5 +1,4 @@
 use codegen::Function;
-use serde_json::{Map, Value};
 
 use crate::{
     generate_workflows::{
@@ -15,13 +14,14 @@ use super::create_response_field;
 pub fn create_response_field_object(
     function: &mut Function,
     struct_name_node: NestedNode<ResponseWithStructName>,
-    map_object: &Map<String, Value>,
     query_parameters: Vec<RequestParameter>,
     input_map: &InputMap,
+    map_pointer: String,
 ) {
     let response_property_schema = struct_name_node.current.schema;
     let property_name = response_property_schema.name.clone().unwrap();
-    let current_value_map = map_object.get(&property_name).unwrap().as_object().unwrap();
+
+    let new_map_pointer = format!("{}/{}", map_pointer, property_name);
 
     let struct_name = struct_name_node.current.struct_name.unwrap();
 
@@ -32,9 +32,9 @@ pub fn create_response_field_object(
             create_response_field(
                 function,
                 child_struct_name_node,
-                current_value_map,
                 query_parameters.to_vec(),
                 input_map,
+                new_map_pointer.clone(),
             );
         }
     }
