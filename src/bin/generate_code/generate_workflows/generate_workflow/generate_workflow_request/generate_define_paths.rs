@@ -1,24 +1,34 @@
 use codegen::Scope;
 
 use crate::{
-    generate_workflows::extract_request_parameters_from_spec::RequestParameter,
-    spec_parsing::to_string_schema,
+    generate_workflows::{
+        add_variable_aliases_to_request_parameters::{
+            RequestParameter, WorkflowPathPart, WorkflowVariable,
+        },
+        input_map::Variable,
+    },
+    parse_specs::parse_schema::to_string_schema,
 };
 
 use super::format_tuple;
 
-pub fn generate_define_paths(
-    scope: &mut Scope,
-    path_string: String,
-    path_parameters: Vec<RequestParameter>,
-) {
-    let formatted_parameters: Vec<String> = path_parameters
+pub fn generate_define_paths(scope: &mut Scope, path_parts: Vec<WorkflowPathPart>) {
+    let formatted_parameters: Vec<String> = path_parts
         .to_vec()
         .iter()
-        .map(|parameter| -> String {
+        .filter(|path_part| (*path_part).schema_type.is_some())
+        .map(|path_part| -> String {
+            let name = match path_part.name.clone() {
+                WorkflowVariable::Variable(name) => name,
+                _ => Variable {
+                    original_name: String::new(),
+                    alias: String::new(),
+                },
+            };
+
             to_string_schema(
-                parameter.schema_type,
-                Some(parameter.name.original_name.to_string()),
+                path_part.schema_type.unwrap(),
+                Some(name.original_name.to_string()),
             )
         })
         .collect();
@@ -35,17 +45,21 @@ pub fn generate_define_paths(
         ))
         .line("http_method");
 
-    let path_parts = path_string.split('/');
-
     for path_part in path_parts {
-        match (path_part.get(..1), path_part.chars().rev().nth(0)) {
-            (Some("{"), Some('}')) => function.line(format!(
-                ".and(warp::path::param::<{}>())",
-                get_path_parameter(path_parameters.to_vec(), path_part)
-            )),
-            (Some(_), Some(_)) => function.line(format!(".and(warp::path(\"{}\"))", path_part)),
-            _ => function,
+        let formatted_path_part = match path_part.name {
+            WorkflowVariable::Name(name) => format!(".and(warp::path(\"{}\"))", name),
+            WorkflowVariable::Variable(name) => {
+                format!(
+                    ".and(warp::path::param::<{}>())",
+                    to_string_schema(
+                        path_part.schema_type.unwrap(),
+                        Some(name.original_name.to_string())
+                    )
+                )
+            }
         };
+
+        function.line(formatted_path_part);
     }
 
     function.line(".and(warp::path::end())");

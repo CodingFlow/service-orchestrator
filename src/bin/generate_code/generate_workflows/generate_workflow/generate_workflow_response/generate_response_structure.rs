@@ -1,7 +1,10 @@
 use codegen::{Field, Scope, Struct};
 
 use crate::{
-    spec_parsing::{to_string_schema, ParsedSchema},
+    parse_specs::{
+        parse_schema::{to_string_schema, ParsedSchema},
+        ResponseSpec,
+    },
     traversal::{traverse_nested_type, NestedNode},
 };
 
@@ -12,10 +15,10 @@ pub struct ResponseWithStructName {
 }
 
 pub fn generate_response_structure(
-    response_values: Vec<(String, ParsedSchema)>,
+    response_specs: Vec<ResponseSpec>,
     scope: &mut Scope,
 ) -> Vec<(String, NestedNode<ResponseWithStructName>)> {
-    let responses = create_structs(response_values);
+    let responses = create_struct(response_specs);
 
     for (_, node) in responses.clone() {
         traverse_nested_type(
@@ -58,26 +61,24 @@ pub fn generate_response_structure(
         .collect()
 }
 
-fn create_structs(
-    response_values: Vec<(String, ParsedSchema)>,
+fn create_struct(
+    response_specs: Vec<ResponseSpec>,
 ) -> Vec<(String, NestedNode<(ResponseWithStructName, Option<Struct>)>)> {
-    response_values.iter().map(nested_process).collect()
+    response_specs.iter().map(nested_process).collect()
 }
 
 fn nested_process(
-    parent: &(String, ParsedSchema),
+    parent: &ResponseSpec,
 ) -> (String, NestedNode<(ResponseWithStructName, Option<Struct>)>) {
-    let (status_code, schema) = parent;
-
     let nested_node = traverse_nested_type(
-        schema.clone(),
+        parent.body.clone(),
         process_parent,
         process_child,
         get_children,
         &mut (),
     );
 
-    (status_code.to_string(), nested_node)
+    (parent.status_code.to_string(), nested_node)
 }
 
 fn process_parent(

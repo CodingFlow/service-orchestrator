@@ -7,6 +7,7 @@ info:
 paths:
   /rat/{id}:
     get:
+      operationId: getRat
       parameters:
         - name: id
           in: path

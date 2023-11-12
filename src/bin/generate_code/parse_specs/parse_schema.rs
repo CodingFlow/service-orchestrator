@@ -26,6 +26,17 @@ pub fn parse_schema(
         .collect()
 }
 
+pub fn to_string_schema(schema_type: SchemaType, struct_name: Option<String>) -> String {
+    match schema_type {
+        SchemaType::Boolean => "bool".to_string(),
+        SchemaType::Integer => "i32".to_string(),
+        SchemaType::Number => "f32".to_string(),
+        SchemaType::String => "String".to_string(),
+        SchemaType::Array => panic!("function does not handle schema type \"array\""),
+        SchemaType::Object => struct_name.unwrap(),
+    }
+}
+
 fn parse_object(schema: &Schema, spec: &Spec, name: &Option<String>) -> ParsedSchema {
     let properties: Vec<(Option<String>, Schema)> = schema
         .properties
@@ -49,16 +60,5 @@ fn parse_object(schema: &Schema, spec: &Spec, name: &Option<String>) -> ParsedSc
         name: name.clone(),
         properties: Some(parsed_properties),
         schema_type: schema.schema_type.unwrap(),
-    }
-}
-
-pub fn to_string_schema(schema_type: SchemaType, struct_name: Option<String>) -> String {
-    match schema_type {
-        SchemaType::Boolean => "bool".to_string(),
-        SchemaType::Integer => "i32".to_string(),
-        SchemaType::Number => "f32".to_string(),
-        SchemaType::String => "String".to_string(),
-        SchemaType::Array => panic!("function does not handle schema type \"array\""),
-        SchemaType::Object => struct_name.unwrap(),
     }
 }

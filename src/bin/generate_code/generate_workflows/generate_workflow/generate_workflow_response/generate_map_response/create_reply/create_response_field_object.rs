@@ -2,7 +2,7 @@ use codegen::Function;
 
 use crate::{
     generate_workflows::{
-        extract_request_parameters_from_spec::RequestParameter,
+        add_variable_aliases_to_request_parameters::RequestParameter,
         generate_workflow::generate_workflow_response::generate_response_structure::ResponseWithStructName,
         input_map::InputMap,
     },

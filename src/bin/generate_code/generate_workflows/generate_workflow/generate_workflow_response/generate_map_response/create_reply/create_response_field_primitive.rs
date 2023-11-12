@@ -2,7 +2,7 @@ use codegen::Function;
 
 use crate::{
     generate_workflows::input_map::{InputMap, InputMapBehavior},
-    spec_parsing::ParsedSchema,
+    parse_specs::parse_schema::ParsedSchema,
 };
 
 pub fn create_response_field_primitive(

@@ -10,17 +10,14 @@ use generate_define_paths::generate_define_paths;
 use generate_define_query::generate_define_query;
 use generate_define_request::generate_define_request;
 use generate_query_struct::generate_query_struct;
-use http::Method;
 
 use crate::{
     generate_re_exports::{ReExports, ReExportsBehavior},
-    generate_workflows::extract_request_parameters_from_spec::RequestParameters,
+    generate_workflows::add_variable_aliases_to_request_parameters::WorkflowRequestSpec,
 };
 
 pub fn generate_workflow_request<'a>(
-    method: Method,
-    path_string: String,
-    request_parameters: RequestParameters,
+    workflow_request_spec: WorkflowRequestSpec,
     workflow_name: String,
     re_exports: &mut ReExports,
 ) -> (&'a str, String) {
@@ -31,16 +28,14 @@ pub fn generate_workflow_request<'a>(
     scope.import("serde", "Serialize");
     scope.import("serde", "Deserialize");
 
-    let RequestParameters {
-        path_parameters,
-        query_parameters,
-    } = request_parameters;
+    let path_parameters = workflow_request_spec.path;
+    let query_parameters = workflow_request_spec.query;
 
     let query_struct_name = generate_query_struct(&mut scope, query_parameters);
 
     generate_define_request(&mut scope, path_parameters.to_vec(), query_struct_name);
-    generate_define_method(&mut scope, method);
-    generate_define_paths(&mut scope, path_string, path_parameters.to_vec());
+    generate_define_method(&mut scope, workflow_request_spec.method);
+    generate_define_paths(&mut scope, path_parameters.to_vec());
     generate_define_query(&mut scope, path_parameters, query_struct_name);
 
     let module_name = format!("{}_workflow_request_definition", workflow_name);

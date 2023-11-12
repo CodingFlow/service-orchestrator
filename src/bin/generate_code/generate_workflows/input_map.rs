@@ -15,7 +15,7 @@ pub struct Variable {
 }
 
 pub trait InputMapBehavior {
-    fn get_workflow_response(&self, workflow_name: String) -> Map<String, Value>;
+    // fn get_workflow_response(&self, workflow_name: String) -> Map<String, Value>;
 
     fn get_workflow_services(&self, workflow_name: String) -> Map<String, Value>;
 
@@ -25,21 +25,21 @@ pub trait InputMapBehavior {
 }
 
 impl InputMapBehavior for InputMap {
-    fn get_workflow_response(&self, workflow_name: String) -> Map<String, Value> {
-        let workflow = self
-            .input_map_config
-            .get(&workflow_name)
-            .unwrap()
-            .as_object()
-            .unwrap();
+    // fn get_workflow_response(&self, workflow_name: String) -> Map<String, Value> {
+    //     let workflow = self
+    //         .input_map_config
+    //         .get(&workflow_name)
+    //         .unwrap()
+    //         .as_object()
+    //         .unwrap();
 
-        workflow
-            .get("response")
-            .unwrap()
-            .as_object()
-            .unwrap()
-            .clone()
-    }
+    //     workflow
+    //         .get("response")
+    //         .unwrap()
+    //         .as_object()
+    //         .unwrap()
+    //         .clone()
+    // }
 
     fn get_workflow_services(&self, workflow_name: String) -> Map<String, Value> {
         self.input_map_config

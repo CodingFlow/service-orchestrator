@@ -1,21 +1,32 @@
 use codegen::Scope;
 
 use crate::{
-    generate_workflows::extract_request_parameters_from_spec::RequestParameter,
-    spec_parsing::to_string_schema,
+    generate_workflows::{
+        add_variable_aliases_to_request_parameters::{WorkflowPathPart, WorkflowVariable},
+        input_map::Variable,
+    },
+    parse_specs::parse_schema::to_string_schema,
 };
 
 pub fn generate_define_request(
     scope: &mut Scope,
-    path_parameters: Vec<RequestParameter>,
+    path_parameters: Vec<WorkflowPathPart>,
     query_struct_name: &str,
 ) {
     let mut parameters: Vec<String> = path_parameters
         .iter()
-        .map(|parameter| -> String {
+        .filter(|path_part| (*path_part).schema_type.is_some())
+        .map(|path_part| -> String {
+            let name = match path_part.name.clone() {
+                WorkflowVariable::Variable(name) => name,
+                _ => Variable {
+                    original_name: String::new(),
+                    alias: String::new(),
+                },
+            };
             to_string_schema(
-                parameter.schema_type,
-                Some(parameter.name.original_name.to_string()),
+                path_part.schema_type.unwrap(),
+                Some(name.original_name.to_string()),
             )
         })
         .collect();

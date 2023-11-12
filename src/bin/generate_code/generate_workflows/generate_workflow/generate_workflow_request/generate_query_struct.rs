@@ -1,8 +1,8 @@
 use codegen::{Field, Scope, Struct};
 
 use crate::{
-    generate_workflows::extract_request_parameters_from_spec::RequestParameter,
-    spec_parsing::to_string_schema,
+    generate_workflows::add_variable_aliases_to_request_parameters::RequestParameter,
+    parse_specs::parse_schema::to_string_schema,
 };
 
 const QUERY_STRUCT_NAME: &str = "QueryParameters";
