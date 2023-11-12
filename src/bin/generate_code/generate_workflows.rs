@@ -1,6 +1,5 @@
 mod add_variable_aliases_to_request_parameters;
 mod generate_workflow;
-mod get_endpoint_infos_from_specs;
 mod input_map;
 
 use crate::{

@@ -1,8 +1,5 @@
 use http::Method;
-use oas3::{
-    spec::{Operation, Parameter, PathItem, SchemaType},
-    Schema, Spec,
-};
+use oas3::spec::SchemaType;
 
 use crate::parse_specs::{OperationSpec, RequestSpec, ResponseSpec};
 
@@ -104,54 +101,4 @@ pub fn add_variable_aliases_to_request_parameters(
         },
         response_spec: response_spec.clone(),
     }
-}
-
-fn extract_parameters(
-    path_item: &PathItem,
-    operation: &Operation,
-    spec: &Spec,
-    input_map: &mut InputMap,
-) -> (Vec<RequestParameter>, Vec<RequestParameter>) {
-    let mut all_parameters = path_item.parameters.to_vec();
-
-    all_parameters.extend(operation.parameters.to_vec());
-
-    let all_resolved_parameters: Vec<Parameter> = all_parameters
-        .iter()
-        .map(|reference| -> Parameter { reference.resolve(&spec).unwrap() })
-        .collect();
-
-    let path_parameters = filter_map_parameters(
-        input_map,
-        all_resolved_parameters.to_vec(),
-        |parameter| -> bool { parameter.location == "path" },
-    );
-
-    let query_parameters =
-        filter_map_parameters(input_map, all_resolved_parameters, |parameter| -> bool {
-            parameter.location == "query"
-        });
-
-    (path_parameters, query_parameters)
-}
-
-fn filter_map_parameters(
-    input_map: &mut InputMap,
-    all_resolved_parameters: Vec<Parameter>,
-    filter_function: fn(&Parameter) -> bool,
-) -> Vec<RequestParameter> {
-    let path_parameters: Vec<RequestParameter> = all_resolved_parameters
-        .to_vec()
-        .into_iter()
-        .filter(filter_function)
-        .map(|parameter| parameter.clone())
-        .map(|parameter| -> (String, Schema) { (parameter.name, parameter.schema.unwrap()) })
-        .map(|(name, schema)| -> RequestParameter {
-            RequestParameter {
-                name: input_map.create_variable_alias(name.to_string()),
-                schema_type: schema.schema_type.unwrap(),
-            }
-        })
-        .collect();
-    path_parameters
 }

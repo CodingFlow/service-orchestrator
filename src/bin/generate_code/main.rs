@@ -6,7 +6,7 @@ pub mod traversal;
 
 use generate_re_exports::{ReExports, ReExportsBehavior};
 use generate_workflows::generate_workflows;
-use parse_specs::{get_specs, SpecInfo, SpecType};
+use parse_specs::{get_specs, SpecType};
 
 fn main() {
     let mut re_exports = ReExports::new();

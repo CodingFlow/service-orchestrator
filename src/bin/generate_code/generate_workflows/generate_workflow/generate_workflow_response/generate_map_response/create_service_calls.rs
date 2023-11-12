@@ -6,10 +6,7 @@ use oas3::spec::{Operation, PathItem};
 use serde_json::{Map, Value};
 
 use crate::{
-    generate_workflows::{
-        get_endpoint_infos_from_specs::get_endpoint_infos_from_specs,
-        input_map::{InputMap, InputMapBehavior},
-    },
+    generate_workflows::input_map::{InputMap, InputMapBehavior},
     parse_specs::SpecInfo,
 };
 
@@ -39,26 +36,4 @@ pub fn create_service_calls(
     // create_service_results_for_workflow_response(); // depends on enums, response structs, dependencies
 
     // generate_all_services() // actually "print" as generated code: keep this dumb.
-}
-
-// fn process_response_data(
-//     endpoint_infos: Vec<(SpecInfo, String, PathItem, Method, Operation)>,
-//     futures_alias_lookup: BTreeMap<String, String>,
-// ) -> _ {
-// }
-
-fn filter_service_spec_infos(
-    service_spec_infos: Vec<SpecInfo>,
-    service_mappings: Map<String, Value>,
-) -> Vec<(SpecInfo, String, PathItem, Method, Operation)> {
-    let endpoint_infos = get_endpoint_infos_from_specs(service_spec_infos);
-
-    endpoint_infos
-        .into_iter()
-        .filter(
-            |(spec_info, path_string, path_item, method, operation)| -> bool {
-                service_mappings.contains_key(&operation.operation_id.clone().unwrap())
-            },
-        )
-        .collect()
 }

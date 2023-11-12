@@ -2,9 +2,7 @@ use codegen::Scope;
 
 use crate::{
     generate_workflows::{
-        add_variable_aliases_to_request_parameters::{
-            RequestParameter, WorkflowPathPart, WorkflowVariable,
-        },
+        add_variable_aliases_to_request_parameters::{WorkflowPathPart, WorkflowVariable},
         input_map::Variable,
     },
     parse_specs::parse_schema::to_string_schema,
@@ -63,25 +61,4 @@ pub fn generate_define_paths(scope: &mut Scope, path_parts: Vec<WorkflowPathPart
     }
 
     function.line(".and(warp::path::end())");
-}
-
-fn get_path_parameter(path_parameters: Vec<RequestParameter>, path_part: &str) -> String {
-    let request_parameter = path_parameters
-        .iter()
-        .find(|parameter| -> bool {
-            parameter.name.original_name == remove_first_and_last(path_part)
-        })
-        .unwrap();
-
-    to_string_schema(
-        request_parameter.schema_type,
-        Some(request_parameter.name.original_name.to_string()),
-    )
-}
-
-fn remove_first_and_last(value: &str) -> &str {
-    let mut chars = value.chars();
-    chars.next();
-    chars.next_back();
-    chars.as_str()
 }

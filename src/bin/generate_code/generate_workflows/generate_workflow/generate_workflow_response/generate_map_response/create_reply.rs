@@ -18,7 +18,7 @@ use crate::{
 pub fn create_reply(
     function: &mut Function,
     status_code_struct_name_node: (String, NestedNode<ResponseWithStructName>),
-    query_parameters: Vec<(RequestParameter)>,
+    query_parameters: Vec<RequestParameter>,
     input_map: &InputMap,
     workflow_name: String,
 ) {

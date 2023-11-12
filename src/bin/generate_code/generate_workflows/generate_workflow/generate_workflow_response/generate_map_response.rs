@@ -5,8 +5,7 @@ mod create_service_calls;
 
 use crate::{
     generate_workflows::{
-        add_variable_aliases_to_request_parameters::{RequestParameters, WorkflowRequestSpec},
-        input_map::InputMap,
+        add_variable_aliases_to_request_parameters::WorkflowRequestSpec, input_map::InputMap,
     },
     traversal::NestedNode,
 };
