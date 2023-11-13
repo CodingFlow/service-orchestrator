@@ -30,7 +30,7 @@ pub struct OperationSpec {
     pub spec_name: String,
     pub operation_id: String,
     pub request_spec: RequestSpec,
-    pub response_spec: Vec<ResponseSpec>,
+    pub response_specs: Vec<ResponseSpec>,
 }
 
 #[derive(Debug, Clone)]
@@ -52,7 +52,7 @@ pub struct ResponseSpec {
     pub body: ParsedSchema,
 }
 
-pub fn get_specs(spec_type: SpecType) -> Vec<OperationSpec> {
+pub fn get_operation_specs(spec_type: SpecType) -> Vec<OperationSpec> {
     let directory_path = get_directory_path(spec_type);
     let spec_infos = parse_specs(&directory_path);
     let (request_specs_with_ids, spec_infos_with_operation) = get_request_specs(spec_infos);
@@ -152,7 +152,7 @@ fn create_operation_specs(
                 spec_name: spec_name.to_string(),
                 operation_id: operation_id.to_string(),
                 request_spec: request_spec.clone(),
-                response_spec: matching_response_spec.clone(),
+                response_specs: matching_response_spec.clone(),
             }
         })
         .collect()

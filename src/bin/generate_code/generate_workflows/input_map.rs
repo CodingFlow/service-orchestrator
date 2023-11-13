@@ -15,9 +15,10 @@ pub struct Variable {
 }
 
 pub trait InputMapBehavior {
-    // fn get_workflow_response(&self, workflow_name: String) -> Map<String, Value>;
-
-    fn get_workflow_services(&self, workflow_name: String) -> Map<String, Value>;
+    fn get_workflow_services_operations_names(
+        &self,
+        workflow_name: String,
+    ) -> Vec<(String, String)>;
 
     fn create_variable_alias(&mut self, original_name: String) -> Variable;
 
@@ -25,31 +26,27 @@ pub trait InputMapBehavior {
 }
 
 impl InputMapBehavior for InputMap {
-    // fn get_workflow_response(&self, workflow_name: String) -> Map<String, Value> {
-    //     let workflow = self
-    //         .input_map_config
-    //         .get(&workflow_name)
-    //         .unwrap()
-    //         .as_object()
-    //         .unwrap();
-
-    //     workflow
-    //         .get("response")
-    //         .unwrap()
-    //         .as_object()
-    //         .unwrap()
-    //         .clone()
-    // }
-
-    fn get_workflow_services(&self, workflow_name: String) -> Map<String, Value> {
-        self.input_map_config
+    fn get_workflow_services_operations_names(
+        &self,
+        workflow_name: String,
+    ) -> Vec<(String, String)> {
+        let services = &self
+            .input_map_config
             .get(&workflow_name)
             .unwrap()
             .as_object()
-            .unwrap()
+            .unwrap();
+
+        services
             .iter()
             .filter(|(key, _)| -> bool { **key != "response" })
-            .map(|(key, value)| -> (String, Value) { (key.to_string(), value.clone()) })
+            .flat_map(|(service_name, value)| {
+                let operations = (*value).as_object().unwrap();
+
+                operations.iter().map(|(operation_name, operation_value)| {
+                    (service_name.to_string(), operation_name.to_string())
+                })
+            })
             .collect()
     }
 

@@ -1,7 +1,10 @@
 cat_api_spec:
+  meat_service:
+    getMeat:
+      id: maxResults
   dog_service:
     getDog:
-      id: maxResults
+      id: meat_service/getMeat/temperature
   response:
     tailLength: id
     furLength: maxResults

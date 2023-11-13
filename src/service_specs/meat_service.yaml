@@ -1,0 +1,30 @@
+openapi: 3.1.0
+info:
+  title: Meat Service
+  description: |-
+    Workflow API
+  version: 1.0.0
+paths:
+  /dog/{id}:
+    get:
+      operationId: getMeat
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        200:
+          description: got the meat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  color:
+                    description: color of meat
+                    type: string
+                  temperature:
+                    description: temperature of meat
+                    type: number

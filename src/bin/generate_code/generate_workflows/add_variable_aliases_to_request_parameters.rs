@@ -58,7 +58,7 @@ pub fn add_variable_aliases_to_request_parameters(
                 path,
                 ..
             },
-        response_spec,
+        response_specs: response_spec,
         ..
     } = operation_spec;
 
