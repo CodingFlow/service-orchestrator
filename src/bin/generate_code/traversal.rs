@@ -6,13 +6,17 @@ pub struct NestedNode<T> {
 
 /// Traverses a nested hierachy of types, processes them,
 /// and creates a hiearchy of [NestedNode] with the same structure.
-pub fn traverse_nested_type<T: Clone, R: Clone, U>(
+pub fn traverse_nested_type<T, R, U>(
     current: T,
     action: fn(T, &mut U) -> R,
     nested_action: fn(child: T, parent_result: &mut R, &mut U),
     nested_reference: fn(current: T) -> Option<Vec<T>>,
     additional_action_input: &mut U,
-) -> NestedNode<R> {
+) -> NestedNode<R>
+where
+    T: Clone,
+    R: Clone,
+{
     let mut action_result = action(current.clone(), additional_action_input);
     let mut nested_results = None;
 
@@ -46,29 +50,27 @@ pub fn traverse_nested_type<T: Clone, R: Clone, U>(
     }
 }
 
-/// Maps contents of [NestedNode] structure.
-// pub fn map_nested_node<T: Clone, R: Clone>(
-//     current: NestedNode<T>,
-//     action: fn(NestedNode<T>) -> R,
-//     nested_action: fn(child: NestedNode<T>, parent_result: R),
-// ) -> NestedNode<R> {
-//     traverse_nested_type(current.clone(), action, nested_action, |current| {
-//         current.clone().children
-//     })
-// }
-
 /// Traverses a nested hierachy of [NestedNode]s and processes them.
-pub fn traverse_nested_node<T: Clone, R: Clone>(
+pub fn traverse_nested_node<T, R, U>(
     current: NestedNode<T>,
-    action: impl Fn(NestedNode<T>) -> R,
-    nested_action: fn(child: NestedNode<T>, parent_result: R),
-) {
-    let action_result = action(current.clone());
+    action: fn(NestedNode<T>, &mut U) -> R,
+    nested_action: fn(child: NestedNode<T>, parent_result: &mut R, addition_action_input: &mut U),
+    additional_action_input: &mut U,
+) where
+    T: Clone,
+    R: Clone,
+{
+    let mut action_result = action(current.clone(), additional_action_input);
 
-    if let Some(ref children) = current.children {
+    if let Some(children) = current.clone().children {
         for child in children {
-            nested_action(child.clone(), action_result.clone());
-            traverse_nested_node(child.clone(), &action, nested_action)
+            nested_action(child.clone(), &mut action_result, additional_action_input);
+            traverse_nested_node(
+                child.clone(),
+                action,
+                nested_action,
+                additional_action_input,
+            )
         }
     }
 }

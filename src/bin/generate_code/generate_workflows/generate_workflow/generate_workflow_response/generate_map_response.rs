@@ -22,7 +22,7 @@ pub fn generate_map_response(
     scope: &mut Scope,
     workflow_request_spec: WorkflowRequestSpec,
     query_struct_name: &str,
-    input_map: &InputMap,
+    input_map: &mut InputMap,
     workflow_name: String,
 ) {
     let map_functions: Vec<Function> = status_code_struct_names
@@ -34,6 +34,7 @@ pub fn generate_map_response(
                 query_struct_name,
                 input_map,
                 workflow_name.to_string(),
+                scope,
             )
         })
         .collect();
@@ -47,8 +48,9 @@ fn map_function(
     status_code_struct_name_node: (String, NestedNode<ResponseWithStructName>),
     workflow_request_spec: WorkflowRequestSpec,
     query_struct_name: &str,
-    input_map: &InputMap,
+    input_map: &mut InputMap,
     workflow_name: String,
+    scope: &mut Scope,
 ) -> Function {
     let mut function = Function::new("map_response");
 
@@ -60,7 +62,7 @@ fn map_function(
         workflow_request_spec.query.to_vec(),
     );
 
-    // create_service_calls(&mut function);
+    create_service_calls(&mut function, input_map, workflow_name.to_string(), scope);
 
     create_reply(
         &mut function,

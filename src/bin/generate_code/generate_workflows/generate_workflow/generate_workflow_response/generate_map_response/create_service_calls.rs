@@ -1,59 +1,81 @@
+mod build_loopkup_map;
+mod generate_response_structs;
+mod generate_service_calls;
 mod variables;
 
-use std::collections::BTreeMap;
-
-use codegen::Function;
+use build_loopkup_map::build_lookup_map;
+use codegen::{Function, Scope};
+use generate_response_structs::generate_response_structs;
+use generate_service_calls::generate_service_calls;
 
 use crate::{
-    generate_workflows::input_map::{InputMap, InputMapBehavior, Variable},
+    generate_workflows::input_map::{InputMap, InputMapBehavior},
     parse_specs::{get_operation_specs, OperationSpec, SpecType},
-    traversal::{traverse_nested_type, NestedNode},
 };
 
 use self::variables::VariableAliases;
 
-struct ServiceCodeGenerationInfo {
-    future_variable_name: String,
-    response_struct_name: String,
-    response_aliases: NestedNode<String>,
-    dependent_service_names: Vec<String>,
-}
-
 pub fn create_service_calls(
     function: &mut Function,
-    mut input_map: InputMap,
+    input_map: &mut InputMap,
     workflow_name: String,
+    scope: &mut Scope,
 ) {
     let operation_specs = get_operation_specs(SpecType::Service);
 
-    // Need to create variable aliases for service responses
-    // before referencing them in service requests
-
     let used_operation_specs =
-        filter_to_used_operation_specs(workflow_name, operation_specs, input_map);
+        filter_to_used_operation_specs(workflow_name.to_string(), operation_specs, &input_map);
 
-    let variable_aliases = VariableAliases::new();
+    let mut variable_aliases = VariableAliases::new();
+    let response_struct_names =
+        create_response_struct_names(used_operation_specs.iter(), &mut variable_aliases);
 
-    let service_operation_specs = build_lookup_map(used_operation_specs, variable_aliases);
+    generate_response_structs(
+        scope,
+        used_operation_specs.clone(),
+        response_struct_names.to_vec(),
+    );
 
-    // determine_dependencies();
+    let generation_infos = build_lookup_map(
+        used_operation_specs,
+        response_struct_names,
+        variable_aliases,
+        workflow_name,
+        input_map,
+    );
 
-    // create_response_struct();
+    generate_service_calls(scope, function, generation_infos);
+}
 
-    // create_request_response_futures(); // depends on dependencies
+fn create_response_struct_names(
+    iter: std::slice::Iter<'_, OperationSpec>,
+    variable_aliases: &mut VariableAliases,
+) -> Vec<String> {
+    iter.clone()
+        .map(|_| variable_aliases.create_alias())
+        .collect()
+}
 
-    // // streams depends only on futures. Enums depend on response structs and dependencies.
-    // // Create enums as part of output: per future, create stream & enum.depends on response structs and dependencies.
-    // create_streams_and_enums();
-    // create_service_results_for_workflow_response(); // depends on enums, response structs, dependencies
-
-    // generate_all_services() // actually "print" as generated code: keep this dumb.
+fn get_response_struct_names(
+    generation_infos: &(
+        std::collections::BTreeMap<(String, String), build_loopkup_map::ServiceCodeGenerationInfo>,
+        Vec<(
+            (String, String),
+            build_loopkup_map::ServiceCodeGenerationInfo,
+        )>,
+    ),
+) -> Vec<String> {
+    generation_infos
+        .1
+        .iter()
+        .map(|(_, service_info)| service_info.response_struct_name.clone())
+        .collect()
 }
 
 fn filter_to_used_operation_specs(
     workflow_name: String,
     operation_specs: Vec<OperationSpec>,
-    input_map: InputMap,
+    input_map: &InputMap,
 ) -> Vec<OperationSpec> {
     let service_operation_names = input_map.get_workflow_services_operations_names(workflow_name);
 
@@ -68,79 +90,4 @@ fn filter_to_used_operation_specs(
                 })
         })
         .collect()
-}
-
-fn build_lookup_map(
-    operation_specs: Vec<OperationSpec>,
-    mut variable_aliases: VariableAliases,
-) -> BTreeMap<(String, String), ServiceCodeGenerationInfo> {
-    let iter = operation_specs.iter();
-    create_future_variable_names(iter.clone(), &mut variable_aliases);
-    create_response_struct_names(iter.clone(), &mut variable_aliases);
-
-    create_response_aliases(iter, &mut variable_aliases);
-
-    // add dependencies
-    // add created variable aliases to responses
-    // create response struct names
-
-    // add looked up mapped variable aliases from InputMap to requests
-
-    todo!()
-}
-
-fn create_future_variable_names(
-    iter: std::slice::Iter<'_, OperationSpec>,
-    variable_aliases: &mut VariableAliases,
-) -> Vec<String> {
-    iter.clone()
-        .map(|_| variable_aliases.create_alias())
-        .collect()
-}
-
-fn create_response_struct_names(
-    iter: std::slice::Iter<'_, OperationSpec>,
-    variable_aliases: &mut VariableAliases,
-) -> Vec<String> {
-    iter.clone()
-        .map(|_| variable_aliases.create_alias())
-        .collect()
-}
-
-fn create_response_aliases(
-    iter: std::slice::Iter<'_, OperationSpec>,
-    variable_aliases: &mut VariableAliases,
-) -> Vec<NestedNode<Variable>> {
-    iter.clone()
-        .map(|operation_spec| add_nested_response_aliases(operation_spec, variable_aliases))
-        .collect()
-}
-
-fn add_nested_response_aliases(
-    operation_spec: &OperationSpec,
-    variable_aliases: &mut VariableAliases,
-) -> NestedNode<Variable> {
-    traverse_nested_type(
-        operation_spec.response_specs.first().unwrap().body.clone(),
-        |response_schema, (variable_aliases, alias_accumulator)| {
-            if let Some(name) = response_schema.name {
-                alias_accumulator.push(name);
-            }
-
-            let namespaced_name = alias_accumulator.join("/");
-
-            let alias = (variable_aliases).create_stored_alias(namespaced_name);
-
-            alias
-        },
-        |_, _, _| {},
-        |schema| schema.properties,
-        &mut (
-            variable_aliases,
-            vec![
-                operation_spec.spec_name.to_string(),
-                operation_spec.operation_id.to_string(),
-            ],
-        ),
-    )
 }

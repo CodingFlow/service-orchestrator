@@ -12,7 +12,7 @@ use super::{
 
 pub fn generate_workflow(
     workflow_operation_spec: WorkflowOperationSpec,
-    input_map: &InputMap,
+    input_map: &mut InputMap,
     re_exports: &mut ReExports,
 ) -> WorkflowDefinitionNames {
     let (query_struct_name, request_module_name) = generate_workflow_request(

@@ -1,13 +1,13 @@
 openapi: 3.1.0
 info:
-  title: Meat Service
+  title: Cow Service
   description: |-
     Workflow API
   version: 1.0.0
 paths:
-  /meat/{id}:
+  /cow/{id}:
     get:
-      operationId: getMeat
+      operationId: getCow
       parameters:
         - name: id
           in: path
@@ -16,15 +16,15 @@ paths:
             type: number
       responses:
         200:
-          description: got the meat
+          description: got the cow
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   color:
-                    description: color of meat
+                    description: color of cow
                     type: string
-                  temperature:
-                    description: temperature of meat
+                  numberHorns:
+                    description: number of horns on cow
                     type: number

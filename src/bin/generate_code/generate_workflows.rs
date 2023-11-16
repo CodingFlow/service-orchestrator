@@ -20,7 +20,7 @@ pub fn generate_workflows(workflow_spec_infos: Vec<OperationSpec>, re_exports: &
         let workflow_operation_spec =
             add_variable_aliases_to_request_parameters(operation_spec, &mut input_map);
 
-        let names = generate_workflow(workflow_operation_spec, &input_map, re_exports);
+        let names = generate_workflow(workflow_operation_spec, &mut input_map, re_exports);
 
         workflow_definition_names.push(names);
     }

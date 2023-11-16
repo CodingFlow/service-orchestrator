@@ -22,7 +22,7 @@ pub fn generate_workflow_response(
     workflow_request_spec: WorkflowRequestSpec,
     query_struct_name: &str,
     request_module_name: String,
-    input_map: &InputMap,
+    input_map: &mut InputMap,
     re_exports: &mut ReExports,
 ) -> String {
     let mut scope = Scope::new();
