@@ -32,7 +32,7 @@ pub struct ServiceCodeGenerationInfo {
 pub fn build_lookup_map(
     operation_specs: Vec<OperationSpec>,
     response_struct_names: Vec<String>,
-    mut variable_aliases: VariableAliases,
+    variable_aliases: &mut VariableAliases,
     workflow_name: String,
     input_map: &mut InputMap,
 ) -> (
@@ -41,7 +41,7 @@ pub fn build_lookup_map(
 ) {
     let iter = operation_specs.iter();
 
-    let future_variable_names = create_future_variable_names(iter.clone(), &mut variable_aliases);
+    let future_variable_names = create_future_variable_names(iter.clone(), variable_aliases);
 
     let response_aliases =
         create_response_aliases(iter.clone(), input_map, workflow_name.to_string());

@@ -39,12 +39,12 @@ pub fn create_service_calls(
     let generation_infos = build_lookup_map(
         used_operation_specs,
         response_struct_names,
-        variable_aliases,
+        &mut variable_aliases,
         workflow_name,
         input_map,
     );
 
-    generate_service_calls(scope, function, generation_infos);
+    generate_service_calls(scope, function, generation_infos, variable_aliases);
 }
 
 fn create_response_struct_names(

@@ -1,34 +1,27 @@
 openapi: 3.1.0
 info:
-  title: Meat Service
+  title: Oven Service
   description: |-
     Workflow API
   version: 1.0.0
 paths:
-  /meat/{id}:
+  /oven/{id}:
     get:
-      operationId: getMeat
+      operationId: getOven
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: number
-        - name: heat
-          in: query
-          schema:
-            type: number
       responses:
         200:
-          description: got the meat
+          description: got the oven
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  color:
-                    description: color of meat
-                    type: string
                   temperature:
-                    description: temperature of meat
+                    description: oven temperature
                     type: number
