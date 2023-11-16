@@ -56,22 +56,6 @@ fn create_response_struct_names(
         .collect()
 }
 
-fn get_response_struct_names(
-    generation_infos: &(
-        std::collections::BTreeMap<(String, String), build_loopkup_map::ServiceCodeGenerationInfo>,
-        Vec<(
-            (String, String),
-            build_loopkup_map::ServiceCodeGenerationInfo,
-        )>,
-    ),
-) -> Vec<String> {
-    generation_infos
-        .1
-        .iter()
-        .map(|(_, service_info)| service_info.response_struct_name.clone())
-        .collect()
-}
-
 fn filter_to_used_operation_specs(
     workflow_name: String,
     operation_specs: Vec<OperationSpec>,

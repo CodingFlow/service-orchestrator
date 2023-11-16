@@ -4,7 +4,6 @@ pub fn generate_imports(scope: &mut Scope, query_struct_name: &str, request_modu
     scope.import("serde", "Serialize");
     scope.import("serde", "Deserialize");
     scope.import("warp::reply", "self");
-    scope.import("warp::reply", "Json");
     scope.import(
         format!("super::{}", request_module_name).as_str(),
         query_struct_name,
