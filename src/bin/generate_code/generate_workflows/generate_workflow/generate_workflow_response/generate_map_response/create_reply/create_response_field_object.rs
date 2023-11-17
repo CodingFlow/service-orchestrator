@@ -2,8 +2,10 @@ use codegen::Function;
 
 use crate::{
     generate_workflows::{
-        add_variable_aliases_to_request_parameters::RequestParameter,
-        generate_workflow::generate_workflow_response::generate_response_structure::ResponseWithStructName,
+        generate_workflow::{
+            add_variable_aliases_to_request_parameters::RequestParameter,
+            generate_workflow_response::generate_response_structure::ResponseWithStructName,
+        },
         input_map::InputMap,
     },
     traversal::NestedNode,

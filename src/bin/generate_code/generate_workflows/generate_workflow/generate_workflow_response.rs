@@ -11,11 +11,11 @@ use generate_response_structure::generate_response_structure;
 
 use crate::{
     generate_re_exports::{ReExports, ReExportsBehavior},
-    generate_workflows::{
-        add_variable_aliases_to_request_parameters::WorkflowRequestSpec, input_map::InputMap,
-    },
+    generate_workflows::input_map::InputMap,
     parse_specs::ResponseSpec,
 };
+
+use super::add_variable_aliases_to_request_parameters::WorkflowRequestSpec;
 
 pub fn generate_workflow_response(
     workflow_response_specs: Vec<ResponseSpec>,

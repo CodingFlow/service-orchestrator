@@ -1,7 +1,7 @@
 use codegen::Function;
 use oas3::spec::SchemaType;
 
-use crate::generate_workflows::add_variable_aliases_to_request_parameters::RequestParameter;
+use crate::generate_workflows::generate_workflow::add_variable_aliases_to_request_parameters::RequestParameter;
 
 pub fn create_query_destructure(
     function: &mut Function,

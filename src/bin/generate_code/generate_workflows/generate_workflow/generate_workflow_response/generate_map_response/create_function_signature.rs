@@ -1,12 +1,6 @@
 use codegen::Function;
 
-use crate::{
-    generate_workflows::{
-        add_variable_aliases_to_request_parameters::{WorkflowPathPart, WorkflowVariable},
-        input_map::Variable,
-    },
-    parse_specs::parse_schema::to_string_schema,
-};
+use crate::generate_workflows::generate_workflow::add_variable_aliases_to_request_parameters::WorkflowPathPart;
 
 pub fn create_function_signature(
     function: &mut Function,
@@ -28,19 +22,11 @@ fn create_function_arguments(
 ) {
     let path_parameters_info: Vec<(String, String)> = path_parts
         .iter()
-        .filter(|path_part| (*path_part).schema_type.is_some())
+        .filter(|path_part| (*path_part).alias.is_some())
         .map(|path_part| -> (String, String) {
-            let name = match path_part.name.clone() {
-                WorkflowVariable::Variable(name) => name,
-                _ => Variable {
-                    original_name: String::new(),
-                    alias: String::new(),
-                },
-            };
-
             (
-                name.alias,
-                to_string_schema(path_part.schema_type.unwrap(), None),
+                path_part.alias.clone().unwrap(),
+                path_part.formatted_type.clone().unwrap(),
             )
         })
         .collect();

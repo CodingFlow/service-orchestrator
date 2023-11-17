@@ -157,10 +157,19 @@ impl InputMapBehavior for InputMap {
             .collect()
     }
 
-    fn create_variable_alias(&mut self, original_name: String) -> Variable {
+    fn create_variable_alias(&mut self, namespaced_name: String) -> Variable {
+        let mut split = namespaced_name.split('/');
+        let service_name = split.nth(2).unwrap();
+        let is_service = service_name != "response";
+
+        let name = match is_service {
+            true => namespaced_name.split("/").skip(4).collect(),
+            false => namespaced_name.split("/").skip(3).collect(),
+        };
+
         Variable {
-            original_name: original_name.to_string(),
-            alias: self.create_alias(original_name),
+            original_name: name,
+            alias: self.create_alias(namespaced_name),
         }
     }
 
@@ -179,7 +188,7 @@ impl InputMapBehavior for InputMap {
 
         let alias_lookup_value = match is_service(first_part.to_string(), service_names) {
             true => format!("/{}/{}", workflow_name, map_from_value),
-            false => map_from_value.to_string(),
+            false => format!("/{}/response/{}", workflow_name, map_from_value),
         };
 
         match self.alias_lookup.get(&alias_lookup_value) {

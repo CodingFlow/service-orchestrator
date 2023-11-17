@@ -260,8 +260,7 @@ fn add_nested_response_aliases(
                     response_schema.name.unwrap(),
                 );
 
-                let mut alias = input_map.create_variable_alias(namespaced_name);
-                alias.original_name = alias.original_name.split("/").skip(4).collect();
+                let alias = input_map.create_variable_alias(namespaced_name);
 
                 Some(alias)
             } else {

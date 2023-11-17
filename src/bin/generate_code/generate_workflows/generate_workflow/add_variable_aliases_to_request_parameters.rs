@@ -1,9 +1,9 @@
+use crate::{
+    generate_workflows::input_map::{InputMap, InputMapBehavior, Variable},
+    parse_specs::{parse_schema::to_string_schema, OperationSpec, RequestSpec, ResponseSpec},
+};
 use http::Method;
 use oas3::spec::SchemaType;
-
-use crate::parse_specs::{OperationSpec, RequestSpec, ResponseSpec};
-
-use super::input_map::{InputMap, InputMapBehavior, Variable};
 
 #[derive(Debug, Clone)]
 pub struct RequestParameters {
@@ -34,8 +34,9 @@ pub struct WorkflowRequestSpec {
 
 #[derive(Debug, Clone)]
 pub struct WorkflowPathPart {
-    pub name: WorkflowVariable,
-    pub schema_type: Option<SchemaType>,
+    pub name: String,
+    pub alias: Option<String>,
+    pub formatted_type: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -65,28 +66,38 @@ pub fn add_variable_aliases_to_request_parameters(
     let workflow_path = path
         .iter()
         .map(|path_part| {
-            let name = match path_part.parameter_info {
-                Some(_) => WorkflowVariable::Variable(
-                    input_map.create_variable_alias(path_part.name.to_string()),
+            let alias = match path_part.parameter_info {
+                Some(_) => Some(
+                    input_map
+                        .create_variable_alias(
+                            vec!["", &operation_id, "response", &path_part.name].join("/"),
+                        )
+                        .alias,
                 ),
-                None => WorkflowVariable::Name(path_part.name.to_string()),
-            };
-
-            let schema_type = match &path_part.parameter_info {
-                Some(parameter_info) => {
-                    Some(parameter_info.schema.clone().unwrap().schema_type.unwrap())
-                }
                 None => None,
             };
 
-            WorkflowPathPart { name, schema_type }
+            let formatted_type = match &path_part.parameter_info {
+                Some(parameter_info) => Some(to_string_schema(
+                    parameter_info.schema.clone().unwrap().schema_type.unwrap(),
+                    None,
+                )),
+                None => None,
+            };
+
+            WorkflowPathPart {
+                name: path_part.name.to_string(),
+                alias,
+                formatted_type,
+            }
         })
         .collect();
 
     let workflow_query = query
         .iter()
         .map(|(name, schema_type)| RequestParameter {
-            name: input_map.create_variable_alias(name.to_string()),
+            name: input_map
+                .create_variable_alias(vec!["", &operation_id, "response", name].join("/")),
             schema_type: schema_type.clone(),
         })
         .collect();
