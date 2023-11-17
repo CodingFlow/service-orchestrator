@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, fmt::format, fs};
+use std::{collections::BTreeMap, fs};
 
 use serde_json::Value;
 
@@ -17,10 +17,12 @@ pub struct Variable {
 }
 
 pub trait InputMapBehavior {
-    fn get_workflow_services_operations_names(
+    fn get_workflow_response_dependencies_ids(
         &self,
         workflow_name: String,
     ) -> Vec<(String, String)>;
+
+    fn get_workflow_services_operations_ids(&self, workflow_name: String) -> Vec<(String, String)>;
 
     fn get_service_dependencies(
         &self,
@@ -33,10 +35,56 @@ pub trait InputMapBehavior {
 }
 
 impl InputMapBehavior for InputMap {
-    fn get_workflow_services_operations_names(
+    fn get_workflow_response_dependencies_ids(
         &self,
         workflow_name: String,
     ) -> Vec<(String, String)> {
+        let response = self.get_workflow_response(workflow_name.to_string());
+
+        let mut dependencies_properties = vec![];
+
+        for property in response {
+            traverse_nested_type(
+                property.clone(),
+                |(_, value), dependencies_ids| {
+                    if !value.is_object() {
+                        dependencies_ids.push(value.as_str().unwrap().to_string())
+                    }
+                },
+                |_, _, _| {},
+                |(_, value)| match value.is_object() {
+                    true => Some(
+                        value
+                            .as_object()
+                            .unwrap()
+                            .iter()
+                            .map(|(key, value)| (key.to_string(), value.clone()))
+                            .collect(),
+                    ),
+                    false => None,
+                },
+                &mut dependencies_properties,
+            );
+        }
+
+        let services = self.get_workflow_services(workflow_name.to_string());
+        let service_names: Vec<String> =
+            services.iter().map(|(name, _)| name.to_string()).collect();
+
+        dependencies_properties
+            .into_iter()
+            .filter(|dependency_id| is_service(dependency_id.to_string(), service_names.to_vec()))
+            .map(|property_name| {
+                let split = &mut property_name.split("/");
+                (
+                    split.nth(0).unwrap().to_string(),
+                    split.nth(0).unwrap().to_string(),
+                )
+            })
+            .collect()
+    }
+
+    fn get_workflow_services_operations_ids(&self, workflow_name: String) -> Vec<(String, String)> {
         let services = self.get_workflow_services(workflow_name);
 
         services
@@ -44,7 +92,7 @@ impl InputMapBehavior for InputMap {
             .flat_map(|(service_name, value)| {
                 let operations = (*value).as_object().unwrap();
 
-                operations.iter().map(|(operation_name, operation_value)| {
+                operations.iter().map(|(operation_name, _)| {
                     (service_name.to_string(), operation_name.to_string())
                 })
             })
@@ -169,6 +217,19 @@ impl InputMap {
             .filter(|(key, _)| -> bool { **key != "response" })
             .map(|(key, value)| (key.to_string(), value.clone()))
             .collect()
+    }
+
+    fn get_workflow_response(&self, workflow_name: String) -> serde_json::Map<String, Value> {
+        self.input_map_config
+            .get(&workflow_name)
+            .unwrap()
+            .as_object()
+            .unwrap()
+            .get("response")
+            .unwrap()
+            .as_object()
+            .unwrap()
+            .clone()
     }
 }
 

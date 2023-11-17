@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 
 pub fn generate_futures(
     function: &mut Function,
-    (generation_infos, ordered_generation_infos): (
+    (generation_infos, ordered_generation_infos): &(
         BTreeMap<(String, String), ServiceCodeGenerationInfo>,
         Vec<((String, String), ServiceCodeGenerationInfo)>,
     ),

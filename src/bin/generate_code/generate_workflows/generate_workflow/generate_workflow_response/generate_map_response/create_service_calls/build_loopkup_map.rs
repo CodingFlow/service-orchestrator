@@ -24,12 +24,14 @@ pub struct ServiceRequestPath {
 pub struct ServiceCodeGenerationInfo {
     pub future_variable_name: String,
     pub response_struct_name: String,
+    pub enum_name: String,
+    pub stream_variable_name: String,
     pub response_aliases: NestedNode<Option<Variable>>,
     pub depending_service_names: Vec<(String, String)>,
     pub request: ServiceRequest,
 }
 
-pub fn build_lookup_map(
+pub fn build_service_operation_lookup_map(
     operation_specs: Vec<OperationSpec>,
     response_struct_names: Vec<String>,
     variable_aliases: &mut VariableAliases,
@@ -41,7 +43,11 @@ pub fn build_lookup_map(
 ) {
     let iter = operation_specs.iter();
 
-    let future_variable_names = create_future_variable_names(iter.clone(), variable_aliases);
+    let future_variable_names = create_variable_names(iter.clone(), variable_aliases);
+
+    let enum_names = create_variable_names(iter.clone(), variable_aliases);
+
+    let stream_variable_names = create_variable_names(iter.clone(), variable_aliases);
 
     let response_aliases =
         create_response_aliases(iter.clone(), input_map, workflow_name.to_string());
@@ -54,6 +60,8 @@ pub fn build_lookup_map(
         iter,
         future_variable_names,
         response_struct_names,
+        enum_names,
+        stream_variable_names,
         response_aliases,
         dependencies,
         requests,
@@ -62,6 +70,15 @@ pub fn build_lookup_map(
     let ordered = order_by_dependencies(code_generation_infos.clone());
 
     (code_generation_infos, ordered)
+}
+
+fn create_variable_names(
+    iter: std::slice::Iter<'_, OperationSpec>,
+    variable_aliases: &mut VariableAliases,
+) -> Vec<String> {
+    iter.clone()
+        .map(|_| variable_aliases.create_alias())
+        .collect()
 }
 
 /// Returns [ServiceCodeGenerationInfo]s ordered from most dependent to independent
@@ -108,12 +125,16 @@ fn create_service_code_generation_infos(
     iter: std::slice::Iter<'_, OperationSpec>,
     future_variable_names: Vec<String>,
     response_struct_names: Vec<String>,
+    enum_names: Vec<String>,
+    stream_variable_names: Vec<String>,
     response_aliases: Vec<NestedNode<Option<Variable>>>,
     dependencies: BTreeMap<String, Vec<(String, String)>>,
     requests: Vec<ServiceRequest>,
 ) -> BTreeMap<(String, String), ServiceCodeGenerationInfo> {
     let mut future_variable_names_iter = future_variable_names.iter();
     let mut response_struct_names_iter = response_struct_names.iter();
+    let mut enum_names_iter = enum_names.iter();
+    let mut stream_variable_names_iter = stream_variable_names.iter();
     let mut response_aliases_iter = response_aliases.iter();
     let mut dependencies_iter = dependencies
         .iter()
@@ -123,6 +144,8 @@ fn create_service_code_generation_infos(
     iter.map(|operation_spec| {
         let future_variable_name = future_variable_names_iter.next().unwrap().to_string();
         let response_struct_name = response_struct_names_iter.next().unwrap().to_string();
+        let enum_name = enum_names_iter.next().unwrap().to_string();
+        let stream_variable_name = stream_variable_names_iter.next().unwrap().to_string();
         let response_aliases = response_aliases_iter.next().unwrap().clone();
         let dependent_service_names = dependencies_iter.next().unwrap().to_vec();
         let request = requests_iter.next().unwrap().clone();
@@ -135,6 +158,8 @@ fn create_service_code_generation_infos(
             ServiceCodeGenerationInfo {
                 future_variable_name,
                 response_struct_name,
+                enum_name,
+                stream_variable_name,
                 response_aliases,
                 depending_service_names: dependent_service_names,
                 request,
@@ -199,15 +224,6 @@ fn create_dependencies(
     workflow_name: String,
 ) -> BTreeMap<String, Vec<(String, String)>> {
     input_map.get_service_dependencies(workflow_name.to_string())
-}
-
-fn create_future_variable_names(
-    iter: std::slice::Iter<'_, OperationSpec>,
-    variable_aliases: &mut VariableAliases,
-) -> Vec<String> {
-    iter.clone()
-        .map(|_| variable_aliases.create_alias())
-        .collect()
 }
 
 fn create_response_aliases(

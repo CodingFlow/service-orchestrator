@@ -15,7 +15,7 @@ cat_api_spec:
   response:
     tailLength: id
     furLength: maxResults
-    numberOfLegs: maxResults
+    numberOfLegs: dog_service/getDog/numberHairs
     eyes:
       color: eyeColor
 rat_api_spec:
