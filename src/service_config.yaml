@@ -1,0 +1,8 @@
+dog_service:
+  service_url: http://localhost:3000
+meat_service:
+  service_url: http://localhost:3001
+cow_service:
+  service_url: http://localhost:3003
+oven_service:
+  service_url: http://localhost:3002

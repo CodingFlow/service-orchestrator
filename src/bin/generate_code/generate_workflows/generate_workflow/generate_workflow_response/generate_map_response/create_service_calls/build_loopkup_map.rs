@@ -6,6 +6,7 @@ use crate::traversal::traverse_nested_type;
 use crate::traversal::NestedNode;
 use http::Method;
 use std::collections::BTreeMap;
+use url::Url;
 
 #[derive(Debug, Clone)]
 pub struct ServiceRequest {
@@ -29,6 +30,7 @@ pub struct ServiceCodeGenerationInfo {
     pub response_aliases: NestedNode<Option<Variable>>,
     pub depending_service_names: Vec<(String, String)>,
     pub request: ServiceRequest,
+    pub service_url: Url,
 }
 
 pub fn build_service_operation_lookup_map(
@@ -36,6 +38,7 @@ pub fn build_service_operation_lookup_map(
     response_struct_names: Vec<String>,
     variable_aliases: &mut VariableAliases,
     workflow_name: String,
+    service_urls: BTreeMap<String, Url>,
     input_map: &mut InputMap,
 ) -> (
     BTreeMap<(String, String), ServiceCodeGenerationInfo>,
@@ -65,6 +68,7 @@ pub fn build_service_operation_lookup_map(
         response_aliases,
         dependencies,
         requests,
+        service_urls,
     );
 
     let ordered = order_by_dependencies(code_generation_infos.clone());
@@ -130,6 +134,7 @@ fn create_service_code_generation_infos(
     response_aliases: Vec<NestedNode<Option<Variable>>>,
     dependencies: BTreeMap<String, Vec<(String, String)>>,
     requests: Vec<ServiceRequest>,
+    service_urls: BTreeMap<String, Url>,
 ) -> BTreeMap<(String, String), ServiceCodeGenerationInfo> {
     let mut future_variable_names_iter = future_variable_names.iter();
     let mut response_struct_names_iter = response_struct_names.iter();
@@ -149,6 +154,7 @@ fn create_service_code_generation_infos(
         let response_aliases = response_aliases_iter.next().unwrap().clone();
         let dependent_service_names = dependencies_iter.next().unwrap().to_vec();
         let request = requests_iter.next().unwrap().clone();
+        let service_url = service_urls.get(&operation_spec.spec_name).unwrap().clone();
 
         (
             (
@@ -163,6 +169,7 @@ fn create_service_code_generation_infos(
                 response_aliases,
                 depending_service_names: dependent_service_names,
                 request,
+                service_url,
             },
         )
     })

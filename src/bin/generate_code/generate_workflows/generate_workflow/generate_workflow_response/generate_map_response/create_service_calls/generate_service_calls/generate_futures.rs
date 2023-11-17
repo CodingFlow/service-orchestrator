@@ -16,9 +16,7 @@ pub fn generate_futures(
 ) {
     function.line("let client = Client::new();");
 
-    for ((service_name, operation_id), service_code_generation_info) in
-        ordered_generation_infos.iter().rev()
-    {
+    for (_, service_code_generation_info) in ordered_generation_infos.iter().rev() {
         generate_future(
             service_code_generation_info,
             &generation_infos,
@@ -39,6 +37,7 @@ fn generate_future(
         response_struct_name,
         depending_service_names,
         request,
+        service_url,
         ..
     } = service_code_generation_info;
 
@@ -72,8 +71,9 @@ fn generate_future(
         .join(",");
 
     function.line(format!(
-        r#".{}(format!("http://localhost:3001/{}", {}))"#,
+        r#".{}(format!("{}{}", {}))"#,
         request.method.to_string().to_lowercase(),
+        service_url,
         path,
         path_parameters
     ));

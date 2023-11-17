@@ -3,12 +3,15 @@ mod generate_response_structs;
 mod generate_service_calls;
 mod variables;
 
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, fs};
 
 use build_loopkup_map::build_service_operation_lookup_map;
 use codegen::{Function, Scope};
 use generate_response_structs::generate_response_structs;
 use generate_service_calls::generate_service_calls;
+
+use serde_json::Value;
+use url::Url;
 
 use crate::{
     generate_workflows::input_map::{InputMap, InputMapBehavior},
@@ -23,6 +26,7 @@ pub fn create_service_calls(
     workflow_name: String,
     scope: &mut Scope,
 ) {
+    let service_urls = get_service_urls();
     let operation_specs = get_operation_specs(SpecType::Service);
 
     let used_operation_specs =
@@ -43,6 +47,7 @@ pub fn create_service_calls(
         response_struct_names,
         &mut variable_aliases,
         workflow_name.to_string(),
+        service_urls,
         input_map,
     );
 
@@ -62,6 +67,34 @@ pub fn create_service_calls(
         workflow_response_info,
         variable_aliases,
     );
+}
+
+fn get_service_urls() -> BTreeMap<String, Url> {
+    let file = match fs::File::open("./src/service_config.yaml") {
+        Ok(file) => file,
+        Err(_) => panic!("Unable to read service configuration file."),
+    };
+
+    let config: Value = match serde_yaml::from_reader(file) {
+        Ok(config) => config,
+        Err(_) => panic!("Unable to parse service configuration file."),
+    };
+
+    config
+        .as_object()
+        .unwrap()
+        .into_iter()
+        .map(|(service_name, value)| {
+            (
+                service_name,
+                value.as_object().unwrap().get("service_url").unwrap(),
+            )
+        })
+        .map(|(service_name, value)| {
+            let url = value.as_str().unwrap();
+            (service_name.to_string(), Url::parse(url).unwrap())
+        })
+        .collect()
 }
 
 pub struct WorkflowResponseCodeGenerationInfo {
