@@ -1,14 +1,14 @@
 mod build_loopkup_map;
-mod generate_response_structs;
 mod generate_service_calls;
+mod generate_service_response_structs;
 mod variables;
 
 use std::{collections::BTreeMap, fs};
 
 use build_loopkup_map::build_service_operation_lookup_map;
 use codegen::{Function, Scope};
-use generate_response_structs::generate_response_structs;
 use generate_service_calls::generate_service_calls;
+use generate_service_response_structs::generate_service_response_structs;
 
 use serde_json::Value;
 use url::Url;
@@ -36,7 +36,7 @@ pub fn create_service_calls(
     let response_struct_names =
         create_response_struct_names(used_operation_specs.iter(), &mut variable_aliases);
 
-    generate_response_structs(
+    generate_service_response_structs(
         scope,
         used_operation_specs.clone(),
         response_struct_names.to_vec(),

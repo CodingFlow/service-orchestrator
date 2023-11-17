@@ -1,20 +1,25 @@
+use crate::parse_specs::parse_schema::to_string_schema;
+use crate::parse_specs::parse_schema::ParsedSchema;
+use crate::parse_specs::ResponseSpec;
+use crate::traversal::traverse_nested_node;
+use crate::traversal::traverse_nested_type;
+use crate::traversal::NestedNode;
+use codegen::Field;
+use codegen::Scope;
+use codegen::Struct;
 use std::slice;
 
-use codegen::{Field, Scope, Struct};
-
-use crate::{parse_specs::{ResponseSpec, parse_schema::{ParsedSchema, to_string_schema}, OperationSpec}, traversal::{NestedNode, traverse_nested_type, traverse_nested_node}, generate_workflows::generate_workflow::generate_workflow_response::generate_response_structure::ResponseWithStructName};
-
 pub fn generate_response_structs(
-    scope: &mut Scope,
-    operation_specs: Vec<OperationSpec>,
     struct_names: Vec<String>,
+    response_specs: Vec<Vec<ResponseSpec>>,
+    scope: &mut Scope,
 ) {
     let struct_names_iter = &mut struct_names.iter();
-    let nested_structs: Vec<(String, NestedNode<Option<Struct>>)> = operation_specs
+    let nested_structs: Vec<(String, NestedNode<Option<Struct>>)> = response_specs
         .iter()
-        .flat_map(|operation_spec| {
+        .flat_map(|response_spec| {
             // TODO: handle multiple status codes
-            create_structs(operation_spec.response_specs.clone(), struct_names_iter)
+            create_structs(response_spec.clone(), struct_names_iter)
         })
         .collect();
 
