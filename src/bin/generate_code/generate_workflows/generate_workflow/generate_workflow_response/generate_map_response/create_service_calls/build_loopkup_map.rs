@@ -187,10 +187,14 @@ fn map_requests_with_variables(
             .query
             .into_iter()
             .map(|(name, _)| {
-                let alias = input_map.get_variable_alias(format!(
-                    "/{}/{}/{}/{}",
-                    workflow_name, operation_spec.spec_name, operation_spec.operation_id, name
-                ));
+                let alias = input_map.get_variable_alias(
+                    (
+                        workflow_name.to_string(),
+                        operation_spec.spec_name.to_string(),
+                        Some(operation_spec.operation_id.to_string()),
+                    ),
+                    vec![name.to_string()],
+                );
                 (name, alias)
             })
             .collect();
@@ -201,13 +205,14 @@ fn map_requests_with_variables(
                 let mut alias = None;
 
                 if let Some(_) = &path_part.parameter_info {
-                    alias = Some(input_map.get_variable_alias(format!(
-                        "/{}/{}/{}/{}",
-                        workflow_name,
-                        operation_spec.spec_name,
-                        operation_spec.operation_id,
-                        path_part.name
-                    )));
+                    alias = Some(input_map.get_variable_alias(
+                        (
+                            workflow_name.to_string(),
+                            operation_spec.spec_name.to_string(),
+                            Some(operation_spec.operation_id.to_string()),
+                        ),
+                        vec![path_part.name.to_string()],
+                    ));
                 }
 
                 ServiceRequestPath {

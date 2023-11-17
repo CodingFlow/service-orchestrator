@@ -31,7 +31,11 @@ pub trait InputMapBehavior {
 
     fn create_variable_alias(&mut self, original_name: String) -> Variable;
 
-    fn get_variable_alias(&self, map_to_key: String) -> String;
+    fn get_variable_alias(
+        &self,
+        namespace: (String, String, Option<String>),
+        map_to_key: Vec<String>,
+    ) -> String;
 }
 
 impl InputMapBehavior for InputMap {
@@ -174,13 +178,25 @@ impl InputMapBehavior for InputMap {
         }
     }
 
-    fn get_variable_alias(&self, map_to_key: String) -> String {
-        let map_from_value = match self.input_map_config.pointer(&map_to_key) {
-            Some(value) => value.as_str().unwrap(),
-            None => panic!("No mapped value found for key '{}'", map_to_key),
+    fn get_variable_alias(
+        &self,
+        (workflow_name, service_name, service_operation_name): (String, String, Option<String>),
+        map_to_key: Vec<String>,
+    ) -> String {
+        let namespace = match service_operation_name {
+            Some(service_operation_name) => format!(
+                "/{}/{}/{}/",
+                workflow_name, service_name, service_operation_name
+            ),
+            None => format!("/{}/{}/", workflow_name, service_name),
         };
 
-        let workflow_name = map_to_key.split('/').nth(1).unwrap();
+        let map_pointer = format!("{}{}", namespace, map_to_key.join("/"));
+        let map_from_value = match self.input_map_config.pointer(&map_pointer) {
+            Some(value) => value.as_str().unwrap(),
+            None => panic!("No mapped value found for key '{}'", map_to_key.join("/")),
+        };
+
         let services = self.get_workflow_services(workflow_name.to_string());
         let service_names: Vec<String> =
             services.iter().map(|(name, _)| name.to_string()).collect();
@@ -195,7 +211,7 @@ impl InputMapBehavior for InputMap {
 
         match self.alias_lookup.get(&alias_lookup_value) {
             Some(alias) => alias.to_string(),
-            None => panic!("Alias not found for key '{}'", map_to_key),
+            None => panic!("Alias not found for key '{}'", map_to_key.join("/")),
         }
     }
 }

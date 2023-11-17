@@ -12,8 +12,17 @@ pub fn create_response_field_primitive(
     map_pointer: String,
 ) {
     let property_name = response_property.name.unwrap();
-    let new_map_pointer = format!("{}/{}", map_pointer, property_name);
-    let mapped_value_name = input_map.get_variable_alias(new_map_pointer);
+    let mut split = map_pointer.split("/");
+    let workflow_name = split.nth(1).unwrap();
+    let service_name = split.nth(0).unwrap();
+    let mut path: Vec<String> = split.map(|name| name.to_string()).collect();
+
+    path.push(property_name.to_string());
+
+    let mapped_value_name = input_map.get_variable_alias(
+        (workflow_name.to_string(), service_name.to_string(), None),
+        path,
+    );
 
     function.line(format!(
         "{}:{},",
