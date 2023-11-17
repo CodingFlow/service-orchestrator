@@ -17,13 +17,13 @@ pub fn generate_workflow(
 ) -> WorkflowDefinitionNames {
     let (query_struct_name, request_module_name) = generate_workflow_request(
         workflow_operation_spec.request_spec.clone(),
-        workflow_operation_spec.spec_name.to_string(),
+        workflow_operation_spec.operation_id.to_string(),
         re_exports,
     );
 
     let response_module_name = generate_workflow_response(
         workflow_operation_spec.response_spec,
-        workflow_operation_spec.spec_name,
+        workflow_operation_spec.operation_id,
         workflow_operation_spec.request_spec,
         query_struct_name,
         request_module_name.clone(),

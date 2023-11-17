@@ -1,4 +1,4 @@
-cat_api_spec:
+getCat:
   meat_service:
     getMeat:
       id: cow_service/getCow/numberHorns
@@ -18,7 +18,7 @@ cat_api_spec:
     numberOfLegs: dog_service/getDog/numberHairs
     eyes:
       color: eyeColor
-rat_api_spec:
+getRat:
   dog_service:
     getDog:
       id: maxResults
