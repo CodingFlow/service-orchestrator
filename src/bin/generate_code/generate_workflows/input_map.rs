@@ -73,7 +73,9 @@ impl InputMapBehavior for InputMap {
 
         dependencies_properties
             .into_iter()
-            .filter(|dependency_id| is_service(dependency_id.to_string(), service_names.to_vec()))
+            .filter(|dependency_id| {
+                is_service_from_services(dependency_id.to_string(), service_names.to_vec())
+            })
             .map(|property_name| {
                 let split = &mut property_name.split("/");
                 (
@@ -115,7 +117,10 @@ impl InputMapBehavior for InputMap {
                 service.clone(),
                 |(_, value), (service_properties, service_names)| {
                     if !value.is_object()
-                        && is_service(value.as_str().unwrap().to_string(), service_names.to_vec())
+                        && is_service_from_services(
+                            value.as_str().unwrap().to_string(),
+                            service_names.to_vec(),
+                        )
                     {
                         service_properties.push(value.as_str().unwrap().to_string())
                     }
@@ -158,11 +163,7 @@ impl InputMapBehavior for InputMap {
     }
 
     fn create_variable_alias(&mut self, namespaced_name: String) -> Variable {
-        let mut split = namespaced_name.split('/');
-        let service_name = split.nth(2).unwrap();
-        let is_service = service_name != "response";
-
-        let name = match is_service {
+        let name = match is_service(namespaced_name.clone()) {
             true => namespaced_name.split("/").skip(4).collect(),
             false => namespaced_name.split("/").skip(3).collect(),
         };
@@ -186,10 +187,11 @@ impl InputMapBehavior for InputMap {
         let split_map_from_value = &mut map_from_value.split('/');
         let first_part = split_map_from_value.nth(0).unwrap();
 
-        let alias_lookup_value = match is_service(first_part.to_string(), service_names) {
-            true => format!("/{}/{}", workflow_name, map_from_value),
-            false => format!("/{}/response/{}", workflow_name, map_from_value),
-        };
+        let alias_lookup_value =
+            match is_service_from_services(first_part.to_string(), service_names) {
+                true => format!("/{}/{}", workflow_name, map_from_value),
+                false => format!("/{}/response/{}", workflow_name, map_from_value.to_string()),
+            };
 
         match self.alias_lookup.get(&alias_lookup_value) {
             Some(alias) => alias.to_string(),
@@ -198,7 +200,14 @@ impl InputMapBehavior for InputMap {
     }
 }
 
-fn is_service(name: String, service_names: Vec<String>) -> bool {
+fn is_service(namespaced_name: String) -> bool {
+    let mut split = namespaced_name.split('/');
+    let service_name = split.nth(2).unwrap();
+
+    service_name != "response"
+}
+
+fn is_service_from_services(name: String, service_names: Vec<String>) -> bool {
     let first_part = name.split("/").nth(0).unwrap();
     service_names.contains(&first_part.to_string())
 }
