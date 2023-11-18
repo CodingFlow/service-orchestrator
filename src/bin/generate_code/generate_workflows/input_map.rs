@@ -29,7 +29,11 @@ pub trait InputMapBehavior {
         workflow_name: String,
     ) -> BTreeMap<String, Vec<(String, String)>>;
 
-    fn create_variable_alias(&mut self, original_name: String) -> Variable;
+    fn create_variable_alias(
+        &mut self,
+        namespace: (String, String, Option<String>),
+        map_to_key: Vec<String>,
+    ) -> Variable;
 
     fn get_variable_alias(
         &self,
@@ -166,15 +170,29 @@ impl InputMapBehavior for InputMap {
             .collect()
     }
 
-    fn create_variable_alias(&mut self, namespaced_name: String) -> Variable {
-        let name = match is_service(namespaced_name.clone()) {
-            true => namespaced_name.split("/").skip(4).collect(),
-            false => namespaced_name.split("/").skip(3).collect(),
+    fn create_variable_alias(
+        &mut self,
+        (workflow_name, service_name, service_operation_name): (String, String, Option<String>),
+        map_to_key: Vec<String>,
+    ) -> Variable {
+        let namespace = match service_operation_name {
+            Some(service_operation_name) => format!(
+                "/{}/{}/{}/",
+                workflow_name, service_name, service_operation_name
+            ),
+            None => format!("/{}/{}/", workflow_name, service_name),
+        };
+
+        let map_pointer = format!("{}{}", namespace, map_to_key.join("/"));
+
+        let name = match is_service(map_pointer.clone()) {
+            true => map_pointer.split("/").skip(4).collect(),
+            false => map_pointer.split("/").skip(3).collect(),
         };
 
         Variable {
             original_name: name,
-            alias: self.create_alias(namespaced_name),
+            alias: self.create_alias(map_pointer),
         }
     }
 

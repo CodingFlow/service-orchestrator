@@ -257,15 +257,13 @@ fn add_nested_response_aliases(
 ) -> NestedNode<Option<Variable>> {
     traverse_nested_type(
         operation_spec.response_specs.first().unwrap().body.clone(),
-        |response_schema, (input_map, alias_accumulator)| {
+        |response_schema, (input_map, alias_accumulator, namespace)| {
             if let None = response_schema.properties {
-                let namespaced_name = format!(
-                    "{}/{}",
-                    alias_accumulator.join("/"),
-                    response_schema.name.unwrap(),
-                );
+                let mut map_to_key = alias_accumulator.to_vec();
 
-                let alias = input_map.create_variable_alias(namespaced_name);
+                map_to_key.push(response_schema.name.unwrap());
+
+                let alias = input_map.create_variable_alias(namespace.clone(), map_to_key);
 
                 Some(alias)
             } else {
@@ -275,16 +273,16 @@ fn add_nested_response_aliases(
                 None
             }
         },
-        |child_schema, _, (input_map, alias_accumulator)| {},
+        |child_schema, _, (input_map, alias_accumulator, _)| {},
         |schema| schema.properties,
         &mut (
             input_map,
-            vec![
-                String::new(),
+            vec![],
+            (
                 workflow_name,
                 operation_spec.spec_name.to_string(),
-                operation_spec.operation_id.to_string(),
-            ],
+                Some(operation_spec.operation_id.to_string()),
+            ),
         ),
     )
 }

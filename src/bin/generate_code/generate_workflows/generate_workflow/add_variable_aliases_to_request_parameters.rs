@@ -70,7 +70,8 @@ pub fn add_variable_aliases_to_request_parameters(
                 Some(_) => Some(
                     input_map
                         .create_variable_alias(
-                            vec!["", &operation_id, "response", &path_part.name].join("/"),
+                            (operation_id.to_string(), "response".to_string(), None),
+                            vec![path_part.name.to_string()],
                         )
                         .alias,
                 ),
@@ -96,8 +97,10 @@ pub fn add_variable_aliases_to_request_parameters(
     let workflow_query = query
         .iter()
         .map(|(name, schema_type)| RequestParameter {
-            name: input_map
-                .create_variable_alias(vec!["", &operation_id, "response", name].join("/")),
+            name: input_map.create_variable_alias(
+                (operation_id.to_string(), "response".to_string(), None),
+                vec![name.to_string()],
+            ),
             schema_type: schema_type.clone(),
         })
         .collect();
