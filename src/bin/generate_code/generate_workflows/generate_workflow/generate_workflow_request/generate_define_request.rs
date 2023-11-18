@@ -1,6 +1,6 @@
 use codegen::Scope;
 
-use crate::generate_workflows::generate_workflow::add_variable_aliases_to_request_parameters::WorkflowPathPart;
+use crate::generate_workflows::generate_workflow::build_view_data::WorkflowPathPart;
 
 pub fn generate_define_request(
     scope: &mut Scope,

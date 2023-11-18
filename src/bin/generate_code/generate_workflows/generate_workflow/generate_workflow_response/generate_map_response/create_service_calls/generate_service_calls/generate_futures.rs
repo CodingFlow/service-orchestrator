@@ -1,9 +1,10 @@
 mod generate_signature_and_dependencies_variables;
 
-use generate_signature_and_dependencies_variables::generate_signature_and_dependencies_variables;
+use crate::generate_workflows::generate_workflow::variables::VariableAliases;
+
 use super::super::build_loopkup_map::ServiceCodeGenerationInfo;
-use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_map_response::create_service_calls::variables::VariableAliases;
 use codegen::Function;
+use generate_signature_and_dependencies_variables::generate_signature_and_dependencies_variables;
 use std::collections::BTreeMap;
 
 pub fn generate_futures(
@@ -12,7 +13,7 @@ pub fn generate_futures(
         BTreeMap<(String, String), ServiceCodeGenerationInfo>,
         Vec<((String, String), ServiceCodeGenerationInfo)>,
     ),
-    mut variable_aliases: VariableAliases,
+    variable_aliases: &mut VariableAliases,
 ) {
     function.line("let client = Client::new();");
 
@@ -21,7 +22,7 @@ pub fn generate_futures(
             service_code_generation_info,
             &generation_infos,
             function,
-            &mut variable_aliases,
+            variable_aliases,
         );
     }
 }

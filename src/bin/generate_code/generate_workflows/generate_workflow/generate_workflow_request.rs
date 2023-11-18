@@ -13,13 +13,13 @@ use generate_query_struct::generate_query_struct;
 
 use crate::generate_re_exports::{ReExports, ReExportsBehavior};
 
-use super::add_variable_aliases_to_request_parameters::WorkflowRequestSpec;
+use super::build_view_data::WorkflowRequestSpec;
 
 pub fn generate_workflow_request<'a>(
     workflow_request_spec: WorkflowRequestSpec,
     workflow_name: String,
     re_exports: &mut ReExports,
-) -> (&'a str, String) {
+) -> String {
     let mut scope = Scope::new();
 
     scope.import("warp::reject", "Rejection");
@@ -31,20 +31,21 @@ pub fn generate_workflow_request<'a>(
         method,
         query,
         path,
+        query_struct_name,
     } = workflow_request_spec;
 
-    let query_struct_name = generate_query_struct(&mut scope, query);
+    generate_query_struct(&mut scope, query, &query_struct_name);
 
-    generate_define_request(&mut scope, path.to_vec(), query_struct_name);
+    generate_define_request(&mut scope, path.to_vec(), &query_struct_name);
     generate_define_method(&mut scope, method);
     generate_define_paths(&mut scope, path.to_vec());
-    generate_define_query(&mut scope, path, query_struct_name);
+    generate_define_query(&mut scope, path, &query_struct_name);
 
     let module_name = format!("{}_workflow_request_definition", workflow_name);
 
     re_exports.add(module_name.clone(), scope.to_string());
 
-    (query_struct_name, module_name)
+    module_name
 }
 
 fn format_tuple(input: Vec<String>) -> String {

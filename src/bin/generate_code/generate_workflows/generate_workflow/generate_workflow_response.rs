@@ -15,20 +15,24 @@ use crate::{
     parse_specs::ResponseSpec,
 };
 
-use super::add_variable_aliases_to_request_parameters::WorkflowRequestSpec;
+use super::{build_view_data::WorkflowRequestSpec, variables::VariableAliases};
 
 pub fn generate_workflow_response(
     workflow_response_specs: Vec<ResponseSpec>,
     workflow_name: String,
     workflow_request_spec: WorkflowRequestSpec,
-    query_struct_name: &str,
     request_module_name: String,
     input_map: &mut InputMap,
     re_exports: &mut ReExports,
+    mut variable_aliases: VariableAliases,
 ) -> String {
     let mut scope = Scope::new();
 
-    generate_imports(&mut scope, query_struct_name, request_module_name);
+    let WorkflowRequestSpec {
+        query_struct_name, ..
+    } = workflow_request_spec.clone();
+
+    generate_imports(&mut scope, &query_struct_name, request_module_name);
 
     let status_code_struct_names = generate_response_structure(workflow_response_specs, &mut scope);
 
@@ -36,9 +40,10 @@ pub fn generate_workflow_response(
         status_code_struct_names,
         &mut scope,
         workflow_request_spec,
-        query_struct_name,
+        &query_struct_name,
         input_map,
         workflow_name.to_string(),
+        &mut variable_aliases,
     );
 
     let module_name = format!("{}_workflow_response_definition", workflow_name);

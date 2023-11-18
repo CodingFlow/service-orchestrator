@@ -1,16 +1,15 @@
 use codegen::{Field, Scope, Struct};
 
 use crate::{
-    generate_workflows::generate_workflow::add_variable_aliases_to_request_parameters::RequestParameter,
+    generate_workflows::generate_workflow::build_view_data::RequestParameter,
     parse_specs::parse_schema::to_string_schema,
 };
-
-const QUERY_STRUCT_NAME: &str = "QueryParameters";
 
 pub fn generate_query_struct(
     scope: &mut Scope,
     query_parameters: Vec<RequestParameter>,
-) -> &'static str {
+    query_struct_name: &str,
+) {
     let fields = query_parameters.iter().map(|parameter| -> Field {
         let converted_type = to_string_schema(
             parameter.schema_type,
@@ -22,7 +21,7 @@ pub fn generate_query_struct(
         )
     });
 
-    let mut new_struct = Struct::new(QUERY_STRUCT_NAME);
+    let mut new_struct = Struct::new(query_struct_name);
 
     new_struct
         .vis("pub")
@@ -34,6 +33,4 @@ pub fn generate_query_struct(
     }
 
     scope.push_struct(new_struct);
-
-    QUERY_STRUCT_NAME
 }

@@ -11,8 +11,8 @@ use parse_specs::{get_operation_specs, SpecType};
 fn main() {
     let mut re_exports = ReExports::new();
 
-    let workflow_spec_infos = get_operation_specs(SpecType::Workflow);
-    generate_workflows(workflow_spec_infos, &mut re_exports);
+    let workflow_specs = get_operation_specs(SpecType::Workflow);
+    generate_workflows(workflow_specs, &mut re_exports);
 
     re_exports.generate();
 }

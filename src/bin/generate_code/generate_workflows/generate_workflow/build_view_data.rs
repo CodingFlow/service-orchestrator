@@ -5,6 +5,8 @@ use crate::{
 use http::Method;
 use oas3::spec::SchemaType;
 
+use super::variables::VariableAliases;
+
 #[derive(Debug, Clone)]
 pub struct RequestParameters {
     pub path_parameters: Vec<RequestParameter>,
@@ -30,6 +32,7 @@ pub struct WorkflowRequestSpec {
     pub method: Method,
     pub query: Vec<RequestParameter>,
     pub path: Vec<WorkflowPathPart>,
+    pub query_struct_name: String,
 }
 
 #[derive(Debug, Clone)]
@@ -39,15 +42,10 @@ pub struct WorkflowPathPart {
     pub formatted_type: Option<String>,
 }
 
-#[derive(Debug, Clone)]
-pub enum WorkflowVariable {
-    Name(String),
-    Variable(Variable),
-}
-
-pub fn add_variable_aliases_to_request_parameters(
+pub fn build_view_data(
     operation_spec: OperationSpec,
     input_map: &mut InputMap,
+    variable_aliases: &mut VariableAliases,
 ) -> WorkflowOperationSpec {
     let OperationSpec {
         spec_name,
@@ -59,7 +57,7 @@ pub fn add_variable_aliases_to_request_parameters(
                 path,
                 ..
             },
-        response_specs: response_spec,
+        response_specs,
         ..
     } = operation_spec;
 
@@ -112,7 +110,8 @@ pub fn add_variable_aliases_to_request_parameters(
             method: method.clone(),
             query: workflow_query,
             path: workflow_path,
+            query_struct_name: variable_aliases.create_alias(),
         },
-        response_spec: response_spec.clone(),
+        response_spec: response_specs.clone(),
     }
 }

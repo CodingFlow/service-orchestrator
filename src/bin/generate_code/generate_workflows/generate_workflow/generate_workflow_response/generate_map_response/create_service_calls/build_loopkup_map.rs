@@ -1,4 +1,4 @@
-use super::variables::VariableAliases;
+use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::generate_workflows::input_map::InputMap;
 use crate::generate_workflows::input_map::{InputMapBehavior, Variable};
 use crate::parse_specs::OperationSpec;

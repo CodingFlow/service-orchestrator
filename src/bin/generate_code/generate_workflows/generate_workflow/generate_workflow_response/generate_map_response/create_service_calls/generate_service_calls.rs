@@ -1,11 +1,11 @@
 mod generate_futures;
 
+use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::generate_workflows::input_map::Variable;
 use crate::traversal::traverse_nested_node;
 use crate::traversal::NestedNode;
 
 use super::build_loopkup_map::ServiceCodeGenerationInfo;
-use super::variables::VariableAliases;
 use super::WorkflowResponseCodeGenerationInfo;
 use codegen::Function;
 use codegen::Scope;
@@ -20,7 +20,7 @@ pub fn generate_service_calls(
         Vec<((String, String), ServiceCodeGenerationInfo)>,
     ),
     workflow_response_code_generation_info: WorkflowResponseCodeGenerationInfo,
-    variable_aliases: VariableAliases,
+    variable_aliases: &mut VariableAliases,
 ) {
     generate_imports(scope);
 

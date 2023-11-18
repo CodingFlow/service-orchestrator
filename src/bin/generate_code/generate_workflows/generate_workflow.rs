@@ -1,8 +1,9 @@
-mod add_variable_aliases_to_request_parameters;
+mod build_view_data;
 mod generate_workflow_request;
 mod generate_workflow_response;
+mod variables;
 
-use add_variable_aliases_to_request_parameters::add_variable_aliases_to_request_parameters;
+use build_view_data::build_view_data;
 use generate_workflow_request::generate_workflow_request;
 use generate_workflow_response::generate_workflow_response;
 
@@ -11,6 +12,8 @@ use crate::{
     parse_specs::OperationSpec,
 };
 
+use self::variables::VariableAliases;
+
 use super::input_map::InputMap;
 
 pub fn generate_workflow(
@@ -18,10 +21,10 @@ pub fn generate_workflow(
     input_map: &mut InputMap,
     re_exports: &mut ReExports,
 ) -> WorkflowDefinitionNames {
-    let workflow_operation_spec =
-        add_variable_aliases_to_request_parameters(operation_spec, input_map);
+    let mut variable_aliases = VariableAliases::new();
+    let workflow_operation_spec = build_view_data(operation_spec, input_map, &mut variable_aliases);
 
-    let (query_struct_name, request_module_name) = generate_workflow_request(
+    let request_module_name = generate_workflow_request(
         workflow_operation_spec.request_spec.clone(),
         workflow_operation_spec.operation_id.to_string(),
         re_exports,
@@ -31,10 +34,10 @@ pub fn generate_workflow(
         workflow_operation_spec.response_spec,
         workflow_operation_spec.operation_id,
         workflow_operation_spec.request_spec,
-        query_struct_name,
         request_module_name.clone(),
         input_map,
         re_exports,
+        variable_aliases,
     );
 
     WorkflowDefinitionNames {

@@ -3,7 +3,7 @@ use codegen::Function;
 use crate::{
     generate_workflows::{
         generate_workflow::{
-            add_variable_aliases_to_request_parameters::RequestParameter,
+            build_view_data::RequestParameter,
             generate_workflow_response::generate_response_structure::ResponseWithStructName,
         },
         input_map::InputMap,

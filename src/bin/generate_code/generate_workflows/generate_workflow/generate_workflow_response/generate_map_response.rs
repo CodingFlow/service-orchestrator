@@ -5,7 +5,7 @@ mod create_service_calls;
 
 use crate::{
     generate_workflows::{
-        generate_workflow::add_variable_aliases_to_request_parameters::WorkflowRequestSpec,
+        generate_workflow::{build_view_data::WorkflowRequestSpec, variables::VariableAliases},
         input_map::InputMap,
     },
     traversal::NestedNode,
@@ -25,6 +25,7 @@ pub fn generate_map_response(
     query_struct_name: &str,
     input_map: &mut InputMap,
     workflow_name: String,
+    variable_aliases: &mut VariableAliases,
 ) {
     let map_functions: Vec<Function> = status_code_struct_names
         .iter()
@@ -36,6 +37,7 @@ pub fn generate_map_response(
                 input_map,
                 workflow_name.to_string(),
                 scope,
+                variable_aliases,
             )
         })
         .collect();
@@ -52,6 +54,7 @@ fn map_function(
     input_map: &mut InputMap,
     workflow_name: String,
     scope: &mut Scope,
+    variable_aliases: &mut VariableAliases,
 ) -> Function {
     let mut function = Function::new("map_response");
 
@@ -63,7 +66,13 @@ fn map_function(
         workflow_request_spec.query.to_vec(),
     );
 
-    create_service_calls(&mut function, input_map, workflow_name.to_string(), scope);
+    create_service_calls(
+        &mut function,
+        input_map,
+        workflow_name.to_string(),
+        scope,
+        variable_aliases,
+    );
 
     create_reply(
         &mut function,

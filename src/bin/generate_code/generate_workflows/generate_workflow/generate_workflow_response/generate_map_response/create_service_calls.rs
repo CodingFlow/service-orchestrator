@@ -1,7 +1,6 @@
 mod build_loopkup_map;
 mod generate_service_calls;
 mod generate_service_response_structs;
-mod variables;
 
 use std::{collections::BTreeMap, fs};
 
@@ -14,17 +13,21 @@ use serde_json::Value;
 use url::Url;
 
 use crate::{
-    generate_workflows::input_map::{InputMap, InputMapBehavior},
+    generate_workflows::{
+        generate_workflow::variables::VariableAliases,
+        input_map::{InputMap, InputMapBehavior},
+    },
     parse_specs::{get_operation_specs, OperationSpec, SpecType},
 };
 
-use self::{build_loopkup_map::ServiceCodeGenerationInfo, variables::VariableAliases};
+use self::build_loopkup_map::ServiceCodeGenerationInfo;
 
 pub fn create_service_calls(
     function: &mut Function,
     input_map: &mut InputMap,
     workflow_name: String,
     scope: &mut Scope,
+    variable_aliases: &mut VariableAliases,
 ) {
     let service_urls = get_service_urls();
     let operation_specs = get_operation_specs(SpecType::Service);
@@ -32,9 +35,8 @@ pub fn create_service_calls(
     let used_operation_specs =
         filter_to_used_operation_specs(workflow_name.to_string(), operation_specs, &input_map);
 
-    let mut variable_aliases = VariableAliases::new();
     let response_struct_names =
-        create_response_struct_names(used_operation_specs.iter(), &mut variable_aliases);
+        create_response_struct_names(used_operation_specs.iter(), variable_aliases);
 
     generate_service_response_structs(
         scope,
@@ -45,7 +47,7 @@ pub fn create_service_calls(
     let generation_infos = build_service_operation_lookup_map(
         used_operation_specs,
         response_struct_names,
-        &mut variable_aliases,
+        variable_aliases,
         workflow_name.to_string(),
         service_urls,
         input_map,
@@ -53,7 +55,7 @@ pub fn create_service_calls(
 
     let workflow_response_info = build_workflow_response_lookup_map(
         generation_infos.0.clone(),
-        &mut variable_aliases,
+        variable_aliases,
         workflow_name,
         input_map,
     );
