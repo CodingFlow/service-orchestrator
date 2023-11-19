@@ -2,7 +2,7 @@ mod generate_signature_and_dependencies_variables;
 
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 
-use super::super::build_loopkup_map::ServiceCodeGenerationInfo;
+use super::super::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
 use codegen::Function;
 use generate_signature_and_dependencies_variables::generate_signature_and_dependencies_variables;
 use std::collections::BTreeMap;
@@ -35,7 +35,7 @@ fn generate_future(
 ) {
     let ServiceCodeGenerationInfo {
         future_variable_name,
-        response_struct_name,
+        response_aliases,
         depending_service_names,
         request,
         service_url,
@@ -92,7 +92,10 @@ fn generate_future(
 
     function.line(".send()").line(".await").line(".unwrap()");
 
-    function.line(format!(".json::<{}>()", response_struct_name));
+    function.line(format!(
+        ".json::<{}>()",
+        response_aliases.current.variable_alias
+    ));
 
     function
         .line(".await")

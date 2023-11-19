@@ -1,10 +1,11 @@
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::generate_workflows::input_map::InputMap;
-use crate::generate_workflows::input_map::{InputMapBehavior, Variable};
+use crate::generate_workflows::input_map::InputMapBehavior;
 use crate::parse_specs::OperationSpec;
 use crate::traversal::traverse_nested_type;
 use crate::traversal::NestedNode;
 use http::Method;
+use oas3::spec::SchemaType;
 use std::collections::BTreeMap;
 use url::Url;
 
@@ -22,12 +23,27 @@ pub struct ServiceRequestPath {
 }
 
 #[derive(Debug, Clone)]
+pub enum AliasType {
+    Struct,
+    Field,
+}
+
+#[derive(Debug, Clone)]
+pub struct ServiceResponseAlias {
+    /// name of property from open api spec. Optional because top level
+    /// node does not have a name.
+    pub name: Option<String>,
+    pub variable_alias: String,
+    pub schema_type: SchemaType,
+    pub alias_type: AliasType,
+}
+
+#[derive(Debug, Clone)]
 pub struct ServiceCodeGenerationInfo {
     pub future_variable_name: String,
-    pub response_struct_name: String,
     pub enum_name: String,
     pub stream_variable_name: String,
-    pub response_aliases: NestedNode<Option<Variable>>,
+    pub response_aliases: NestedNode<ServiceResponseAlias>,
     pub depending_service_names: Vec<(String, String)>,
     pub request: ServiceRequest,
     pub service_url: Url,
@@ -35,7 +51,6 @@ pub struct ServiceCodeGenerationInfo {
 
 pub fn build_service_operation_lookup_map(
     operation_specs: Vec<OperationSpec>,
-    response_struct_names: Vec<String>,
     variable_aliases: &mut VariableAliases,
     workflow_name: String,
     service_urls: BTreeMap<String, Url>,
@@ -52,8 +67,12 @@ pub fn build_service_operation_lookup_map(
 
     let stream_variable_names = create_variable_names(iter.clone(), variable_aliases);
 
-    let response_aliases =
-        create_response_aliases(iter.clone(), input_map, workflow_name.to_string());
+    let response_aliases = create_response_aliases(
+        iter.clone(),
+        input_map,
+        variable_aliases,
+        workflow_name.to_string(),
+    );
 
     let dependencies = create_dependencies(input_map, workflow_name.to_string());
 
@@ -62,7 +81,6 @@ pub fn build_service_operation_lookup_map(
     let code_generation_infos = create_service_code_generation_infos(
         iter,
         future_variable_names,
-        response_struct_names,
         enum_names,
         stream_variable_names,
         response_aliases,
@@ -128,16 +146,14 @@ fn order_by_dependencies(
 fn create_service_code_generation_infos(
     iter: std::slice::Iter<'_, OperationSpec>,
     future_variable_names: Vec<String>,
-    response_struct_names: Vec<String>,
     enum_names: Vec<String>,
     stream_variable_names: Vec<String>,
-    response_aliases: Vec<NestedNode<Option<Variable>>>,
+    response_aliases: Vec<NestedNode<ServiceResponseAlias>>,
     dependencies: BTreeMap<String, Vec<(String, String)>>,
     requests: Vec<ServiceRequest>,
     service_urls: BTreeMap<String, Url>,
 ) -> BTreeMap<(String, String), ServiceCodeGenerationInfo> {
     let mut future_variable_names_iter = future_variable_names.iter();
-    let mut response_struct_names_iter = response_struct_names.iter();
     let mut enum_names_iter = enum_names.iter();
     let mut stream_variable_names_iter = stream_variable_names.iter();
     let mut response_aliases_iter = response_aliases.iter();
@@ -148,7 +164,6 @@ fn create_service_code_generation_infos(
 
     iter.map(|operation_spec| {
         let future_variable_name = future_variable_names_iter.next().unwrap().to_string();
-        let response_struct_name = response_struct_names_iter.next().unwrap().to_string();
         let enum_name = enum_names_iter.next().unwrap().to_string();
         let stream_variable_name = stream_variable_names_iter.next().unwrap().to_string();
         let response_aliases = response_aliases_iter.next().unwrap().clone();
@@ -163,7 +178,6 @@ fn create_service_code_generation_infos(
             ),
             ServiceCodeGenerationInfo {
                 future_variable_name,
-                response_struct_name,
                 enum_name,
                 stream_variable_name,
                 response_aliases,
@@ -241,11 +255,17 @@ fn create_dependencies(
 fn create_response_aliases(
     iter: std::slice::Iter<'_, OperationSpec>,
     input_map: &mut InputMap,
+    variable_aliases: &mut VariableAliases,
     workflow_name: String,
-) -> Vec<NestedNode<Option<Variable>>> {
+) -> Vec<NestedNode<ServiceResponseAlias>> {
     iter.clone()
         .map(|operation_spec| {
-            add_nested_response_aliases(operation_spec, input_map, workflow_name.to_string())
+            add_nested_response_aliases(
+                operation_spec,
+                input_map,
+                variable_aliases,
+                workflow_name.to_string(),
+            )
         })
         .collect()
 }
@@ -253,11 +273,14 @@ fn create_response_aliases(
 fn add_nested_response_aliases(
     operation_spec: &OperationSpec,
     input_map: &mut InputMap,
+    variable_aliases: &mut VariableAliases,
     workflow_name: String,
-) -> NestedNode<Option<Variable>> {
+) -> NestedNode<ServiceResponseAlias> {
+    // TODO: handle more than one status code
+
     traverse_nested_type(
         operation_spec.response_specs.first().unwrap().body.clone(),
-        |response_schema, (input_map, alias_accumulator, namespace)| {
+        |response_schema, (input_map, variable_aliases, alias_accumulator, namespace)| {
             if let None = response_schema.properties {
                 let mut map_to_key = alias_accumulator.to_vec();
 
@@ -265,18 +288,32 @@ fn add_nested_response_aliases(
 
                 let alias = input_map.create_variable_alias(namespace.clone(), map_to_key);
 
-                Some(alias)
+                ServiceResponseAlias {
+                    name: Some(alias.original_name),
+                    variable_alias: alias.alias,
+                    schema_type: response_schema.schema_type,
+                    alias_type: AliasType::Field,
+                }
             } else {
-                if let Some(name) = response_schema.name {
+                if let Some(name) = response_schema.name.clone() {
                     alias_accumulator.push(name);
                 }
-                None
+
+                let alias = variable_aliases.create_alias();
+
+                ServiceResponseAlias {
+                    name: response_schema.name,
+                    variable_alias: alias,
+                    schema_type: response_schema.schema_type,
+                    alias_type: AliasType::Struct,
+                }
             }
         },
-        |child_schema, _, (input_map, alias_accumulator, _)| {},
+        |child_schema, _, (input_map, variable_aliases, alias_accumulator, _)| {},
         |schema| schema.properties,
         &mut (
             input_map,
+            variable_aliases,
             vec![],
             (
                 workflow_name,

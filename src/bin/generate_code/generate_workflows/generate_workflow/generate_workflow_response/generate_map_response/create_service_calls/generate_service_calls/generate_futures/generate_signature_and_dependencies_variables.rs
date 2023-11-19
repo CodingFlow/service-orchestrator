@@ -1,8 +1,6 @@
-use super::super::super::build_loopkup_map::ServiceCodeGenerationInfo;
+use super::super::super::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
+use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_map_response::create_service_calls::generate_service_calls::generate_response_variables;
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
-use crate::generate_workflows::input_map::Variable;
-use crate::traversal::traverse_nested_node;
-use crate::traversal::NestedNode;
 use codegen::Function;
 use std::collections::BTreeMap;
 
@@ -104,7 +102,7 @@ pub fn create_future_signature_data_with_dependencies(
 pub fn generate_future_dependencies_variables(
     depending_service_and_operation_names: &Vec<(String, String)>,
     generation_infos: &BTreeMap<(String, String), ServiceCodeGenerationInfo>,
-    mut function: &mut Function,
+    function: &mut Function,
     depending_operation_aliases: Vec<String>,
 ) {
     let mut depending_operation_alias_iter = depending_operation_aliases.iter();
@@ -113,37 +111,10 @@ pub fn generate_future_dependencies_variables(
         let depending_service_code_generation_info = generation_infos
             .get(depending_service_and_operation)
             .unwrap();
-        let depending_service_struct_name =
-            &depending_service_code_generation_info.response_struct_name;
 
-        function.line(format!("let {} {{", depending_service_struct_name));
-        traverse_nested_node(
-            depending_service_code_generation_info
-                .response_aliases
-                .clone(),
-            |parent_node: NestedNode<Option<Variable>>,
-             (function, service_struct_name): &mut (&mut &mut Function, &String)| {
-                // TODO: Need to add closing curly brace for nested response objects
-                // if parent_node.children.is_some() {
-                //     function.line("},");
-                // }
-
-                if let Some(node) = parent_node.current {
-                    match parent_node.children.is_some() {
-                        true => {
-                            function.line(format!(
-                                "{}: {} {{",
-                                node.original_name, service_struct_name
-                            ));
-                        }
-                        false => {
-                            function.line(format!("{}: {},", node.original_name, node.alias));
-                        }
-                    };
-                }
-            },
-            |child_node, _, (function, service_struct_name)| {},
-            &mut (&mut function, depending_service_struct_name),
+        generate_response_variables(
+            function,
+            &depending_service_code_generation_info.response_aliases,
         );
 
         let depending_operation_alias = depending_operation_alias_iter.next().unwrap();

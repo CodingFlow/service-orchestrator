@@ -55,6 +55,7 @@ pub fn traverse_nested_node<T, R, U>(
     current: NestedNode<T>,
     action: fn(NestedNode<T>, &mut U) -> R,
     nested_action: fn(child: NestedNode<T>, parent_result: &mut R, addition_action_input: &mut U),
+    after_children_action: fn(parent_action_result: R, addition_action_input: &mut U),
     additional_action_input: &mut U,
 ) where
     T: Clone,
@@ -69,8 +70,11 @@ pub fn traverse_nested_node<T, R, U>(
                 child.clone(),
                 action,
                 nested_action,
+                after_children_action,
                 additional_action_input,
             )
         }
+
+        after_children_action(action_result, additional_action_input);
     }
 }

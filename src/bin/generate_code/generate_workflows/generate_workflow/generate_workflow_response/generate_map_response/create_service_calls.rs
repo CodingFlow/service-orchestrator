@@ -1,10 +1,11 @@
-mod build_loopkup_map;
+mod build_service_operation_lookup_map;
+mod generate_response_structs;
 mod generate_service_calls;
 mod generate_service_response_structs;
 
 use std::{collections::BTreeMap, fs};
 
-use build_loopkup_map::build_service_operation_lookup_map;
+use build_service_operation_lookup_map::build_service_operation_lookup_map;
 use codegen::{Function, Scope};
 use generate_service_calls::generate_service_calls;
 use generate_service_response_structs::generate_service_response_structs;
@@ -20,7 +21,7 @@ use crate::{
     parse_specs::{get_operation_specs, OperationSpec, SpecType},
 };
 
-use self::build_loopkup_map::ServiceCodeGenerationInfo;
+use self::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
 
 pub fn create_service_calls(
     function: &mut Function,
@@ -35,18 +36,8 @@ pub fn create_service_calls(
     let used_operation_specs =
         filter_to_used_operation_specs(workflow_name.to_string(), operation_specs, &input_map);
 
-    let response_struct_names =
-        create_response_struct_names(used_operation_specs.iter(), variable_aliases);
-
-    generate_service_response_structs(
-        scope,
-        used_operation_specs.clone(),
-        response_struct_names.to_vec(),
-    );
-
     let generation_infos = build_service_operation_lookup_map(
         used_operation_specs,
-        response_struct_names,
         variable_aliases,
         workflow_name.to_string(),
         service_urls,
@@ -59,6 +50,8 @@ pub fn create_service_calls(
         workflow_name,
         input_map,
     );
+
+    generate_service_response_structs(scope, generation_infos.1.to_vec());
 
     generate_stream_enum(scope, generation_infos.clone());
 
@@ -170,7 +163,7 @@ fn generate_stream_enum(
         .map(|(_, info)| {
             (
                 info.enum_name.to_string(),
-                info.response_struct_name.to_string(),
+                info.response_aliases.current.variable_alias.to_string(),
             )
         })
         .collect();

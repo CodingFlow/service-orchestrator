@@ -1,19 +1,23 @@
-use crate::{
-    generate_workflows::generate_workflow::generate_workflow_response::generate_response_structs,
-    parse_specs::{OperationSpec, ResponseSpec},
-};
+use crate::traversal::NestedNode;
 use codegen::Scope;
 use generate_response_structs::generate_response_structs;
 
+use super::{
+    build_service_operation_lookup_map::{ServiceCodeGenerationInfo, ServiceResponseAlias},
+    generate_response_structs,
+};
+
 pub fn generate_service_response_structs(
     scope: &mut Scope,
-    operation_specs: Vec<OperationSpec>,
-    struct_names: Vec<String>,
+    generation_infos_with_ids: Vec<(
+        (std::string::String, std::string::String),
+        ServiceCodeGenerationInfo,
+    )>,
 ) {
-    let response_specs: Vec<Vec<ResponseSpec>> = operation_specs
+    let response_specs: Vec<NestedNode<ServiceResponseAlias>> = generation_infos_with_ids
         .iter()
-        .map(|operation_spec| operation_spec.response_specs.clone())
+        .map(|(_, info)| info.response_aliases.clone())
         .collect();
 
-    generate_response_structs(struct_names, response_specs, scope);
+    generate_response_structs(response_specs, scope);
 }

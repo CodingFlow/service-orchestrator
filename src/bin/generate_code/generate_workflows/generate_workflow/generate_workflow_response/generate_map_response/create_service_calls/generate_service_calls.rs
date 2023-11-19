@@ -1,11 +1,11 @@
 mod generate_futures;
 
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
-use crate::generate_workflows::input_map::Variable;
 use crate::traversal::traverse_nested_node;
 use crate::traversal::NestedNode;
 
-use super::build_loopkup_map::ServiceCodeGenerationInfo;
+use super::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
+use super::build_service_operation_lookup_map::ServiceResponseAlias;
 use super::WorkflowResponseCodeGenerationInfo;
 use codegen::Function;
 use codegen::Scope;
@@ -62,45 +62,55 @@ fn generate_response_handling(
 
     for dependency_info in &workflow_response_code_generation_info.dependency_infos {
         let ServiceCodeGenerationInfo {
-            response_struct_name,
-            response_aliases,
-            ..
+            response_aliases, ..
         } = &dependency_info.service_operation_dependency;
 
-        function.line(format!("let {} {{", response_struct_name,));
-
-        traverse_nested_node(
-            response_aliases.clone(),
-            |parent_node: NestedNode<Option<Variable>>,
-             (function, service_struct_name): &mut (&mut &mut Function, &String)| {
-                // TODO: Need to add closing curly brace for nested response objects
-                // if parent_node.children.is_some() {
-                //     function.line("},");
-                // }
-
-                if let Some(node) = parent_node.current {
-                    match parent_node.children.is_some() {
-                        true => {
-                            function.line(format!(
-                                "{}: {} {{",
-                                node.original_name, service_struct_name
-                            ));
-                        }
-                        false => {
-                            function.line(format!("{}: {},", node.original_name, node.alias));
-                        }
-                    };
-                }
-            },
-            |child_node, _, (function, service_struct_name)| {},
-            &mut (&mut function, response_struct_name),
-        );
+        generate_response_variables(function, response_aliases);
 
         function.line(format!(
             "}} = {}.unwrap();",
             dependency_info.result_destructure_variable_name
         ));
     }
+}
+
+pub fn generate_response_variables(
+    mut function: &mut Function,
+    response_aliases: &NestedNode<ServiceResponseAlias>,
+) {
+    function.line(format!(
+        "let {} {{",
+        response_aliases.current.variable_alias
+    ));
+
+    traverse_nested_node(
+        response_aliases.clone(),
+        |parent_node: NestedNode<ServiceResponseAlias>, function: &mut &mut Function| {
+            if let Some(_) = parent_node.current.name {
+                match parent_node.children.is_some() {
+                    true => {
+                        function.line(format!(
+                            "{}: {} {{",
+                            parent_node.current.name.unwrap(),
+                            parent_node.current.variable_alias
+                        ));
+                    }
+                    false => {
+                        function.line(format!(
+                            "{}: {},",
+                            parent_node.current.name.unwrap(),
+                            parent_node.current.variable_alias
+                        ));
+                    }
+                };
+            }
+        },
+        |child_node, _, function| {},
+        |_, function| {
+            function.line("},");
+        },
+        &mut function,
+    );
 }
 
 fn generate_streams(
