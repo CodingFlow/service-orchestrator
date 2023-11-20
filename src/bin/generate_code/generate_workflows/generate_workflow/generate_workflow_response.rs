@@ -1,7 +1,6 @@
 mod generate_imports;
 mod generate_map_response;
 mod generate_response_structs;
-mod generate_response_structure;
 
 use super::{
     build_service_call_view_data::{

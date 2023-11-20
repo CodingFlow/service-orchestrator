@@ -234,13 +234,6 @@ impl InputMapBehavior for InputMap {
     }
 }
 
-fn is_service(namespaced_name: String) -> bool {
-    let mut split = namespaced_name.split('/');
-    let service_name = split.nth(2).unwrap();
-
-    service_name != "response"
-}
-
 fn is_service_from_services(name: String, service_names: Vec<String>) -> bool {
     let first_part = name.split("/").nth(0).unwrap();
     service_names.contains(&first_part.to_string())
