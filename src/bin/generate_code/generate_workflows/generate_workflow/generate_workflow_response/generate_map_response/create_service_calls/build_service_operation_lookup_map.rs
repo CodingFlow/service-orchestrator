@@ -122,13 +122,11 @@ fn order_by_dependencies(
         for (index, (_, info)) in cloned_vector {
             let depending_services = &info.depending_service_names;
             let misplaced_depending_service_index =
-                iter.clone()
-                    .take(index)
-                    .position(|(service_operation, above_info)| {
-                        depending_services
-                            .iter()
-                            .any(|service| service == service_operation)
-                    });
+                iter.clone().take(index).position(|(service_operation, _)| {
+                    depending_services
+                        .iter()
+                        .any(|service| service == service_operation)
+                });
 
             if let Some(misplaced_index) = misplaced_depending_service_index {
                 let misplaced_service = vector.remove(misplaced_index);
@@ -157,9 +155,7 @@ fn create_service_code_generation_infos(
     let mut enum_names_iter = enum_names.iter();
     let mut stream_variable_names_iter = stream_variable_names.iter();
     let mut response_aliases_iter = response_aliases.iter();
-    let mut dependencies_iter = dependencies
-        .iter()
-        .map(|(service_name, dependencies)| dependencies);
+    let mut dependencies_iter = dependencies.iter().map(|(_, dependencies)| dependencies);
     let mut requests_iter = requests.iter();
 
     iter.map(|operation_spec| {
@@ -309,8 +305,11 @@ fn add_nested_response_aliases(
                 }
             }
         },
-        |child_schema, _, (input_map, variable_aliases, alias_accumulator, _)| {},
+        |_, _, _| {},
         |schema| schema.properties,
+        |_, (_, _, alias_accumulator, _)| {
+            alias_accumulator.pop();
+        },
         &mut (
             input_map,
             variable_aliases,

@@ -71,6 +71,7 @@ impl InputMapBehavior for InputMap {
                     ),
                     false => None,
                 },
+                |_, _| {},
                 &mut dependencies_properties,
             );
         }
@@ -145,6 +146,7 @@ impl InputMapBehavior for InputMap {
                     ),
                     false => None,
                 },
+                |_, _| {},
                 &mut (&mut service_property_names, &service_names),
             );
 
@@ -154,7 +156,7 @@ impl InputMapBehavior for InputMap {
         all_service_property_names
             .into_iter()
             .map(|(service_name, property_names)| {
-                let dependent_service_names: Vec<(String, String)> = property_names
+                let mut dependent_service_names: Vec<(String, String)> = property_names
                     .iter()
                     .map(|name| {
                         let split = &mut name.split("/");
@@ -164,6 +166,9 @@ impl InputMapBehavior for InputMap {
                         )
                     })
                     .collect();
+
+                dependent_service_names.sort_unstable();
+                dependent_service_names.dedup();
 
                 (service_name, dependent_service_names)
             })
@@ -185,13 +190,8 @@ impl InputMapBehavior for InputMap {
 
         let map_pointer = format!("{}{}", namespace, map_to_key.join("/"));
 
-        let name = match is_service(map_pointer.clone()) {
-            true => map_pointer.split("/").skip(4).collect(),
-            false => map_pointer.split("/").skip(3).collect(),
-        };
-
         Variable {
-            original_name: name,
+            original_name: map_to_key.last().unwrap().to_string(),
             alias: self.create_alias(map_pointer),
         }
     }

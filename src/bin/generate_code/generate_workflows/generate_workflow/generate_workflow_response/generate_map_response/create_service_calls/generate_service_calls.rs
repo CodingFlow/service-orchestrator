@@ -32,7 +32,7 @@ pub fn generate_service_calls(
 }
 
 fn generate_response_handling(
-    mut function: &mut Function,
+    function: &mut Function,
     workflow_response_code_generation_info: WorkflowResponseCodeGenerationInfo,
 ) {
     function.line("tokio::pin!(merged);");
@@ -68,7 +68,7 @@ fn generate_response_handling(
         generate_response_variables(function, response_aliases);
 
         function.line(format!(
-            "}} = {}.unwrap();",
+            "= {}.unwrap();",
             dependency_info.result_destructure_variable_name
         ));
     }
@@ -86,28 +86,35 @@ pub fn generate_response_variables(
     traverse_nested_node(
         response_aliases.clone(),
         |parent_node: NestedNode<ServiceResponseAlias>, function: &mut &mut Function| {
-            if let Some(_) = parent_node.current.name {
-                match parent_node.children.is_some() {
+            if let Some(_) = parent_node.current.name.clone() {
+                let line = match parent_node.children.is_some() {
                     true => {
-                        function.line(format!(
+                        format!(
                             "{}: {} {{",
-                            parent_node.current.name.unwrap(),
+                            parent_node.current.name.clone().unwrap(),
                             parent_node.current.variable_alias
-                        ));
+                        )
                     }
                     false => {
-                        function.line(format!(
+                        format!(
                             "{}: {},",
-                            parent_node.current.name.unwrap(),
+                            parent_node.current.name.clone().unwrap(),
                             parent_node.current.variable_alias
-                        ));
+                        )
                     }
                 };
+
+                function.line(line);
             }
+
+            parent_node.current.name
         },
-        |child_node, _, function| {},
-        |_, function| {
-            function.line("},");
+        |_, _, _| {},
+        |node_name, function| {
+            match node_name {
+                Some(_) => function.line("},"),
+                None => function.line("}"), // only for top level
+            };
         },
         &mut function,
     );

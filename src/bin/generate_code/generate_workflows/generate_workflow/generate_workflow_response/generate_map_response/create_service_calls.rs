@@ -153,7 +153,7 @@ fn create_variable_names(
 
 fn generate_stream_enum(
     scope: &mut Scope,
-    (generation_infos_with_id, ordered_generation_infos_with_id): (
+    (_, ordered_generation_infos_with_id): (
         BTreeMap<(std::string::String, std::string::String), ServiceCodeGenerationInfo>,
         Vec<((String, String), ServiceCodeGenerationInfo)>,
     ),
@@ -175,15 +175,6 @@ fn generate_stream_enum(
 
         variant.tuple(&format!("Result<{}, StatusCode>", response_struct_name));
     }
-}
-
-fn create_response_struct_names(
-    iter: std::slice::Iter<'_, OperationSpec>,
-    variable_aliases: &mut VariableAliases,
-) -> Vec<String> {
-    iter.clone()
-        .map(|_| variable_aliases.create_alias())
-        .collect()
 }
 
 fn filter_to_used_operation_specs(

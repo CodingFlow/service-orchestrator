@@ -119,6 +119,6 @@ pub fn generate_future_dependencies_variables(
 
         let depending_operation_alias = depending_operation_alias_iter.next().unwrap();
 
-        function.line(format!("}} = {}.unwrap();", depending_operation_alias));
+        function.line(format!("= {}.unwrap();", depending_operation_alias));
     }
 }

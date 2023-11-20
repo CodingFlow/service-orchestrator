@@ -11,6 +11,7 @@ pub fn traverse_nested_type<T, R, U>(
     action: fn(T, &mut U) -> R,
     nested_action: fn(child: T, parent_result: &mut R, &mut U),
     nested_reference: fn(current: T) -> Option<Vec<T>>,
+    after_children_action: fn(parent_action_result: &mut R, addition_action_input: &mut U),
     additional_action_input: &mut U,
 ) -> NestedNode<R>
 where
@@ -32,11 +33,14 @@ where
                 action,
                 nested_action,
                 nested_reference,
+                after_children_action,
                 additional_action_input,
             );
 
             result.push(child_result);
         }
+
+        after_children_action(&mut action_result, additional_action_input);
 
         nested_results = match result.len().gt(&0) {
             true => Some(result),

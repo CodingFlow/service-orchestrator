@@ -33,6 +33,7 @@ pub fn generate_response_structure(
             |current_node| -> Option<Vec<NestedNode<(ResponseWithStructName, Option<Struct>)>>> {
                 current_node.children
             },
+            |_, _| {},
             &mut *scope,
         );
     }
@@ -52,6 +53,7 @@ pub fn generate_response_structure(
                     |current_node| -> Option<Vec<NestedNode<(ResponseWithStructName, Option<Struct>)>>> {
                         current_node.children
                     },
+                    |_, _| {},
                     &mut (),
                 );
 
@@ -75,6 +77,7 @@ fn nested_process(
         process_parent,
         process_child,
         get_children,
+        |_, _| {},
         &mut (),
     );
 

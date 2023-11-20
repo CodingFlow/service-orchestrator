@@ -1,11 +1,10 @@
+use super::build_service_operation_lookup_map::ServiceResponseAlias;
 use crate::parse_specs::parse_schema::to_string_schema;
 use crate::traversal::traverse_nested_node;
 use crate::traversal::NestedNode;
 use codegen::Field;
 use codegen::Scope;
 use codegen::Struct;
-
-use super::build_service_operation_lookup_map::ServiceResponseAlias;
 
 pub fn generate_response_structs(
     response_specs: Vec<NestedNode<ServiceResponseAlias>>,
@@ -79,7 +78,10 @@ fn process_child<'a>(
     if let Some(parent_struct) = parent_struct {
         let field = Field::new(
             &child_node.current.name.clone().unwrap(),
-            to_string_schema(child_node.current.schema_type, None),
+            to_string_schema(
+                child_node.current.schema_type,
+                Some(child_node.current.variable_alias),
+            ),
         );
 
         parent_struct.push_field(field.clone());
