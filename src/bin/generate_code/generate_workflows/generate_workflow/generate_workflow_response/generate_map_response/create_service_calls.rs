@@ -1,7 +1,6 @@
 mod build_service_operation_lookup_map;
 mod build_workflow_response_lookup_map;
 mod filter_to_used_operation_specs;
-mod generate_response_structs;
 mod generate_service_calls;
 mod generate_service_response_structs;
 mod generate_stream_enum;

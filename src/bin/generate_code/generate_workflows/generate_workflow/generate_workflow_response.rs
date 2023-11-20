@@ -1,24 +1,24 @@
+mod create_response_aliases;
+mod create_workflow_response_aliases;
 mod generate_imports;
 mod generate_map_response;
+mod generate_response_structs;
 mod generate_response_structure;
 mod generate_response_variables;
 
-use codegen::Scope;
-
-use generate_imports::generate_imports;
-use generate_map_response::generate_map_response;
-use generate_response_structure::generate_response_structure;
-
+use super::{build_view_data::WorkflowRequestSpec, variables::VariableAliases};
 use crate::{
     generate_re_exports::{ReExports, ReExportsBehavior},
     generate_workflows::input_map::InputMap,
-    parse_specs::ResponseSpec,
+    parse_specs::OperationSpec,
 };
-
-use super::{build_view_data::WorkflowRequestSpec, variables::VariableAliases};
+use codegen::Scope;
+use create_workflow_response_aliases::create_workflow_response_aliases;
+use generate_imports::generate_imports;
+use generate_map_response::generate_map_response;
 
 pub fn generate_workflow_response(
-    workflow_response_specs: Vec<ResponseSpec>,
+    workflow_spec: OperationSpec,
     workflow_name: String,
     workflow_request_spec: WorkflowRequestSpec,
     request_module_name: String,
@@ -34,10 +34,8 @@ pub fn generate_workflow_response(
 
     generate_imports(&mut scope, &query_struct_name, request_module_name);
 
-    let status_code_struct_names = generate_response_structure(workflow_response_specs, &mut scope);
-
     generate_map_response(
-        status_code_struct_names,
+        workflow_spec,
         &mut scope,
         workflow_request_spec,
         &query_struct_name,

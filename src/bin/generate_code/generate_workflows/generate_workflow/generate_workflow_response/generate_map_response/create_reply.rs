@@ -1,16 +1,12 @@
-mod create_response_field_object;
-mod create_response_field_primitive;
-
 use codegen::Function;
-use create_response_field_object::create_response_field_object;
-use create_response_field_primitive::create_response_field_primitive;
-use oas3::spec::SchemaType;
 
 use crate::{
     generate_workflows::{
         generate_workflow::{
             build_view_data::RequestParameter,
-            generate_workflow_response::generate_response_structure::ResponseWithStructName,
+            generate_workflow_response::generate_response_variables::{
+                generate_response_variables, ServiceResponseAlias,
+            },
         },
         input_map::InputMap,
     },
@@ -19,73 +15,20 @@ use crate::{
 
 pub fn create_reply(
     function: &mut Function,
-    status_code_struct_name_node: (String, NestedNode<ResponseWithStructName>),
-    query_parameters: Vec<RequestParameter>,
-    input_map: &InputMap,
-    workflow_name: String,
+    response_aliases: Vec<NestedNode<ServiceResponseAlias>>,
 ) {
-    let (_, response_node) = status_code_struct_name_node.clone();
+    // TODO: handle more than one status code
+    let response_alias = response_aliases.first().unwrap();
 
-    function.line(format!(
-        "Ok(reply::json(&{} {{",
-        response_node.current.struct_name.unwrap() // Top level node always has a struct so can unwrap safely.
-    ));
+    function.line("Ok(reply::json(&");
 
-    create_properties(
-        status_code_struct_name_node,
-        function,
-        query_parameters,
-        input_map,
-        workflow_name,
-    );
+    create_properties(response_alias.clone(), function);
 
-    function.line("}))");
+    function.line("))");
 }
 
-fn create_properties(
-    status_code_struct_name_node: (String, NestedNode<ResponseWithStructName>),
-    function: &mut Function,
-    query_parameters: Vec<RequestParameter>,
-    input_map: &InputMap,
-    workflow_name: String,
-) {
+fn create_properties(response_alias: NestedNode<ServiceResponseAlias>, function: &mut Function) {
     // TODO: Handle different status codes.
 
-    let (status_code, struct_name_node) = status_code_struct_name_node;
-
-    // TODO: Update [traverse_nested_type] and use it. Need to support after children action and output from child action.
-    for response_property in struct_name_node.children.unwrap() {
-        create_response_field(
-            function,
-            response_property,
-            query_parameters.to_vec(),
-            input_map,
-            format!("/{}/response", workflow_name),
-        );
-    }
-}
-
-fn create_response_field(
-    function: &mut Function,
-    struct_name_node: NestedNode<ResponseWithStructName>,
-    query_parameters: Vec<RequestParameter>,
-    input_map: &InputMap,
-    map_pointer: String,
-) {
-    match struct_name_node.current.schema.schema_type {
-        SchemaType::Array => todo!(),
-        SchemaType::Object => create_response_field_object(
-            function,
-            struct_name_node,
-            query_parameters,
-            input_map,
-            map_pointer,
-        ),
-        _ => create_response_field_primitive(
-            function,
-            struct_name_node.current.schema,
-            input_map,
-            map_pointer,
-        ),
-    }
+    generate_response_variables(function, &response_alias);
 }

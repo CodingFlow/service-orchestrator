@@ -22,7 +22,8 @@ pub fn generate_workflow(
     re_exports: &mut ReExports,
 ) -> WorkflowDefinitionNames {
     let mut variable_aliases = VariableAliases::new();
-    let workflow_operation_spec = build_view_data(operation_spec, input_map, &mut variable_aliases);
+    let workflow_operation_spec =
+        build_view_data(operation_spec.clone(), input_map, &mut variable_aliases);
 
     let request_module_name = generate_workflow_request(
         workflow_operation_spec.request_spec.clone(),
@@ -31,7 +32,7 @@ pub fn generate_workflow(
     );
 
     let response_module_name = generate_workflow_response(
-        workflow_operation_spec.response_spec,
+        operation_spec,
         workflow_operation_spec.operation_id,
         workflow_operation_spec.request_spec,
         request_module_name.clone(),
