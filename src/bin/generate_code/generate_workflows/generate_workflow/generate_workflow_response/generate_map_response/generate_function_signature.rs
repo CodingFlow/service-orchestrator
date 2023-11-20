@@ -2,7 +2,7 @@ use codegen::Function;
 
 use crate::generate_workflows::generate_workflow::build_view_data::WorkflowPathPart;
 
-pub fn create_function_signature(
+pub fn generate_function_signature(
     function: &mut Function,
     path_parts: Vec<WorkflowPathPart>,
     query_struct_name: &str,

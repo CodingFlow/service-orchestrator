@@ -1,5 +1,5 @@
-mod create_function_signature;
 mod create_service_calls;
+mod generate_function_signature;
 mod generate_query_destructure;
 mod generate_reply;
 
@@ -11,8 +11,8 @@ use crate::{
     parse_specs::OperationSpec,
 };
 use codegen::{Function, Scope};
-use create_function_signature::create_function_signature;
 use create_service_calls::create_service_calls;
+use generate_function_signature::generate_function_signature;
 use generate_query_destructure::generate_query_destructure;
 use generate_reply::generate_reply;
 
@@ -54,7 +54,7 @@ fn map_function(
 ) -> Function {
     let mut function = Function::new("map_response");
 
-    create_function_signature(&mut function, workflow_request_spec.path, query_struct_name);
+    generate_function_signature(&mut function, workflow_request_spec.path, query_struct_name);
 
     generate_query_destructure(
         &mut function,
