@@ -1,6 +1,6 @@
 mod create_function_signature;
-mod create_query_destructure;
 mod create_service_calls;
+mod generate_query_destructure;
 mod generate_reply;
 
 use crate::{
@@ -12,8 +12,8 @@ use crate::{
 };
 use codegen::{Function, Scope};
 use create_function_signature::create_function_signature;
-use create_query_destructure::create_query_destructure;
 use create_service_calls::create_service_calls;
+use generate_query_destructure::generate_query_destructure;
 use generate_reply::generate_reply;
 
 use super::{
@@ -56,7 +56,7 @@ fn map_function(
 
     create_function_signature(&mut function, workflow_request_spec.path, query_struct_name);
 
-    create_query_destructure(
+    generate_query_destructure(
         &mut function,
         query_struct_name,
         workflow_request_spec.query.to_vec(),

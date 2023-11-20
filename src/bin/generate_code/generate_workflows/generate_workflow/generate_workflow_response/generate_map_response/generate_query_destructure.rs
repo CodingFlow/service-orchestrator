@@ -3,7 +3,7 @@ use oas3::spec::SchemaType;
 
 use crate::generate_workflows::generate_workflow::build_view_data::RequestParameter;
 
-pub fn create_query_destructure(
+pub fn generate_query_destructure(
     function: &mut Function,
     query_struct_name: &str,
     query_parameters: Vec<RequestParameter>,
