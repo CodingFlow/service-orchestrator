@@ -1,56 +1,52 @@
-mod create_service_calls;
 mod generate_function_signature;
 mod generate_query_destructure;
 mod generate_reply;
+mod generate_service_calls;
 
+use super::generate_response_structs::generate_response_structs;
 use crate::{
-    generate_workflows::{
-        generate_workflow::{build_view_data::WorkflowRequestSpec, variables::VariableAliases},
-        input_map::InputMap,
+    generate_workflows::generate_workflow::{
+        build_service_call_view_data::{
+            generate_response_variables::ServiceResponseAlias, ServiceCallGenerationInfo,
+        },
+        build_view_data::WorkflowRequestSpec,
+        variables::VariableAliases,
     },
-    parse_specs::OperationSpec,
+    traversal::NestedNode,
 };
 use codegen::{Function, Scope};
-use create_service_calls::create_service_calls;
 use generate_function_signature::generate_function_signature;
 use generate_query_destructure::generate_query_destructure;
 use generate_reply::generate_reply;
-
-use super::{
-    create_workflow_response_aliases::create_workflow_response_aliases,
-    generate_response_structs::generate_response_structs,
-};
+use generate_service_calls::generate_service_calls;
 
 pub fn generate_map_response(
-    workflow_spec: OperationSpec,
     scope: &mut Scope,
     workflow_request_spec: WorkflowRequestSpec,
     query_struct_name: &str,
-    input_map: &mut InputMap,
-    workflow_name: String,
     variable_aliases: &mut VariableAliases,
+    service_call_view_data: ServiceCallGenerationInfo,
+    response_aliases: Vec<NestedNode<ServiceResponseAlias>>,
 ) {
     let function = map_function(
-        workflow_spec,
         workflow_request_spec.clone(),
         query_struct_name,
-        input_map,
-        workflow_name.to_string(),
         scope,
         variable_aliases,
+        service_call_view_data,
+        response_aliases,
     );
 
     scope.push_fn(function);
 }
 
 fn map_function(
-    workflow_spec: OperationSpec,
     workflow_request_spec: WorkflowRequestSpec,
     query_struct_name: &str,
-    input_map: &mut InputMap,
-    workflow_name: String,
     scope: &mut Scope,
-    mut variable_aliases: &mut VariableAliases,
+    variable_aliases: &mut VariableAliases,
+    service_call_view_data: ServiceCallGenerationInfo,
+    response_aliases: Vec<NestedNode<ServiceResponseAlias>>,
 ) -> Function {
     let mut function = Function::new("map_response");
 
@@ -62,19 +58,11 @@ fn map_function(
         workflow_request_spec.query.to_vec(),
     );
 
-    create_service_calls(
+    generate_service_calls(
         &mut function,
-        input_map,
-        workflow_name.to_string(),
         scope,
         variable_aliases,
-    );
-
-    let response_aliases = create_workflow_response_aliases(
-        vec![workflow_spec].iter(),
-        input_map,
-        &mut variable_aliases,
-        workflow_name.to_string(),
+        service_call_view_data,
     );
 
     generate_response_structs(response_aliases.to_vec(), scope);

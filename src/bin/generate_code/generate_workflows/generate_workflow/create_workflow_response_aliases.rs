@@ -1,10 +1,9 @@
-use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_response_variables::AliasType;
-use crate::traversal::traverse_nested_type;
-use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_response_variables::ServiceResponseAlias;
-use crate::traversal::NestedNode;
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::{ServiceResponseAlias, AliasType};
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::generate_workflows::input_map::{InputMap, InputMapBehavior};
 use crate::parse_specs::OperationSpec;
+use crate::traversal::traverse_nested_type;
+use crate::traversal::NestedNode;
 
 pub fn create_workflow_response_aliases(
     iter: std::slice::Iter<'_, OperationSpec>,

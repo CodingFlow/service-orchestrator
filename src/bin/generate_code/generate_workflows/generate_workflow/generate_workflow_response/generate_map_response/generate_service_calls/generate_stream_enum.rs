@@ -1,14 +1,10 @@
 use codegen::Scope;
-use std::collections::BTreeMap;
 
-use super::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
 
 pub fn generate_stream_enum(
     scope: &mut Scope,
-    (_, ordered_generation_infos_with_id): (
-        BTreeMap<(std::string::String, std::string::String), ServiceCodeGenerationInfo>,
-        Vec<((String, String), ServiceCodeGenerationInfo)>,
-    ),
+    ordered_generation_infos_with_id: Vec<((String, String), ServiceCodeGenerationInfo)>,
 ) {
     let struct_names_and_enums: Vec<(String, String)> = ordered_generation_infos_with_id
         .iter()

@@ -1,11 +1,6 @@
 use codegen::Function;
 
-use crate::{
-    generate_workflows::generate_workflow::generate_workflow_response::generate_response_variables::{
-                generate_response_variables, ServiceResponseAlias,
-            },
-    traversal::NestedNode,
-};
+use crate::{generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::{ServiceResponseAlias, generate_response_variables}, traversal::NestedNode};
 
 pub fn generate_reply(
     function: &mut Function,

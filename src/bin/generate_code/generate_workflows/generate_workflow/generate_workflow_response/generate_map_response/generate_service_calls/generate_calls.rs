@@ -3,10 +3,10 @@ mod generate_imports;
 mod generate_response_handling;
 mod generate_streams;
 
-use super::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
-use super::build_workflow_response_lookup_map::WorkflowResponseCodeGenerationInfo;
-use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_response_variables::ServiceResponseAlias;
-use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_response_variables::generate_response_variables;
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::build_workflow_response_lookup_map::WorkflowResponseCodeGenerationInfo;
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::ServiceResponseAlias;
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::generate_response_variables;
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::traversal::NestedNode;
 use codegen::Function;
@@ -17,7 +17,7 @@ use generate_response_handling::generate_response_handling;
 use generate_streams::generate_streams;
 use std::collections::BTreeMap;
 
-pub fn generate_service_calls(
+pub fn generate_calls(
     scope: &mut Scope,
     function: &mut Function,
     generation_infos: (

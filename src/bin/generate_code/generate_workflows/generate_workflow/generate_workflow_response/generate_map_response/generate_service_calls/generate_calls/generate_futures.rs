@@ -1,8 +1,10 @@
 mod generate_signature_and_dependencies_variables;
 
-use crate::generate_workflows::generate_workflow::variables::VariableAliases;
+use crate::generate_workflows::generate_workflow::{
+    build_service_call_view_data::build_service_operation_lookup_map::ServiceCodeGenerationInfo,
+    variables::VariableAliases,
+};
 
-use super::super::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
 use codegen::Function;
 use generate_signature_and_dependencies_variables::generate_signature_and_dependencies_variables;
 use std::collections::BTreeMap;

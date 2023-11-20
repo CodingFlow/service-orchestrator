@@ -1,30 +1,31 @@
-mod create_response_aliases;
-mod create_workflow_response_aliases;
 mod generate_imports;
 mod generate_map_response;
 mod generate_response_structs;
 mod generate_response_structure;
-mod generate_response_variables;
 
-use super::{build_view_data::WorkflowRequestSpec, variables::VariableAliases};
+use super::{
+    build_service_call_view_data::{
+        generate_response_variables::ServiceResponseAlias, ServiceCallGenerationInfo,
+    },
+    build_view_data::WorkflowRequestSpec,
+    variables::VariableAliases,
+};
 use crate::{
     generate_re_exports::{ReExports, ReExportsBehavior},
-    generate_workflows::input_map::InputMap,
-    parse_specs::OperationSpec,
+    traversal::NestedNode,
 };
 use codegen::Scope;
-use create_workflow_response_aliases::create_workflow_response_aliases;
 use generate_imports::generate_imports;
 use generate_map_response::generate_map_response;
 
 pub fn generate_workflow_response(
-    workflow_spec: OperationSpec,
     workflow_name: String,
     workflow_request_spec: WorkflowRequestSpec,
     request_module_name: String,
-    input_map: &mut InputMap,
     re_exports: &mut ReExports,
     mut variable_aliases: VariableAliases,
+    service_call_view_data: ServiceCallGenerationInfo,
+    response_aliases: Vec<NestedNode<ServiceResponseAlias>>,
 ) -> String {
     let mut scope = Scope::new();
 
@@ -35,13 +36,12 @@ pub fn generate_workflow_response(
     generate_imports(&mut scope, &query_struct_name, request_module_name);
 
     generate_map_response(
-        workflow_spec,
         &mut scope,
         workflow_request_spec,
         &query_struct_name,
-        input_map,
-        workflow_name.to_string(),
         &mut variable_aliases,
+        service_call_view_data,
+        response_aliases,
     );
 
     let module_name = format!("{}_workflow_response_definition", workflow_name);

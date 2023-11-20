@@ -1,5 +1,5 @@
-use super::super::super::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
-use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_map_response::create_service_calls::generate_service_calls::generate_response_variables_assigned;
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
+use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_map_response::generate_service_calls::generate_calls::generate_response_variables_assigned;
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use codegen::Function;
 use std::collections::BTreeMap;

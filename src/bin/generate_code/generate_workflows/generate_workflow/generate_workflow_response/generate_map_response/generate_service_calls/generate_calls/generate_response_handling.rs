@@ -1,5 +1,8 @@
-use super::super::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
-use super::super::build_workflow_response_lookup_map::WorkflowResponseCodeGenerationInfo;
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::{
+    build_service_operation_lookup_map::ServiceCodeGenerationInfo,
+    build_workflow_response_lookup_map::WorkflowResponseCodeGenerationInfo,
+};
+
 use super::generate_response_variables_assigned;
 use codegen::Function;
 

@@ -1,5 +1,3 @@
-use crate::generate_workflows::generate_workflow::generate_workflow_response::create_response_aliases::create_response_aliases;
-use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_response_variables::ServiceResponseAlias;
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::generate_workflows::input_map::InputMap;
 use crate::generate_workflows::input_map::InputMapBehavior;
@@ -8,6 +6,9 @@ use crate::traversal::NestedNode;
 use http::Method;
 use std::collections::BTreeMap;
 use url::Url;
+
+use super::create_response_aliases::create_response_aliases;
+use super::generate_response_variables::ServiceResponseAlias;
 
 #[derive(Debug, Clone)]
 pub struct ServiceRequest {
