@@ -1,8 +1,7 @@
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::generate_workflows::input_map::{InputMap, InputMapBehavior};
 use crate::parse_specs::OperationSpec;
-use crate::traversal::traverse_nested_type;
-use crate::traversal::NestedNode;
+use crate::traversal::{map_nested_node, NestedNode};
 
 use super::generate_response_variables::{AliasType, ServiceResponseAlias};
 
@@ -32,39 +31,37 @@ fn add_nested_response_aliases(
 ) -> NestedNode<ServiceResponseAlias> {
     // TODO: handle more than one status code
 
-    traverse_nested_type(
+    map_nested_node(
         operation_spec.response_specs.first().unwrap().body.clone(),
-        |response_schema, (input_map, variable_aliases, alias_accumulator, namespace)| {
-            if let None = response_schema.properties {
+        |parent_schema_node, (input_map, variable_aliases, alias_accumulator, namespace)| {
+            if let None = parent_schema_node.children {
                 let mut map_to_key = alias_accumulator.to_vec();
 
-                map_to_key.push(response_schema.name.unwrap());
+                map_to_key.push(parent_schema_node.current.name.unwrap());
 
                 let alias = input_map.create_variable_alias(namespace.clone(), map_to_key);
 
                 ServiceResponseAlias {
                     name: Some(alias.original_name),
                     variable_alias: alias.alias,
-                    schema_type: response_schema.schema_type,
+                    schema_type: parent_schema_node.current.schema_type,
                     alias_type: AliasType::Field,
                 }
             } else {
-                if let Some(name) = response_schema.name.clone() {
+                if let Some(name) = parent_schema_node.current.name.clone() {
                     alias_accumulator.push(name);
                 }
 
                 let alias = variable_aliases.create_alias();
 
                 ServiceResponseAlias {
-                    name: response_schema.name,
+                    name: parent_schema_node.current.name,
                     variable_alias: alias,
-                    schema_type: response_schema.schema_type,
+                    schema_type: parent_schema_node.current.schema_type,
                     alias_type: AliasType::Struct,
                 }
             }
         },
-        |_, _, _| {},
-        |schema| schema.properties,
         |_, (_, _, alias_accumulator, _)| {
             alias_accumulator.pop();
         },

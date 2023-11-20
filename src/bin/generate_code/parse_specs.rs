@@ -12,6 +12,8 @@ use oas3::{
 
 use parse_schema::parse_schema;
 
+use crate::traversal::NestedNode;
+
 use self::parse_schema::ParsedSchema;
 
 #[derive(Debug, Clone)]
@@ -49,7 +51,7 @@ pub struct PathPart {
 #[derive(Debug, Clone)]
 pub struct ResponseSpec {
     pub status_code: String,
-    pub body: ParsedSchema,
+    pub body: NestedNode<ParsedSchema>,
 }
 
 pub fn get_operation_specs(spec_type: SpecType) -> Vec<OperationSpec> {
@@ -82,15 +84,15 @@ fn get_response_specs(
             let response_specs = responses
                 .iter()
                 .map(|(status_code, response)| {
+                    // TODO: specifically select application/json
                     let (_, media_type) = response.clone().content.pop_first().unwrap();
                     let schema = media_type.schema(&spec).unwrap();
 
-                    let schemas = parse_schema(vec![(None, schema)], &spec);
-                    let parsed_schema = schemas.first().unwrap();
+                    let parsed_schema = parse_schema(schema, &spec);
 
                     ResponseSpec {
                         status_code: status_code.to_string(),
-                        body: parsed_schema.clone(),
+                        body: parsed_schema,
                     }
                 })
                 .collect();

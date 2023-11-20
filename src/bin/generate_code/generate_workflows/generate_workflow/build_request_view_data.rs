@@ -40,7 +40,6 @@ pub fn build_request_view_data(
     variable_aliases: &mut VariableAliases,
 ) -> WorkflowRequestSpec {
     let OperationSpec {
-        spec_name,
         operation_id,
         request_spec:
             RequestSpec {
@@ -49,7 +48,6 @@ pub fn build_request_view_data(
                 path,
                 ..
             },
-        response_specs,
         ..
     } = operation_spec;
 

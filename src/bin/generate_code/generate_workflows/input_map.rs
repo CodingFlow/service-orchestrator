@@ -1,8 +1,6 @@
-use std::{collections::BTreeMap, fs};
-
-use serde_json::Value;
-
 use crate::traversal::traverse_nested_type;
+use serde_json::Value;
+use std::{collections::BTreeMap, fs};
 
 pub struct InputMap {
     input_map_config: Value,
