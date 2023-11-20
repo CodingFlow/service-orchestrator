@@ -22,8 +22,6 @@ where
         let mut result = vec![];
 
         for child in children {
-            let child = child.clone();
-
             let child_result = convert_to_nested_node(
                 child.clone(),
                 action,
