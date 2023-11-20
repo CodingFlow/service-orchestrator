@@ -25,3 +25,10 @@ paths:
                   temperature:
                     description: oven temperature
                     type: number
+                  aroma:
+                    description: aroma while oven is hot
+                    type: object
+                    properties:
+                      aromaLevel:
+                        description: oven aroma level while hot
+                        type: number

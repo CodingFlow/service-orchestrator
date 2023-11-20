@@ -3,6 +3,7 @@ getCat:
     getMeat:
       id: cow_service/getCow/numberHorns
       heat: oven_service/getOven/temperature
+      aromaLevel: oven_service/getOven/aroma/aromaLevel
   dog_service:
     getDog:
       id: meat_service/getMeat/temperature

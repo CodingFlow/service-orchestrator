@@ -18,6 +18,10 @@ paths:
           in: query
           schema:
             type: number
+        - name: aromaLevel
+          in: query
+          schema:
+            type: number
       responses:
         200:
           description: got the meat
@@ -31,4 +35,7 @@ paths:
                     type: string
                   temperature:
                     description: temperature of meat
+                    type: number
+                  flavorLevel:
+                    description: level of meat flavor
                     type: number
