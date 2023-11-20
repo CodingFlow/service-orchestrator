@@ -1,4 +1,4 @@
-use super::build_service_operation_lookup_map::ServiceResponseAlias;
+use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_response_variables::ServiceResponseAlias;
 use crate::parse_specs::parse_schema::to_string_schema;
 use crate::traversal::traverse_nested_node;
 use crate::traversal::NestedNode;

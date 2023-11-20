@@ -1,3 +1,5 @@
+use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_response_variables::AliasType;
+use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_response_variables::ServiceResponseAlias;
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::generate_workflows::input_map::InputMap;
 use crate::generate_workflows::input_map::InputMapBehavior;
@@ -5,7 +7,6 @@ use crate::parse_specs::OperationSpec;
 use crate::traversal::traverse_nested_type;
 use crate::traversal::NestedNode;
 use http::Method;
-use oas3::spec::SchemaType;
 use std::collections::BTreeMap;
 use url::Url;
 
@@ -20,22 +21,6 @@ pub struct ServiceRequest {
 pub struct ServiceRequestPath {
     pub name: String,
     pub alias: Option<String>,
-}
-
-#[derive(Debug, Clone)]
-pub enum AliasType {
-    Struct,
-    Field,
-}
-
-#[derive(Debug, Clone)]
-pub struct ServiceResponseAlias {
-    /// name of property from open api spec. Optional because top level
-    /// node does not have a name.
-    pub name: Option<String>,
-    pub variable_alias: String,
-    pub schema_type: SchemaType,
-    pub alias_type: AliasType,
 }
 
 #[derive(Debug, Clone)]

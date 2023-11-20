@@ -1,6 +1,7 @@
 mod generate_imports;
 mod generate_map_response;
 mod generate_response_structure;
+mod generate_response_variables;
 
 use codegen::Scope;
 

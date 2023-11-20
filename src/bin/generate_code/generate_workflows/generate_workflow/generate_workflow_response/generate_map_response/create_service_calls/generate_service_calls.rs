@@ -4,10 +4,10 @@ mod generate_response_handling;
 mod generate_streams;
 
 use super::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
-use super::build_service_operation_lookup_map::ServiceResponseAlias;
 use super::build_workflow_response_lookup_map::WorkflowResponseCodeGenerationInfo;
+use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_response_variables::ServiceResponseAlias;
+use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_response_variables::generate_response_variables;
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
-use crate::traversal::traverse_nested_node;
 use crate::traversal::NestedNode;
 use codegen::Function;
 use codegen::Scope;
@@ -36,48 +36,11 @@ pub fn generate_service_calls(
     generate_response_handling(function, workflow_response_code_generation_info);
 }
 
-pub fn generate_response_variables(
-    mut function: &mut Function,
+pub fn generate_response_variables_assigned(
+    function: &mut Function,
     response_aliases: &NestedNode<ServiceResponseAlias>,
 ) {
-    function.line(format!(
-        "let {} {{",
-        response_aliases.current.variable_alias
-    ));
+    function.line("let ");
 
-    traverse_nested_node(
-        response_aliases.clone(),
-        |parent_node: NestedNode<ServiceResponseAlias>, function: &mut &mut Function| {
-            if let Some(_) = parent_node.current.name.clone() {
-                let line = match parent_node.children.is_some() {
-                    true => {
-                        format!(
-                            "{}: {} {{",
-                            parent_node.current.name.clone().unwrap(),
-                            parent_node.current.variable_alias
-                        )
-                    }
-                    false => {
-                        format!(
-                            "{}: {},",
-                            parent_node.current.name.clone().unwrap(),
-                            parent_node.current.variable_alias
-                        )
-                    }
-                };
-
-                function.line(line);
-            }
-
-            parent_node.current.name
-        },
-        |_, _, _| {},
-        |node_name, function| {
-            match node_name {
-                Some(_) => function.line("},"),
-                None => function.line("}"), // only for top level
-            };
-        },
-        &mut function,
-    );
+    generate_response_variables(function, response_aliases);
 }

@@ -1,5 +1,5 @@
 use super::super::super::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
-use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_map_response::create_service_calls::generate_service_calls::generate_response_variables;
+use crate::generate_workflows::generate_workflow::generate_workflow_response::generate_map_response::create_service_calls::generate_service_calls::generate_response_variables_assigned;
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use codegen::Function;
 use std::collections::BTreeMap;
@@ -112,7 +112,7 @@ pub fn generate_future_dependencies_variables(
             .get(depending_service_and_operation)
             .unwrap();
 
-        generate_response_variables(
+        generate_response_variables_assigned(
             function,
             &depending_service_code_generation_info.response_aliases,
         );

@@ -1,6 +1,6 @@
 use super::super::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
 use super::super::build_workflow_response_lookup_map::WorkflowResponseCodeGenerationInfo;
-use super::generate_response_variables;
+use super::generate_response_variables_assigned;
 use codegen::Function;
 
 pub fn generate_response_handling(
@@ -37,7 +37,7 @@ pub fn generate_response_handling(
             response_aliases, ..
         } = &dependency_info.service_operation_dependency;
 
-        generate_response_variables(function, response_aliases);
+        generate_response_variables_assigned(function, response_aliases);
 
         function.line(format!(
             "= {}.unwrap();",
