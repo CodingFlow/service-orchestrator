@@ -1,8 +1,7 @@
-use codegen::Scope;
-
-use crate::generate_workflows::generate_workflow::build_view_data::WorkflowPathPart;
+use crate::generate_workflows::generate_workflow::build_request_view_data::WorkflowPathPart;
 
 use super::format_tuple;
+use codegen::Scope;
 
 pub fn generate_define_paths(scope: &mut Scope, path_parts: Vec<WorkflowPathPart>) {
     let formatted_parameters: Vec<String> = path_parts

@@ -3,10 +3,10 @@ mod generate_map_response;
 mod generate_response_structs;
 
 use super::{
+    build_request_view_data::WorkflowRequestSpec,
     build_service_call_view_data::{
         generate_response_variables::ServiceResponseAlias, ServiceCallGenerationInfo,
     },
-    build_view_data::WorkflowRequestSpec,
     variables::VariableAliases,
 };
 use crate::{

@@ -6,10 +6,10 @@ mod generate_service_calls;
 use super::generate_response_structs::generate_response_structs;
 use crate::{
     generate_workflows::generate_workflow::{
+        build_request_view_data::WorkflowRequestSpec,
         build_service_call_view_data::{
             generate_response_variables::ServiceResponseAlias, ServiceCallGenerationInfo,
         },
-        build_view_data::WorkflowRequestSpec,
         variables::VariableAliases,
     },
     traversal::NestedNode,

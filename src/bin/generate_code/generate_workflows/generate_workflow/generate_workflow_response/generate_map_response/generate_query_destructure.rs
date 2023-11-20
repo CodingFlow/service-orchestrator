@@ -1,7 +1,7 @@
 use codegen::Function;
 use oas3::spec::SchemaType;
 
-use crate::generate_workflows::generate_workflow::build_view_data::RequestParameter;
+use crate::generate_workflows::generate_workflow::build_request_view_data::RequestParameter;
 
 pub fn generate_query_destructure(
     function: &mut Function,

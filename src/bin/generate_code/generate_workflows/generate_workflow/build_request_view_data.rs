@@ -20,14 +20,6 @@ pub struct RequestParameter {
 }
 
 #[derive(Debug, Clone)]
-pub struct WorkflowOperationSpec {
-    pub spec_name: String,
-    pub operation_id: String,
-    pub request_spec: WorkflowRequestSpec,
-    pub response_spec: Vec<ResponseSpec>,
-}
-
-#[derive(Debug, Clone)]
 pub struct WorkflowRequestSpec {
     pub method: Method,
     pub query: Vec<RequestParameter>,
@@ -42,11 +34,11 @@ pub struct WorkflowPathPart {
     pub formatted_type: Option<String>,
 }
 
-pub fn build_view_data(
+pub fn build_request_view_data(
     operation_spec: OperationSpec,
     input_map: &mut InputMap,
     variable_aliases: &mut VariableAliases,
-) -> WorkflowOperationSpec {
+) -> WorkflowRequestSpec {
     let OperationSpec {
         spec_name,
         operation_id,
@@ -103,15 +95,10 @@ pub fn build_view_data(
         })
         .collect();
 
-    WorkflowOperationSpec {
-        spec_name: spec_name.to_string(),
-        operation_id: operation_id.to_string(),
-        request_spec: WorkflowRequestSpec {
-            method: method.clone(),
-            query: workflow_query,
-            path: workflow_path,
-            query_struct_name: variable_aliases.create_alias(),
-        },
-        response_spec: response_specs.clone(),
+    WorkflowRequestSpec {
+        method: method.clone(),
+        query: workflow_query,
+        path: workflow_path,
+        query_struct_name: variable_aliases.create_alias(),
     }
 }
