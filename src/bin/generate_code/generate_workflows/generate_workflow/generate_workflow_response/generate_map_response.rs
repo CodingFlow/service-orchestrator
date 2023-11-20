@@ -1,7 +1,7 @@
 mod create_function_signature;
 mod create_query_destructure;
-mod create_reply;
 mod create_service_calls;
+mod generate_reply;
 
 use crate::{
     generate_workflows::{
@@ -13,8 +13,8 @@ use crate::{
 use codegen::{Function, Scope};
 use create_function_signature::create_function_signature;
 use create_query_destructure::create_query_destructure;
-use create_reply::create_reply;
 use create_service_calls::create_service_calls;
+use generate_reply::generate_reply;
 
 use super::{
     create_workflow_response_aliases::create_workflow_response_aliases,
@@ -79,7 +79,7 @@ fn map_function(
 
     generate_response_structs(response_aliases.to_vec(), scope);
 
-    create_reply(&mut function, response_aliases);
+    generate_reply(&mut function, response_aliases);
 
     function
 }
