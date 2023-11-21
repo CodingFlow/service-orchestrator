@@ -1,5 +1,5 @@
 use crate::traversal::{convert_to_nested_node, traverse_nested_node, NestedNode};
-use serde_json::Value;
+use serde_json::{Map, Value};
 use std::{collections::BTreeMap, fs};
 
 pub struct InputMap {
@@ -65,17 +65,9 @@ impl InputMapBehavior for InputMap {
             );
         }
 
-        let services = self.get_workflow_services(workflow_name.to_string());
-        let service_names: Vec<String> = services
-            .iter()
-            .map(|service| service.current.0.to_string())
-            .collect();
-
         dependencies_properties
             .into_iter()
-            .filter(|dependency_id| {
-                is_service_from_services(dependency_id.to_string(), service_names.to_vec())
-            })
+            .filter(|dependency_id| is_service_name(dependency_id.to_string()))
             .map(|property_name| {
                 let split = &mut property_name.split("/");
                 (
@@ -87,17 +79,14 @@ impl InputMapBehavior for InputMap {
     }
 
     fn get_workflow_services_operations_ids(&self, workflow_name: String) -> Vec<(String, String)> {
-        let services = self.get_workflow_services(workflow_name);
-
-        services
+        self.get_all_workflow_services(workflow_name)
             .iter()
-            .flat_map(|service| {
-                let (service_name, value) = &service.current;
-                let operations = value.as_object().unwrap();
-
-                operations.iter().map(|(operation_name, _)| {
-                    (service_name.to_string(), operation_name.to_string())
-                })
+            .flat_map(|(service_name, operations)| {
+                operations
+                    .as_object()
+                    .unwrap()
+                    .iter()
+                    .map(|(operation_id, _)| (service_name.to_string(), operation_id.to_string()))
             })
             .collect()
     }
@@ -106,11 +95,7 @@ impl InputMapBehavior for InputMap {
         &self,
         workflow_name: String,
     ) -> BTreeMap<String, Vec<(String, String)>> {
-        let services = self.get_workflow_services(workflow_name);
-        let service_names: Vec<String> = services
-            .iter()
-            .map(|service_node| service_node.current.0.to_string())
-            .collect();
+        let services = self.get_workflow_services_nested(workflow_name);
 
         let mut all_service_property_names = vec![];
 
@@ -118,21 +103,16 @@ impl InputMapBehavior for InputMap {
             let mut service_property_names = vec![];
             traverse_nested_node(
                 service.clone(),
-                |parent_node, (service_properties, service_names)| {
+                |parent_node, service_properties| {
                     let (_, value) = parent_node.current;
 
-                    if !value.is_object()
-                        && is_service_from_services(
-                            value.as_str().unwrap().to_string(),
-                            service_names.to_vec(),
-                        )
-                    {
+                    if !value.is_object() && is_service_name(value.as_str().unwrap().to_string()) {
                         service_properties.push(value.as_str().unwrap().to_string())
                     }
                 },
                 |_, _, _| {},
                 |_, _| {},
-                &mut (&mut service_property_names, &service_names),
+                &mut service_property_names,
             );
 
             all_service_property_names.push((service.current.0, service_property_names));
@@ -200,19 +180,10 @@ impl InputMapBehavior for InputMap {
             None => panic!("No mapped value found for key '{}'", map_to_key.join("/")),
         };
 
-        let services = self.get_workflow_services(workflow_name.to_string());
-        let service_names: Vec<String> = services
-            .iter()
-            .map(|service_node| service_node.current.0.to_string())
-            .collect();
-        let split_map_from_value = &mut map_from_value.split('/');
-        let first_part = split_map_from_value.nth(0).unwrap();
-
-        let alias_lookup_value =
-            match is_service_from_services(first_part.to_string(), service_names) {
-                true => format!("/{}/{}", workflow_name, map_from_value),
-                false => format!("/{}/response/{}", workflow_name, map_from_value.to_string()),
-            };
+        let alias_lookup_value = match is_service_name(map_from_value.to_string()) {
+            true => format!("/{}/{}", workflow_name, map_from_value),
+            false => format!("/{}/response/{}", workflow_name, map_from_value.to_string()),
+        };
 
         match self.alias_lookup.get(&alias_lookup_value) {
             Some(alias) => alias.to_string(),
@@ -221,9 +192,10 @@ impl InputMapBehavior for InputMap {
     }
 }
 
-fn is_service_from_services(name: String, service_names: Vec<String>) -> bool {
-    let first_part = name.split("/").nth(0).unwrap();
-    service_names.contains(&first_part.to_string())
+fn is_service_name(name: String) -> bool {
+    let second_part = name.split("/").nth(1);
+
+    second_part.is_some() && second_part.unwrap() != "response"
 }
 
 impl InputMap {
@@ -239,19 +211,16 @@ impl InputMap {
         new_alias.to_string()
     }
 
-    fn get_workflow_services(&self, workflow_name: String) -> Vec<NestedNode<(String, Value)>> {
-        let map: BTreeMap<String, Value> = self
-            .input_map_config
-            .get(&workflow_name)
-            .unwrap()
-            .as_object()
-            .unwrap()
-            .iter()
-            .filter(|(key, _)| -> bool { **key != "response" })
-            .map(|(key, value)| (key.to_string(), value.clone()))
-            .collect();
+    fn get_next_level(&self, value: Map<String, Value>, key: String) -> Map<String, Value> {
+        value.get(&key).unwrap().as_object().unwrap().clone()
+    }
 
-        map.into_iter()
+    fn get_workflow_services_nested(
+        &self,
+        workflow_name: String,
+    ) -> Vec<NestedNode<(String, Value)>> {
+        self.get_workflow_services(workflow_name)
+            .into_iter()
             .map(|item| {
                 convert_to_nested_node(
                     item,
@@ -276,21 +245,31 @@ impl InputMap {
             .collect()
     }
 
+    fn get_workflow_services(&self, workflow_name: String) -> Map<String, Value> {
+        let all_services = self.get_all_workflow_services(workflow_name);
+
+        all_services
+            .iter()
+            .filter(|(key, _)| -> bool { **key != "response" })
+            .map(|(key, value)| (key.to_string(), value.clone()))
+            .collect()
+    }
+
+    fn get_all_workflow_services(&self, workflow_name: String) -> Map<String, Value> {
+        self.get_next_level(
+            self.input_map_config.as_object().unwrap().clone(),
+            workflow_name,
+        )
+    }
+
     fn get_workflow_response_properties(
         &self,
         workflow_name: String,
     ) -> Vec<NestedNode<(String, Value)>> {
-        let map = self
-            .input_map_config
-            .get(&workflow_name)
-            .unwrap()
-            .as_object()
-            .unwrap()
-            .get("response")
-            .unwrap()
-            .as_object()
-            .unwrap()
-            .clone();
+        let map = self.get_next_level(
+            self.get_all_workflow_services(workflow_name),
+            "response".to_string(),
+        );
 
         map.into_iter()
             .map(|item| {
