@@ -1,12 +1,26 @@
 use super::{is_service_name, InputMap, Variable};
 
+#[derive(Debug, Clone)]
+
+pub enum Location {
+    Query,
+    Path,
+    Header,
+    Cookie,
+    Body,
+}
+
 impl InputMap {
+    /// Make source value available at specific location.
     pub fn create_variable_alias(
         &mut self,
-        namespace: (String, String, Option<String>),
+        namespace: (String, String, Option<String>, Location),
         map_to_key: Vec<String>,
     ) -> Variable {
-        let map_pointer = create_map_pointer(namespace, &map_to_key);
+        let map_pointer = create_map_pointer(
+            (namespace.0, namespace.1, namespace.2, Some(namespace.3)),
+            &map_to_key,
+        );
 
         Variable {
             original_name: map_to_key.last().unwrap().to_string(),
@@ -14,13 +28,17 @@ impl InputMap {
         }
     }
 
+    /// Get source value location for given destination location.
     pub fn get_variable_alias(
         &self,
         namespace: (String, String, Option<String>),
         map_to_key: Vec<String>,
     ) -> String {
-        let map_pointer = create_map_pointer(namespace.clone(), &map_to_key);
-        let map_from_value = match self.input_map_pointer_lookup.pointer(&map_pointer) {
+        let map_pointer = create_map_pointer(
+            (namespace.0.to_string(), namespace.1, namespace.2, None),
+            &map_to_key,
+        );
+        let map_from_value = match self.input_map_config.pointer(&map_pointer) {
             Some(value) => value.as_str().unwrap(),
             None => panic!("No mapped value found for key '{}'", map_to_key.join("/")),
         };
@@ -52,16 +70,40 @@ impl InputMap {
 }
 
 fn create_map_pointer(
-    (workflow_name, service_name, service_operation_name): (String, String, Option<String>),
+    (workflow_name, service_name, service_operation_name, location): (
+        String,
+        String,
+        Option<String>,
+        Option<Location>,
+    ),
     map_to_key: &Vec<String>,
 ) -> String {
-    let namespace = match service_operation_name {
-        Some(service_operation_name) => format!(
-            "/{}/{}/{}/",
-            workflow_name, service_name, service_operation_name
-        ),
-        None => format!("/{}/{}/", workflow_name, service_name),
+    let mut namespace = match service_operation_name {
+        Some(service_operation_name) => vec![
+            String::new(),
+            workflow_name,
+            service_name,
+            service_operation_name,
+        ],
+        None => vec![String::new(), workflow_name, service_name],
     };
 
-    format!("{}{}", namespace, map_to_key.join("/"))
+    if let Some(location) = location {
+        namespace.push(location_to_string(location));
+    }
+
+    namespace.push(String::new());
+
+    format!("{}{}", namespace.join("/"), map_to_key.join("/"))
+}
+
+fn location_to_string(location: Location) -> String {
+    match location {
+        Location::Query => "query",
+        Location::Path => "path",
+        Location::Header => "header",
+        Location::Cookie => "cookie",
+        Location::Body => "body",
+    }
+    .to_string()
 }

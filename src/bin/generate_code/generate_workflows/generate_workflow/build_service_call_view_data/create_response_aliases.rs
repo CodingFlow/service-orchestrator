@@ -1,4 +1,5 @@
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
+use crate::generate_workflows::input_map::variable_aliases::Location;
 use crate::generate_workflows::input_map::InputMap;
 use crate::parse_specs::OperationSpec;
 use crate::traversal::{map_nested_node, NestedNode};
@@ -73,6 +74,7 @@ fn add_nested_response_aliases(
                 workflow_name,
                 operation_spec.spec_name.to_string(),
                 Some(operation_spec.operation_id.to_string()),
+                Location::Body,
             ),
         ),
     )

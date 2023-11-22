@@ -1,6 +1,6 @@
 use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::{ServiceResponseAlias, AliasType};
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
-use crate::generate_workflows::input_map::{InputMap, };
+use crate::generate_workflows::input_map::InputMap;
 use crate::parse_specs::OperationSpec;
 use crate::traversal::map_nested_node;
 use crate::traversal::NestedNode;

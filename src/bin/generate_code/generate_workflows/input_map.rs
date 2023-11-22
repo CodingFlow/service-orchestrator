@@ -1,11 +1,11 @@
 mod get_info;
-mod variable_aliases;
+pub mod variable_aliases;
 
 use serde_json::Value;
 use std::collections::BTreeMap;
 
 pub struct InputMap {
-    input_map_pointer_lookup: Value,
+    input_map_config: Value,
     alias_lookup: BTreeMap<String, String>,
     last_created_alias: u32,
 }
@@ -17,9 +17,9 @@ pub struct Variable {
 }
 
 fn is_service_name(map_key: String) -> bool {
-    let second_part = map_key.split("/").nth(1);
+    let third_part = map_key.split("/").nth(2);
 
-    second_part.is_some() && second_part.unwrap() != "response"
+    third_part.is_some() && third_part.unwrap() != "response"
 }
 
 pub fn create_input_map() -> InputMap {
@@ -34,7 +34,7 @@ pub fn create_input_map() -> InputMap {
     };
 
     InputMap {
-        input_map_pointer_lookup: config,
+        input_map_config: config,
         alias_lookup: BTreeMap::new(),
         last_created_alias: 0,
     }

@@ -1,5 +1,5 @@
 use crate::{
-    generate_workflows::input_map::{InputMap, Variable},
+    generate_workflows::input_map::{variable_aliases::Location, InputMap, Variable},
     parse_specs::{parse_schema::to_string_schema, OperationSpec, RequestSpec},
 };
 use http::Method;
@@ -58,7 +58,12 @@ pub fn build_request_view_data(
                 Some(_) => Some(
                     input_map
                         .create_variable_alias(
-                            (operation_id.to_string(), "response".to_string(), None),
+                            (
+                                operation_id.to_string(),
+                                "response".to_string(),
+                                None,
+                                Location::Path,
+                            ),
                             vec![path_part.name.to_string()],
                         )
                         .alias,
@@ -86,7 +91,12 @@ pub fn build_request_view_data(
         .iter()
         .map(|(name, schema_type)| RequestParameter {
             name: input_map.create_variable_alias(
-                (operation_id.to_string(), "response".to_string(), None),
+                (
+                    operation_id.to_string(),
+                    "response".to_string(),
+                    None,
+                    Location::Query,
+                ),
                 vec![name.to_string()],
             ),
             schema_type: schema_type.clone(),
