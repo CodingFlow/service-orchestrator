@@ -1,31 +1,31 @@
 getCat:
   meat_service:
     getMeat:
-      id: cow_service/getCow/numberHorns
-      heat: oven_service/getOven/temperature
-      aromaLevel: oven_service/getOven/aroma/aromaLevel
+      id: cow_service/getCow/body/numberHorns
+      heat: oven_service/getOven/body/temperature
+      aromaLevel: oven_service/getOven/body/aroma/aromaLevel
   dog_service:
     getDog:
-      id: meat_service/getMeat/temperature
+      id: meat_service/getMeat/body/temperature
   cow_service:
     getCow:
-      id: maxResults
+      id: query/maxResults
   oven_service:
     getOven:
-      id: maxResults
+      id: query/maxResults
   response:
-    tailLength: id
-    furLength: oven_service/getOven/aroma/aromaLevel
-    numberOfLegs: dog_service/getDog/numberHairs
+    tailLength: path/id
+    furLength: oven_service/getOven/body/aroma/aromaLevel
+    numberOfLegs: dog_service/getDog/body/numberHairs
     eyes:
-      color: eyeColor
+      color: query/eyeColor
 getRat:
   dog_service:
     getDog:
-      id: maxResults
+      id: query/maxResults
   response:
-    tailLength: id
-    furLength: maxResults
-    numberOfLegs: maxResults
+    tailLength: path/id
+    furLength: query/maxResults
+    numberOfLegs: query/maxResults
     eyes:
-      color: eyeColor
+      color: query/eyeColor
