@@ -4,7 +4,7 @@ mod generate_response_structs;
 
 use super::{
     build_service_call_view_data::{
-        generate_response_variables::ServiceResponseAlias, ServiceCallGenerationInfo,
+        generate_response_variables::ResponseAlias, ServiceCallGenerationInfo,
     },
     build_workflow_request_view_data::WorkflowRequestSpec,
     variables::VariableAliases,
@@ -24,7 +24,7 @@ pub fn generate_workflow_response(
     re_exports: &mut ReExports,
     mut variable_aliases: VariableAliases,
     service_call_view_data: ServiceCallGenerationInfo,
-    response_aliases: Vec<NestedNode<ServiceResponseAlias>>,
+    response_aliases: Vec<NestedNode<ResponseAlias>>,
 ) -> String {
     let mut scope = Scope::new();
 

@@ -7,7 +7,7 @@ use super::generate_response_structs::generate_response_structs;
 use crate::{
     generate_workflows::generate_workflow::{
         build_service_call_view_data::{
-            generate_response_variables::ServiceResponseAlias, ServiceCallGenerationInfo,
+            generate_response_variables::ResponseAlias, ServiceCallGenerationInfo,
         },
         build_workflow_request_view_data::WorkflowRequestSpec,
         variables::VariableAliases,
@@ -26,7 +26,7 @@ pub fn generate_map_response(
     query_struct_name: &str,
     variable_aliases: &mut VariableAliases,
     service_call_view_data: ServiceCallGenerationInfo,
-    response_aliases: Vec<NestedNode<ServiceResponseAlias>>,
+    response_aliases: Vec<NestedNode<ResponseAlias>>,
 ) {
     let function = map_function(
         workflow_request_spec.clone(),
@@ -46,7 +46,7 @@ fn map_function(
     scope: &mut Scope,
     variable_aliases: &mut VariableAliases,
     service_call_view_data: ServiceCallGenerationInfo,
-    response_aliases: Vec<NestedNode<ServiceResponseAlias>>,
+    response_aliases: Vec<NestedNode<ResponseAlias>>,
 ) -> Function {
     let mut function = Function::new("map_response");
 

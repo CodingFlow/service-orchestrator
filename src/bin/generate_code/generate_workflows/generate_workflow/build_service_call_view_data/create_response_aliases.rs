@@ -4,14 +4,14 @@ use crate::generate_workflows::input_map::InputMap;
 use crate::parse_specs::OperationSpec;
 use crate::traversal::{map_nested_node, NestedNode};
 
-use super::generate_response_variables::{AliasType, ServiceResponseAlias};
+use super::generate_response_variables::{AliasType, ResponseAlias};
 
 pub fn create_response_aliases(
     iter: std::slice::Iter<'_, OperationSpec>,
     input_map: &mut InputMap,
     variable_aliases: &mut VariableAliases,
     workflow_name: String,
-) -> Vec<NestedNode<ServiceResponseAlias>> {
+) -> Vec<NestedNode<ResponseAlias>> {
     iter.clone()
         .map(|operation_spec| {
             add_nested_response_aliases(
@@ -29,7 +29,7 @@ fn add_nested_response_aliases(
     input_map: &mut InputMap,
     variable_aliases: &mut VariableAliases,
     workflow_name: String,
-) -> NestedNode<ServiceResponseAlias> {
+) -> NestedNode<ResponseAlias> {
     // TODO: handle more than one status code
 
     map_nested_node(
@@ -42,7 +42,7 @@ fn add_nested_response_aliases(
 
                 let alias = input_map.create_variable_alias(namespace.clone(), map_to_key);
 
-                ServiceResponseAlias {
+                ResponseAlias {
                     name: Some(alias.original_name),
                     variable_alias: alias.alias,
                     schema_type: parent_schema_node.current.schema_type,
@@ -55,7 +55,7 @@ fn add_nested_response_aliases(
 
                 let alias = variable_aliases.create_alias();
 
-                ServiceResponseAlias {
+                ResponseAlias {
                     name: parent_schema_node.current.name,
                     variable_alias: alias,
                     schema_type: parent_schema_node.current.schema_type,

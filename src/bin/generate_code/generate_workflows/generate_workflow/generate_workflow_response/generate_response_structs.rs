@@ -1,4 +1,4 @@
-use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::ServiceResponseAlias;
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::ResponseAlias;
 use crate::parse_specs::parse_schema::to_string_schema;
 use crate::traversal::traverse_nested_node;
 use crate::traversal::NestedNode;
@@ -7,7 +7,7 @@ use codegen::Scope;
 use codegen::Struct;
 
 pub fn generate_response_structs(
-    response_specs: Vec<NestedNode<ServiceResponseAlias>>,
+    response_specs: Vec<NestedNode<ResponseAlias>>,
     scope: &mut Scope,
 ) {
     let status_code_structs: Vec<(String, Vec<Struct>)> = response_specs
@@ -26,16 +26,14 @@ pub fn generate_response_structs(
 }
 
 fn create_structs(
-    nested_response_alias_node: NestedNode<ServiceResponseAlias>,
+    nested_response_alias_node: NestedNode<ResponseAlias>,
 ) -> Vec<(String, Vec<Struct>)> {
     // TODO: handle more than one status code
 
     vec![nested_process(nested_response_alias_node)]
 }
 
-fn nested_process(
-    nested_response_alias_node: NestedNode<ServiceResponseAlias>,
-) -> (String, Vec<Struct>) {
+fn nested_process(nested_response_alias_node: NestedNode<ResponseAlias>) -> (String, Vec<Struct>) {
     let structs = &mut vec![];
 
     traverse_nested_node(
@@ -50,7 +48,7 @@ fn nested_process(
 }
 
 fn process_parent<'a>(
-    parent_node: NestedNode<ServiceResponseAlias>,
+    parent_node: NestedNode<ResponseAlias>,
     _: &'a mut Vec<Struct>,
 ) -> Option<Struct> {
     match parent_node.children.is_some() {
@@ -71,7 +69,7 @@ fn process_parent<'a>(
 }
 
 fn process_child<'a>(
-    child_node: NestedNode<ServiceResponseAlias>,
+    child_node: NestedNode<ResponseAlias>,
     parent_struct: &'a mut Option<Struct>,
     _: &'a mut Vec<Struct>,
 ) {

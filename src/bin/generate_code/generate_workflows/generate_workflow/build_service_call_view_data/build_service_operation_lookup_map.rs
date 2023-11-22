@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 use url::Url;
 
 use super::create_response_aliases::create_response_aliases;
-use super::generate_response_variables::ServiceResponseAlias;
+use super::generate_response_variables::ResponseAlias;
 
 #[derive(Debug, Clone)]
 pub struct ServiceRequest {
@@ -28,7 +28,7 @@ pub struct ServiceCodeGenerationInfo {
     pub future_variable_name: String,
     pub enum_name: String,
     pub stream_variable_name: String,
-    pub response_aliases: NestedNode<ServiceResponseAlias>,
+    pub response_aliases: NestedNode<ResponseAlias>,
     pub dependencies_service_names: Vec<(String, String)>,
     pub request: ServiceRequest,
     pub service_url: Url,
@@ -131,7 +131,7 @@ fn create_service_code_generation_infos(
     future_variable_names: Vec<String>,
     enum_names: Vec<String>,
     stream_variable_names: Vec<String>,
-    response_aliases: Vec<NestedNode<ServiceResponseAlias>>,
+    response_aliases: Vec<NestedNode<ResponseAlias>>,
     dependencies: BTreeMap<String, Vec<(String, String)>>,
     requests: Vec<ServiceRequest>,
     service_urls: BTreeMap<String, Url>,

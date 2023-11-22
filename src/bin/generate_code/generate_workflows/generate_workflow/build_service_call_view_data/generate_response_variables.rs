@@ -1,10 +1,9 @@
+use crate::traversal::{traverse_nested_node, NestedNode};
 use codegen::Function;
 use oas3::spec::SchemaType;
 
-use crate::traversal::{traverse_nested_node, NestedNode};
-
 #[derive(Debug, Clone)]
-pub struct ServiceResponseAlias {
+pub struct ResponseAlias {
     /// name of property from open api spec. Optional because top level
     /// node does not have a name.
     pub name: Option<String>,
@@ -21,13 +20,13 @@ pub enum AliasType {
 
 pub fn generate_response_variables(
     mut function: &mut Function,
-    response_aliases: &NestedNode<ServiceResponseAlias>,
+    response_aliases: &NestedNode<ResponseAlias>,
 ) {
     function.line(format!("{} {{", response_aliases.current.variable_alias));
 
     traverse_nested_node(
         response_aliases.clone(),
-        |parent_node: NestedNode<ServiceResponseAlias>, function: &mut &mut Function| {
+        |parent_node: NestedNode<ResponseAlias>, function: &mut &mut Function| {
             if let Some(_) = parent_node.current.name.clone() {
                 let line = match parent_node.children.is_some() {
                     true => {
