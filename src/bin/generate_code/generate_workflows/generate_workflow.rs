@@ -1,5 +1,5 @@
-mod build_request_view_data;
 mod build_service_call_view_data;
+mod build_workflow_request_view_data;
 mod create_workflow_response_aliases;
 mod generate_workflow_request;
 mod generate_workflow_response;
@@ -13,8 +13,8 @@ use crate::{
     generate_create_filter::WorkflowDefinitionNames, generate_re_exports::ReExports,
     parse_specs::OperationSpec,
 };
-use build_request_view_data::build_request_view_data;
 use build_service_call_view_data::build_service_call_view_data;
+use build_workflow_request_view_data::build_workflow_request_view_data;
 use create_workflow_response_aliases::create_workflow_response_aliases;
 use generate_workflow_request::generate_workflow_request;
 use generate_workflow_response::generate_workflow_response;
@@ -30,7 +30,7 @@ pub fn generate_workflow(
     let mut variable_aliases = VariableAliases::new();
 
     let request_spec =
-        build_request_view_data(operation_spec.clone(), input_map, &mut variable_aliases);
+        build_workflow_request_view_data(operation_spec.clone(), input_map, &mut variable_aliases);
 
     let service_call_view_data = build_service_call_view_data(
         service_operation_specs,

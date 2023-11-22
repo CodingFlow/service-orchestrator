@@ -1,7 +1,7 @@
 use codegen::{Field, Scope, Struct};
 
 use crate::{
-    generate_workflows::generate_workflow::build_request_view_data::RequestParameter,
+    generate_workflows::generate_workflow::build_workflow_request_view_data::RequestParameter,
     parse_specs::parse_schema::to_string_schema,
 };
 

@@ -1,6 +1,6 @@
 use codegen::Scope;
 
-use crate::generate_workflows::generate_workflow::build_request_view_data::WorkflowPathPart;
+use crate::generate_workflows::generate_workflow::build_workflow_request_view_data::WorkflowPathPart;
 
 use super::format_tuple;
 

@@ -34,7 +34,7 @@ pub struct WorkflowPathPart {
     pub formatted_type: Option<String>,
 }
 
-pub fn build_request_view_data(
+pub fn build_workflow_request_view_data(
     operation_spec: OperationSpec,
     input_map: &mut InputMap,
     variable_aliases: &mut VariableAliases,

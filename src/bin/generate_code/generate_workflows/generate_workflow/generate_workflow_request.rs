@@ -13,7 +13,7 @@ use generate_query_struct::generate_query_struct;
 
 use crate::generate_re_exports::{ReExports, ReExportsBehavior};
 
-use super::build_request_view_data::WorkflowRequestSpec;
+use super::build_workflow_request_view_data::WorkflowRequestSpec;
 
 pub fn generate_workflow_request<'a>(
     workflow_request_spec: WorkflowRequestSpec,
