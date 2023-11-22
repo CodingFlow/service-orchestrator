@@ -10,7 +10,6 @@ pub struct WorkflowResponseCodeGenerationInfo {
 
 pub struct WorkflowResponseCodeGenerationDependencyInfo {
     pub result_destructure_variable_name: String,
-    pub dependencies_local_variable_name: String,
     pub service_operation_dependency: ServiceCodeGenerationInfo,
 }
 
@@ -25,9 +24,7 @@ pub fn build_workflow_response_lookup_map(
 
     let result_destructure_variable_names =
         create_variable_names(dependencies_ids_iter.clone(), variable_aliases);
-
-    let dependencies_local_variable_names =
-        create_variable_names(dependencies_ids_iter.clone(), variable_aliases);
+    let result_destructure_variable_name_iter = &mut result_destructure_variable_names.iter();
 
     let mut service_operation_dependencies = dependencies_ids_iter
         .clone()
@@ -37,13 +34,7 @@ pub fn build_workflow_response_lookup_map(
 
     for _ in dependencies_ids_iter {
         dependency_infos.push(WorkflowResponseCodeGenerationDependencyInfo {
-            result_destructure_variable_name: result_destructure_variable_names
-                .iter()
-                .next()
-                .unwrap()
-                .to_string(),
-            dependencies_local_variable_name: dependencies_local_variable_names
-                .iter()
+            result_destructure_variable_name: result_destructure_variable_name_iter
                 .next()
                 .unwrap()
                 .to_string(),

@@ -15,7 +15,7 @@ getCat:
       id: maxResults
   response:
     tailLength: id
-    furLength: maxResults
+    furLength: oven_service/getOven/aroma/aromaLevel
     numberOfLegs: dog_service/getDog/numberHairs
     eyes:
       color: eyeColor
