@@ -1,11 +1,10 @@
 mod build_service_call_view_data;
 mod build_workflow_request_view_data;
+mod build_workflow_response_view_data;
 mod create_workflow_response_aliases;
 mod generate_workflow_request;
 mod generate_workflow_response;
 mod variables;
-
-use std::collections::BTreeMap;
 
 use self::variables::VariableAliases;
 use super::input_map::InputMap;
@@ -15,9 +14,10 @@ use crate::{
 };
 use build_service_call_view_data::build_service_call_view_data;
 use build_workflow_request_view_data::build_workflow_request_view_data;
-use create_workflow_response_aliases::create_workflow_response_aliases;
+use build_workflow_response_view_data::build_workflow_response_view_data;
 use generate_workflow_request::generate_workflow_request;
 use generate_workflow_response::generate_workflow_response;
+use std::collections::BTreeMap;
 use url::Url;
 
 pub fn generate_workflow(
@@ -40,12 +40,8 @@ pub fn generate_workflow(
         &mut variable_aliases,
     );
 
-    let response_aliases = create_workflow_response_aliases(
-        vec![operation_spec.clone()].iter(),
-        input_map,
-        &mut variable_aliases,
-        operation_spec.operation_id.to_string(),
-    );
+    let response_aliases =
+        build_workflow_response_view_data(&operation_spec, input_map, &mut variable_aliases);
 
     let request_module_name = generate_workflow_request(
         request_spec.clone(),
