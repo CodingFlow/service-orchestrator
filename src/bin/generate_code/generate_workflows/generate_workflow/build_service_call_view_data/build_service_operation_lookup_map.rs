@@ -187,6 +187,7 @@ fn map_requests_with_variables(
                         workflow_name.to_string(),
                         operation_spec.spec_name.to_string(),
                         Some(operation_spec.operation_id.to_string()),
+                        Location::Query,
                     ),
                     vec![name.to_string()],
                 );
@@ -205,6 +206,7 @@ fn map_requests_with_variables(
                             workflow_name.to_string(),
                             operation_spec.spec_name.to_string(),
                             Some(operation_spec.operation_id.to_string()),
+                            Location::Path,
                         ),
                         vec![path_part.name.to_string()],
                     ));

@@ -31,11 +31,16 @@ impl InputMap {
     /// Get source value location for given destination location.
     pub fn get_variable_alias(
         &self,
-        namespace: (String, String, Option<String>),
+        namespace: (String, String, Option<String>, Location),
         map_to_key: Vec<String>,
     ) -> String {
         let map_pointer = create_map_pointer(
-            (namespace.0.to_string(), namespace.1, namespace.2, None),
+            (
+                namespace.0.to_string(),
+                namespace.1,
+                namespace.2,
+                Some(namespace.3),
+            ),
             &map_to_key,
         );
         let map_from_value = match self.input_map_config.pointer(&map_pointer) {
@@ -43,7 +48,7 @@ impl InputMap {
             None => panic!("No mapped value found for key '{}'", map_to_key.join("/")),
         };
 
-        let (workflow_name, _, _) = namespace;
+        let (workflow_name, _, _, _) = namespace;
 
         let alias_lookup_value = match is_service_name(map_from_value.to_string()) {
             true => format!("/{}/{}", workflow_name, map_from_value),

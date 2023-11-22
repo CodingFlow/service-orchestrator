@@ -25,6 +25,11 @@ paths:
       responses:
         200:
           description: got the cat
+          headers:
+            cat-header:
+              description: a cat header
+              schema:
+                type: string
           content:
             application/json:
               schema:
