@@ -38,17 +38,17 @@ fn generate_future(
     let ServiceCodeGenerationInfo {
         future_variable_name,
         response_aliases,
-        depending_service_names,
+        dependencies_service_names,
         request,
         service_url,
         ..
     } = service_code_generation_info;
 
-    let number_depending = depending_service_names.len();
+    let number_depending = dependencies_service_names.len();
 
     generate_signature_and_dependencies_variables(
         number_depending,
-        depending_service_names,
+        dependencies_service_names,
         generation_infos,
         function,
         future_variable_name,

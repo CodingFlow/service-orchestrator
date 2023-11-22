@@ -1,6 +1,5 @@
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::generate_workflows::input_map::InputMap;
-use crate::generate_workflows::input_map::InputMapBehavior;
 use crate::parse_specs::OperationSpec;
 use crate::traversal::NestedNode;
 use http::Method;
@@ -29,7 +28,7 @@ pub struct ServiceCodeGenerationInfo {
     pub enum_name: String,
     pub stream_variable_name: String,
     pub response_aliases: NestedNode<ServiceResponseAlias>,
-    pub depending_service_names: Vec<(String, String)>,
+    pub dependencies_service_names: Vec<(String, String)>,
     pub request: ServiceRequest,
     pub service_url: Url,
 }
@@ -105,7 +104,7 @@ fn order_by_dependencies(
             iter.clone().enumerate().collect();
 
         for (index, (_, info)) in cloned_vector {
-            let depending_services = &info.depending_service_names;
+            let depending_services = &info.dependencies_service_names;
             let misplaced_depending_service_index =
                 iter.clone().take(index).position(|(service_operation, _)| {
                     depending_services
@@ -148,7 +147,7 @@ fn create_service_code_generation_infos(
         let enum_name = enum_names_iter.next().unwrap().to_string();
         let stream_variable_name = stream_variable_names_iter.next().unwrap().to_string();
         let response_aliases = response_aliases_iter.next().unwrap().clone();
-        let dependent_service_names = dependencies_iter.next().unwrap().to_vec();
+        let dependencies_service_names = dependencies_iter.next().unwrap().to_vec();
         let request = requests_iter.next().unwrap().clone();
         let service_url = service_urls.get(&operation_spec.spec_name).unwrap().clone();
 
@@ -162,7 +161,7 @@ fn create_service_code_generation_infos(
                 enum_name,
                 stream_variable_name,
                 response_aliases,
-                depending_service_names: dependent_service_names,
+                dependencies_service_names,
                 request,
                 service_url,
             },

@@ -1,5 +1,5 @@
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
-use crate::generate_workflows::input_map::{InputMap, InputMapBehavior};
+use crate::generate_workflows::input_map::InputMap;
 use std::collections::BTreeMap;
 
 use super::build_service_operation_lookup_map::ServiceCodeGenerationInfo;

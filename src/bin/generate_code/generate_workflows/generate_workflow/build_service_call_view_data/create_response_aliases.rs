@@ -1,5 +1,5 @@
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
-use crate::generate_workflows::input_map::{InputMap, InputMapBehavior};
+use crate::generate_workflows::input_map::InputMap;
 use crate::parse_specs::OperationSpec;
 use crate::traversal::{map_nested_node, NestedNode};
 

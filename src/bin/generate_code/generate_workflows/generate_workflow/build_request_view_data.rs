@@ -1,6 +1,6 @@
 use crate::{
-    generate_workflows::input_map::{InputMap, InputMapBehavior, Variable},
-    parse_specs::{parse_schema::to_string_schema, OperationSpec, RequestSpec, ResponseSpec},
+    generate_workflows::input_map::{InputMap, Variable},
+    parse_specs::{parse_schema::to_string_schema, OperationSpec, RequestSpec},
 };
 use http::Method;
 use oas3::spec::SchemaType;

@@ -1,4 +1,4 @@
-use crate::generate_workflows::input_map::{InputMap, InputMapBehavior};
+use crate::generate_workflows::input_map::InputMap;
 use crate::parse_specs::OperationSpec;
 
 pub fn filter_to_used_operation_specs(
