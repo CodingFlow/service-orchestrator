@@ -7,6 +7,7 @@ use super::{
         generate_response_variables::ResponseAlias, ServiceCallGenerationInfo,
     },
     build_workflow_request_view_data::WorkflowRequestSpec,
+    build_workflow_response_view_data::WorkflowResponseGenerationInfo,
     variables::VariableAliases,
 };
 use crate::{
@@ -24,7 +25,7 @@ pub fn generate_workflow_response(
     re_exports: &mut ReExports,
     mut variable_aliases: VariableAliases,
     service_call_view_data: ServiceCallGenerationInfo,
-    response_aliases: Vec<NestedNode<ResponseAlias>>,
+    workflow_response_generation_info: WorkflowResponseGenerationInfo,
 ) -> String {
     let mut scope = Scope::new();
 
@@ -40,7 +41,7 @@ pub fn generate_workflow_response(
         &query_struct_name,
         &mut variable_aliases,
         service_call_view_data,
-        response_aliases,
+        workflow_response_generation_info,
     );
 
     let module_name = format!("{}_workflow_response_definition", workflow_name);

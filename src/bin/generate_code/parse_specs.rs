@@ -6,7 +6,7 @@ use std::{collections::BTreeMap, fs::read_dir, path::Path};
 use get_request_spec::get_request_specs;
 use http::Method;
 use oas3::{
-    spec::{Operation, Parameter, Response, SchemaType},
+    spec::{Header, Operation, Parameter, Response, SchemaType},
     Spec,
 };
 
@@ -52,6 +52,7 @@ pub struct PathPart {
 pub struct ResponseSpec {
     pub status_code: String,
     pub body: NestedNode<ParsedSchema>,
+    pub headers: BTreeMap<String, String>,
 }
 
 pub fn get_operation_specs(spec_type: SpecType) -> Vec<OperationSpec> {
@@ -90,9 +91,17 @@ fn get_response_specs(
 
                     let parsed_schema = parse_schema(schema, &spec);
 
+                    let headers: BTreeMap<String, String> = response
+                        .clone()
+                        .headers
+                        .into_iter()
+                        .map(|(key, value_ref)| (key, String::new())) // TODO: use real value when oas3 crate fixes ability to resolve headers.
+                        .collect();
+
                     ResponseSpec {
                         status_code: status_code.to_string(),
                         body: parsed_schema,
+                        headers,
                     }
                 })
                 .collect();

@@ -12,7 +12,7 @@ warp = "0.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.9"
-oas3 = { git = "https://github.com/x52dev/oas3-rs.git", rev = "a6b4c0bb25ef2b3d7a5364858673f82d70a0f0f5" }
+oas3 = "0.4"
 codegen = "0.1"
 reqwest = { version = "0.11", features = ["json"] }
 futures = "0.3"

@@ -10,6 +10,7 @@ use crate::{
             generate_response_variables::ResponseAlias, ServiceCallGenerationInfo,
         },
         build_workflow_request_view_data::WorkflowRequestSpec,
+        build_workflow_response_view_data::WorkflowResponseGenerationInfo,
         variables::VariableAliases,
     },
     traversal::NestedNode,
@@ -26,7 +27,7 @@ pub fn generate_map_response(
     query_struct_name: &str,
     variable_aliases: &mut VariableAliases,
     service_call_view_data: ServiceCallGenerationInfo,
-    response_aliases: Vec<NestedNode<ResponseAlias>>,
+    workflow_response_generation_info: WorkflowResponseGenerationInfo,
 ) {
     let function = map_function(
         workflow_request_spec.clone(),
@@ -34,7 +35,7 @@ pub fn generate_map_response(
         scope,
         variable_aliases,
         service_call_view_data,
-        response_aliases,
+        workflow_response_generation_info,
     );
 
     scope.push_fn(function);
@@ -46,7 +47,7 @@ fn map_function(
     scope: &mut Scope,
     variable_aliases: &mut VariableAliases,
     service_call_view_data: ServiceCallGenerationInfo,
-    response_aliases: Vec<NestedNode<ResponseAlias>>,
+    workflow_response_generation_info: WorkflowResponseGenerationInfo,
 ) -> Function {
     let mut function = Function::new("map_response");
 
@@ -65,9 +66,15 @@ fn map_function(
         service_call_view_data,
     );
 
-    generate_response_structs(response_aliases.to_vec(), scope);
+    let response_aliases = workflow_response_generation_info
+        .generation_infos
+        .iter()
+        .map(|info| info.body.clone())
+        .collect();
 
-    generate_reply(&mut function, response_aliases);
+    generate_response_structs(response_aliases, scope);
+
+    generate_reply(&mut function, workflow_response_generation_info);
 
     function
 }
