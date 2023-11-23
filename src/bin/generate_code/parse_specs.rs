@@ -1,20 +1,23 @@
+mod create_operation_specs;
+mod get_directory_path;
 mod get_request_spec;
+mod get_response_specs;
 pub mod parse_schema;
-
-use std::{collections::BTreeMap, fs::read_dir, path::Path};
-
-use get_request_spec::get_request_specs;
-use http::Method;
-use oas3::{
-    spec::{Header, Operation, Parameter, Response, SchemaType},
-    Spec,
-};
-
-use parse_schema::parse_schema;
-
-use crate::traversal::NestedNode;
+mod parse_specs;
 
 use self::parse_schema::ParsedSchema;
+use crate::traversal::NestedNode;
+use create_operation_specs::create_operation_specs;
+use get_directory_path::get_directory_path;
+use get_request_spec::get_request_specs;
+use get_response_specs::get_response_specs;
+use http::Method;
+use oas3::{
+    spec::{Header, Parameter, SchemaType},
+    Spec,
+};
+use parse_specs::parse_specs;
+use std::collections::BTreeMap;
 
 #[derive(Debug, Clone)]
 pub struct SpecInfo {
@@ -62,109 +65,4 @@ pub fn get_operation_specs(spec_type: SpecType) -> Vec<OperationSpec> {
     let response_specs_with_ids = get_response_specs(spec_infos_with_operation);
 
     create_operation_specs(request_specs_with_ids, response_specs_with_ids)
-}
-
-fn get_response_specs(
-    spec_infos_with_operation: Vec<(SpecInfo, Operation)>,
-) -> BTreeMap<(String, String), Vec<ResponseSpec>> {
-    spec_infos_with_operation
-        .iter()
-        .map(
-            |(spec_info, operation)| -> (String, String, Spec, BTreeMap<String, Response>) {
-                let status_code_and_responses = operation.responses(&spec_info.spec);
-
-                (
-                    spec_info.name.to_string(),
-                    operation.operation_id.clone().unwrap(),
-                    spec_info.spec.clone(),
-                    status_code_and_responses,
-                )
-            },
-        )
-        .map(|(spec_name, operation_id, spec, responses)| {
-            let response_specs = responses
-                .iter()
-                .map(|(status_code, response)| {
-                    // TODO: specifically select application/json
-                    let (_, media_type) = response.clone().content.pop_first().unwrap();
-                    let schema = media_type.schema(&spec).unwrap();
-
-                    let parsed_schema = parse_schema(schema, &spec);
-
-                    let headers: BTreeMap<String, String> = response
-                        .clone()
-                        .headers
-                        .into_iter()
-                        .map(|(key, value_ref)| (key, String::new())) // TODO: use real value when oas3 crate fixes ability to resolve headers.
-                        .collect();
-
-                    ResponseSpec {
-                        status_code: status_code.to_string(),
-                        body: parsed_schema,
-                        headers,
-                    }
-                })
-                .collect();
-
-            ((spec_name, operation_id), response_specs)
-        })
-        .collect()
-}
-
-fn get_directory_path(spec_type: SpecType) -> String {
-    match spec_type {
-        SpecType::Workflow => "./src/workflow_specs/".to_string(),
-        SpecType::Service => "./src/service_specs/".to_string(),
-    }
-}
-
-fn parse_specs(specs_directory_path: &str) -> Vec<SpecInfo> {
-    let files = match read_dir(Path::new(specs_directory_path)) {
-        Ok(files) => files,
-        Err(_) => panic!("Unable to read open api spec files!"),
-    };
-
-    files
-        .map(|dir_entry| -> SpecInfo {
-            let dir_entry = &dir_entry.unwrap();
-
-            SpecInfo {
-                name: dir_entry
-                    .path()
-                    .file_stem()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .to_string(),
-                spec: parse_config(dir_entry.path().as_path()),
-            }
-        })
-        .collect()
-}
-
-fn parse_config(path: &Path) -> oas3::Spec {
-    match oas3::from_path(path) {
-        Ok(spec) => spec,
-        Err(_) => panic!("unable to read open API spec file"),
-    }
-}
-
-fn create_operation_specs(
-    request_specs_with_ids: BTreeMap<(String, String), RequestSpec>,
-    response_specs_with_ids: BTreeMap<(String, String), Vec<ResponseSpec>>,
-) -> Vec<OperationSpec> {
-    request_specs_with_ids
-        .iter()
-        .map(|(key, request_spec)| {
-            let matching_response_spec = response_specs_with_ids.get(key).unwrap();
-            let (spec_name, operation_id) = key;
-
-            OperationSpec {
-                spec_name: spec_name.to_string(),
-                operation_id: operation_id.to_string(),
-                request_spec: request_spec.clone(),
-                response_specs: matching_response_spec.clone(),
-            }
-        })
-        .collect()
 }

@@ -1,5 +1,4 @@
 use super::PathPart;
-
 use super::RequestSpec;
 use super::SpecInfo;
 use http::Method;
