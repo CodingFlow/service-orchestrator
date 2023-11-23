@@ -1,9 +1,8 @@
-use codegen::Scope;
-
 use crate::generate_workflows::generate_workflow::build_workflow_request_view_data::WorkflowPathPart;
+use codegen::Function;
 
-pub fn generate_define_request(
-    scope: &mut Scope,
+pub fn generate_signature(
+    function: &mut Function,
     path_parameters: Vec<WorkflowPathPart>,
     query_struct_name: &str,
 ) {
@@ -17,15 +16,8 @@ pub fn generate_define_request(
 
     let formatted_parameters = parameters.join(",");
 
-    scope
-        .new_fn("define_request")
-        .vis("pub")
-        .ret(format!(
-            "impl Filter<Extract = {}, Error = warp::Rejection> + Clone",
-            format!("({})", formatted_parameters)
-        ))
-        .line("let http_method = define_method();")
-        .line("let with_paths = define_paths(http_method);")
-        .line("let with_query = define_query(with_paths);")
-        .line("with_query");
+    function.vis("pub").ret(format!(
+        "impl Filter<Extract = {}, Error = warp::Rejection> + Clone",
+        format!("({})", formatted_parameters)
+    ));
 }

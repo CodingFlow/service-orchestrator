@@ -1,27 +1,8 @@
 use crate::generate_workflows::generate_workflow::build_workflow_request_view_data::WorkflowPathPart;
+use codegen::Function;
 
-use super::format_tuple;
-use codegen::Scope;
-
-pub fn generate_define_paths(scope: &mut Scope, path_parts: Vec<WorkflowPathPart>) {
-    let formatted_parameters: Vec<String> = path_parts
-        .to_vec()
-        .iter()
-        .filter(|path_part| (*path_part).alias.is_some())
-        .map(|path_part| -> String { path_part.formatted_type.clone().unwrap() })
-        .collect();
-
-    let function = scope
-        .new_fn("define_paths")
-        .arg(
-            "http_method",
-            "impl Filter<Extract = (), Error = warp::reject::Rejection> + Copy",
-        )
-        .ret(format!(
-            "impl Filter<Extract = {}, Error = warp::reject::Rejection> + Copy",
-            format_tuple(formatted_parameters)
-        ))
-        .line("http_method");
+pub fn generate_define_paths(function: &mut Function, path_parts: Vec<WorkflowPathPart>) {
+    function.line("let with_paths = http_method");
 
     for path_part in path_parts {
         let formatted_path_part = match path_part.formatted_type {
@@ -32,5 +13,5 @@ pub fn generate_define_paths(scope: &mut Scope, path_parts: Vec<WorkflowPathPart
         function.line(formatted_path_part);
     }
 
-    function.line(".and(warp::path::end())");
+    function.line(".and(warp::path::end());");
 }
