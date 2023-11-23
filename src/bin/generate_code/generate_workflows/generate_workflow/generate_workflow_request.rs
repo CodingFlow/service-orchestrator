@@ -32,6 +32,7 @@ pub fn generate_workflow_request<'a>(
         query,
         path,
         query_struct_name,
+        body,
     } = workflow_request_spec;
 
     generate_query_struct(&mut scope, query, &query_struct_name);

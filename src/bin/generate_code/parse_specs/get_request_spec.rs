@@ -1,3 +1,4 @@
+use super::parse_schema::parse_schema;
 use super::PathPart;
 use super::RequestSpec;
 use super::SpecInfo;
@@ -199,6 +200,16 @@ fn create_request_spec_with_id(
     ((std::string::String, std::string::String), RequestSpec),
     (SpecInfo, Operation),
 ) {
+    let body = match operation.request_body.clone() {
+        Some(request_body_ref) => {
+            let request_body = request_body_ref.resolve(&spec_info.spec).unwrap();
+            let media_type = request_body.content.get("application/json").unwrap();
+            let body_schema = media_type.schema(&spec_info.spec).unwrap();
+            Some(parse_schema(body_schema, &spec_info.spec))
+        }
+        None => None,
+    };
+
     (
         (
             ((
@@ -209,6 +220,7 @@ fn create_request_spec_with_id(
                 method,
                 query: query_parameters,
                 path: path_parts,
+                body,
             },
         ),
         (spec_info, operation),

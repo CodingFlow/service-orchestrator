@@ -1,6 +1,8 @@
 mod build_service_call_view_data;
 mod build_workflow_request_view_data;
 mod build_workflow_response_view_data;
+mod create_request_aliases;
+mod create_response_aliases;
 mod create_workflow_response_aliases;
 mod generate_workflow_request;
 mod generate_workflow_response;

@@ -1,39 +1,18 @@
+use super::build_service_call_view_data::generate_response_variables::{AliasType, ResponseAlias};
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::generate_workflows::input_map::variable_aliases::Location;
 use crate::generate_workflows::input_map::InputMap;
-use crate::parse_specs::OperationSpec;
+use crate::parse_specs::parse_schema::ParsedSchema;
 use crate::traversal::{map_nested_node, NestedNode};
 
-use super::generate_response_variables::{AliasType, ResponseAlias};
-
-pub fn create_response_aliases(
-    iter: std::slice::Iter<'_, OperationSpec>,
+pub fn create_request_aliases(
+    request_body: NestedNode<ParsedSchema>,
     input_map: &mut InputMap,
     variable_aliases: &mut VariableAliases,
-    workflow_name: String,
-) -> Vec<NestedNode<ResponseAlias>> {
-    iter.clone()
-        .map(|operation_spec| {
-            add_nested_response_aliases(
-                operation_spec,
-                input_map,
-                variable_aliases,
-                workflow_name.to_string(),
-            )
-        })
-        .collect()
-}
-
-fn add_nested_response_aliases(
-    operation_spec: &OperationSpec,
-    input_map: &mut InputMap,
-    variable_aliases: &mut VariableAliases,
-    workflow_name: String,
+    namespace: (String, String, Option<String>, Location),
 ) -> NestedNode<ResponseAlias> {
-    // TODO: handle more than one status code
-
     map_nested_node(
-        operation_spec.response_specs.first().unwrap().body.clone(),
+        request_body,
         |parent_schema_node, (input_map, variable_aliases, alias_accumulator, namespace)| {
             if let None = parent_schema_node.children {
                 let mut map_to_key = alias_accumulator.to_vec();
@@ -66,16 +45,6 @@ fn add_nested_response_aliases(
         |_, (_, _, alias_accumulator, _)| {
             alias_accumulator.pop();
         },
-        &mut (
-            input_map,
-            variable_aliases,
-            vec![],
-            (
-                workflow_name,
-                operation_spec.spec_name.to_string(),
-                Some(operation_spec.operation_id.to_string()),
-                Location::Body,
-            ),
-        ),
+        &mut (input_map, variable_aliases, vec![], namespace),
     )
 }

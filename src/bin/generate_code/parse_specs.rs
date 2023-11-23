@@ -43,6 +43,7 @@ pub struct RequestSpec {
     pub method: Method,
     pub query: BTreeMap<String, SchemaType>,
     pub path: Vec<PathPart>,
+    pub body: Option<NestedNode<ParsedSchema>>,
 }
 
 #[derive(Debug, Clone)]
