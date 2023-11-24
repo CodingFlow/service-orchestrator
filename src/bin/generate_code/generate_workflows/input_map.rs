@@ -3,6 +3,7 @@ mod variable_aliases;
 
 use self::variable_aliases::AliasKey;
 pub use self::variable_aliases::Location;
+pub use self::variable_aliases::Variable;
 use serde_json::Value;
 use std::collections::BTreeMap;
 
@@ -10,12 +11,6 @@ pub struct InputMap {
     input_map_config: Value,
     alias_lookup: BTreeMap<AliasKey, String>,
     last_created_alias: u32,
-}
-
-#[derive(Debug, Clone)]
-pub struct Variable {
-    pub original_name: String,
-    pub alias: String,
 }
 
 impl InputMap {

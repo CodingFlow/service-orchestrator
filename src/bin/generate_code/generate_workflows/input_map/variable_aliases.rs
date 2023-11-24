@@ -1,4 +1,4 @@
-use super::{InputMap, Variable};
+use super::InputMap;
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Location {
@@ -11,6 +11,12 @@ pub enum Location {
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct AliasKey((String, String, Option<String>, Location), Vec<String>);
+
+#[derive(Debug, Clone)]
+pub struct Variable {
+    pub original_name: String,
+    pub alias: String,
+}
 
 impl InputMap {
     /// Make source value available at specific location.
