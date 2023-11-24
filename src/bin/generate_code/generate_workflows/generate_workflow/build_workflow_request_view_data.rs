@@ -94,12 +94,7 @@ fn create_workflow_body(
 ) -> Option<NestedNode<ResponseAlias>> {
     match body {
         Some(body) => {
-            let aliases = create_request_aliases(
-                body,
-                input_map,
-                variable_aliases,
-                (operation_id, "response".to_string(), None, Location::Body),
-            );
+            let aliases = create_request_aliases(body, input_map, variable_aliases, operation_id);
 
             Some(aliases)
         }
