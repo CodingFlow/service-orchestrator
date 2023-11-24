@@ -32,7 +32,6 @@ pub fn build_workflow_response_view_data(
         vec![operation_spec.clone()].iter(),
         input_map,
         variable_aliases,
-        operation_spec.operation_id.to_string(),
     );
 
     let headers = create_workflow_headers(operation_spec.clone(), input_map);

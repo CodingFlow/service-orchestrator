@@ -11,7 +11,7 @@ use oas3::spec::SchemaType;
 
 use super::{
     build_service_call_view_data::generate_response_variables::ResponseAlias,
-    create_request_aliases::create_request_aliases, variables::VariableAliases,
+    create_workflow_request_aliases::create_workflow_request_aliases, variables::VariableAliases,
 };
 
 #[derive(Debug, Clone)]
@@ -94,7 +94,8 @@ fn create_workflow_body(
 ) -> Option<NestedNode<ResponseAlias>> {
     match body {
         Some(body) => {
-            let aliases = create_request_aliases(body, input_map, variable_aliases, operation_id);
+            let aliases =
+                create_workflow_request_aliases(body, input_map, variable_aliases, operation_id);
 
             Some(aliases)
         }
