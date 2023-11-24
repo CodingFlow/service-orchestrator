@@ -6,7 +6,6 @@ use crate::{
     traversal::NestedNode,
 };
 use codegen::Function;
-use warp::filters::query;
 
 pub fn generate_signature(
     function: &mut Function,

@@ -1,6 +1,5 @@
-use codegen::Function;
-
 use crate::generate_workflows::generate_workflow::build_workflow_request_view_data::RequestParameter;
+use codegen::Function;
 
 pub fn generate_define_query(
     function: &mut Function,

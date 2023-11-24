@@ -1,25 +1,21 @@
+mod generate_body;
 mod generate_define_method;
 mod generate_define_paths;
 mod generate_define_query;
 mod generate_query_struct;
+mod generate_request_body_struct;
 mod generate_signature;
 
+use super::build_workflow_request_view_data::WorkflowRequestSpec;
+use crate::generate_re_exports::{ReExports, ReExportsBehavior};
 use codegen::Scope;
+use generate_body::generate_body;
 use generate_define_method::generate_method;
 use generate_define_paths::generate_define_paths;
 use generate_define_query::generate_define_query;
 use generate_query_struct::generate_query_struct;
+use generate_request_body_struct::generate_request_body_struct;
 use generate_signature::generate_signature;
-
-use crate::{
-    generate_re_exports::{ReExports, ReExportsBehavior},
-    traversal::NestedNode,
-};
-
-use super::{
-    build_service_call_view_data::generate_response_variables::ResponseAlias,
-    build_workflow_request_view_data::WorkflowRequestSpec, generate_structs::generate_structs,
-};
 
 pub fn generate_workflow_request<'a>(
     workflow_request_spec: WorkflowRequestSpec,
@@ -62,20 +58,4 @@ pub fn generate_workflow_request<'a>(
     re_exports.add(module_name.clone(), scope.to_string());
 
     module_name
-}
-
-fn generate_body(function: &mut codegen::Function, body: Option<NestedNode<ResponseAlias>>) {
-    if let Some(_) = body {
-        function.line(".and(warp::body::json())");
-    }
-}
-
-fn generate_request_body_struct(scope: &mut Scope, body: Option<NestedNode<ResponseAlias>>) {
-    if let Some(body) = body {
-        let structs = generate_structs(body);
-
-        for new_struct in structs {
-            scope.push_struct(new_struct);
-        }
-    }
 }
