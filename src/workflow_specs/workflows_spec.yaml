@@ -55,6 +55,70 @@ paths:
                     properties:
                       color:
                         type: string
+    post:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      operationId: createCat
+      requestBody:
+        description: Update an existent pet in the store
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tailLength:
+                  description: length of cat's tail
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                furLength:
+                  description: length of cat's fur
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                numberOfLegs:
+                  description: number of legs the cat has
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                eyes:
+                  type: object
+                  properties:
+                    color:
+                      type: string
+      responses:
+        200:
+          description: created the cat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tailLength:
+                    description: length of cat's tail
+                    type: number
+                    minimum: 0
+                    maximum: 100
+                  furLength:
+                    description: length of cat's fur
+                    type: number
+                    minimum: 0
+                    maximum: 100
+                  numberOfLegs:
+                    description: number of legs the cat has
+                    type: number
+                    minimum: 0
+                    maximum: 100
+                  eyes:
+                    type: object
+                    properties:
+                      color:
+                        type: string
+
   /rat/{id}:
     get:
       operationId: getRat
