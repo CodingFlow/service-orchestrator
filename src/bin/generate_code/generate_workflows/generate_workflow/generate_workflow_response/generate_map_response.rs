@@ -1,25 +1,21 @@
 mod generate_function_signature;
 mod generate_query_destructure;
 mod generate_reply;
+mod generate_request_body_destructure;
 mod generate_service_calls;
 
 use super::generate_response_structs::generate_response_structs;
-use crate::{
-    generate_workflows::generate_workflow::{
-        build_service_call_view_data::{
-            generate_response_variables::{generate_response_variables, ResponseAlias},
-            ServiceCallGenerationInfo,
-        },
-        build_workflow_request_view_data::{QueryVariables, WorkflowRequestSpec},
-        build_workflow_response_view_data::WorkflowResponseGenerationInfo,
-        variables::VariableAliases,
-    },
-    traversal::NestedNode,
+use crate::generate_workflows::generate_workflow::{
+    build_service_call_view_data::ServiceCallGenerationInfo,
+    build_workflow_request_view_data::{QueryVariables, WorkflowRequestSpec},
+    build_workflow_response_view_data::WorkflowResponseGenerationInfo,
+    variables::VariableAliases,
 };
 use codegen::{Function, Scope};
 use generate_function_signature::generate_function_signature;
 use generate_query_destructure::generate_query_destructure;
 use generate_reply::generate_reply;
+use generate_request_body_destructure::generate_request_body_destructure;
 use generate_service_calls::generate_service_calls;
 
 pub fn generate_map_response(
@@ -87,18 +83,4 @@ fn map_function(
     generate_reply(&mut function, workflow_response_generation_info);
 
     function
-}
-
-fn generate_request_body_destructure(
-    function: &mut Function,
-    body: Option<NestedNode<ResponseAlias>>,
-    body_local_variable: String,
-) {
-    if let Some(body) = body {
-        function.line("let ");
-
-        generate_response_variables(function, &body);
-
-        function.line(format!("= {};", body_local_variable));
-    }
 }
