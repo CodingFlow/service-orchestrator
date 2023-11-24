@@ -1,16 +1,17 @@
+use crate::generate_workflows::generate_workflow::build_workflow_request_view_data::{
+    QueryVariables, RequestParameter,
+};
 use codegen::Function;
 use oas3::spec::SchemaType;
 
-use crate::generate_workflows::generate_workflow::build_workflow_request_view_data::RequestParameter;
-
 pub fn generate_query_destructure(
     function: &mut Function,
-    query_struct_name: &str,
+    query_variables: QueryVariables,
     query_parameters: Vec<RequestParameter>,
 ) {
     if query_parameters.len() > 0 {
         function.line(format_query_destructure(
-            query_struct_name,
+            query_variables,
             query_parameters.to_vec(),
         ));
 
@@ -38,7 +39,7 @@ fn format_default_values(parameter: RequestParameter) -> String {
 }
 
 fn format_query_destructure(
-    query_struct_name: &str,
+    query_variables: QueryVariables,
     query_parameters: Vec<RequestParameter>,
 ) -> String {
     let variables: Vec<String> = query_parameters
@@ -52,9 +53,10 @@ fn format_query_destructure(
         .collect();
 
     format!(
-        "let {} {{ {} }} = parameters;",
-        query_struct_name,
-        variables.join(",")
+        "let {} {{ {} }} = {};",
+        query_variables.struct_name,
+        variables.join(","),
+        query_variables.local_variable
     )
 }
 

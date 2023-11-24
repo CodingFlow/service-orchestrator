@@ -24,7 +24,7 @@ pub fn generate_workflow_response(
     let mut scope = Scope::new();
 
     let WorkflowRequestSpec {
-        query_struct_name, ..
+        query_variables, ..
     } = workflow_request_spec.clone();
 
     generate_imports(&mut scope, request_module_name);
@@ -32,7 +32,7 @@ pub fn generate_workflow_response(
     generate_map_response(
         &mut scope,
         workflow_request_spec,
-        &query_struct_name,
+        query_variables,
         &mut variable_aliases,
         service_call_view_data,
         workflow_response_generation_info,

@@ -32,11 +32,12 @@ pub fn generate_workflow_request<'a>(
         method,
         query,
         path,
-        query_struct_name,
+        query_variables,
         body,
+        ..
     } = workflow_request_spec;
 
-    generate_query_struct(&mut scope, query.to_vec(), &query_struct_name);
+    generate_query_struct(&mut scope, query.to_vec(), &query_variables.struct_name);
     generate_request_body_struct(&mut scope, body.clone());
 
     let mut function = scope.new_fn("define_request");
@@ -45,12 +46,12 @@ pub fn generate_workflow_request<'a>(
         &mut function,
         path.to_vec(),
         query.to_vec(),
-        &query_struct_name,
+        &query_variables.struct_name,
         body.clone(),
     );
     generate_method(&mut function, method);
     generate_define_paths(&mut function, path.to_vec());
-    generate_define_query(&mut function, query, &query_struct_name);
+    generate_define_query(&mut function, query, &query_variables.struct_name);
     generate_body(function, body);
 
     let module_name = format!("{}_workflow_request_definition", workflow_name);

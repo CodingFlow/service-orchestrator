@@ -10,9 +10,8 @@ use crate::{
             generate_response_variables::{generate_response_variables, ResponseAlias},
             ServiceCallGenerationInfo,
         },
-        build_workflow_request_view_data::WorkflowRequestSpec,
+        build_workflow_request_view_data::{QueryVariables, WorkflowRequestSpec},
         build_workflow_response_view_data::WorkflowResponseGenerationInfo,
-        generate_structs::generate_structs,
         variables::VariableAliases,
     },
     traversal::NestedNode,
@@ -26,14 +25,14 @@ use generate_service_calls::generate_service_calls;
 pub fn generate_map_response(
     scope: &mut Scope,
     workflow_request_spec: WorkflowRequestSpec,
-    query_struct_name: &str,
+    query_variables: QueryVariables,
     variable_aliases: &mut VariableAliases,
     service_call_view_data: ServiceCallGenerationInfo,
     workflow_response_generation_info: WorkflowResponseGenerationInfo,
 ) {
     let function = map_function(
         workflow_request_spec.clone(),
-        query_struct_name,
+        query_variables,
         scope,
         variable_aliases,
         service_call_view_data,
@@ -45,7 +44,7 @@ pub fn generate_map_response(
 
 fn map_function(
     workflow_request_spec: WorkflowRequestSpec,
-    query_struct_name: &str,
+    query_variables: QueryVariables,
     scope: &mut Scope,
     variable_aliases: &mut VariableAliases,
     service_call_view_data: ServiceCallGenerationInfo,
@@ -57,17 +56,18 @@ fn map_function(
         &mut function,
         workflow_request_spec.path.clone(),
         workflow_request_spec.query.to_vec(),
-        query_struct_name,
+        query_variables.clone(),
         workflow_request_spec.body.clone(),
+        workflow_request_spec.body_local_variable.to_string(),
     );
 
-    generate_query_destructure(
+    generate_query_destructure(&mut function, query_variables, workflow_request_spec.query);
+
+    generate_request_body_destructure(
         &mut function,
-        query_struct_name,
-        workflow_request_spec.query,
+        workflow_request_spec.body,
+        workflow_request_spec.body_local_variable,
     );
-
-    generate_request_body_destructure(&mut function, workflow_request_spec.body);
 
     generate_service_calls(
         &mut function,
@@ -92,12 +92,13 @@ fn map_function(
 fn generate_request_body_destructure(
     function: &mut Function,
     body: Option<NestedNode<ResponseAlias>>,
+    body_local_variable: String,
 ) {
     if let Some(body) = body {
         function.line("let ");
 
         generate_response_variables(function, &body);
 
-        function.line("= body;");
+        function.line(format!("= {};", body_local_variable));
     }
 }

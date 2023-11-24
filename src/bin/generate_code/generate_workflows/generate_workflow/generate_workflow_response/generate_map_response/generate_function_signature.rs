@@ -3,7 +3,7 @@ use codegen::Function;
 use crate::{
     generate_workflows::generate_workflow::{
         build_service_call_view_data::generate_response_variables::ResponseAlias,
-        build_workflow_request_view_data::{RequestParameter, WorkflowPathPart},
+        build_workflow_request_view_data::{QueryVariables, RequestParameter, WorkflowPathPart},
     },
     traversal::NestedNode,
 };
@@ -12,13 +12,21 @@ pub fn generate_function_signature(
     function: &mut Function,
     path_parts: Vec<WorkflowPathPart>,
     query: Vec<RequestParameter>,
-    query_struct_name: &str,
+    query_variables: QueryVariables,
     request_body: Option<NestedNode<ResponseAlias>>,
+    request_body_local_variable: String,
 ) {
     function.vis("pub");
     function.set_async(true);
 
-    create_function_arguments(path_parts, function, query, query_struct_name, request_body);
+    create_function_arguments(
+        path_parts,
+        function,
+        query,
+        query_variables,
+        request_body,
+        request_body_local_variable,
+    );
 
     function.ret("Result<impl warp::Reply, warp::Rejection>");
 }
@@ -27,8 +35,9 @@ fn create_function_arguments(
     path_parts: Vec<WorkflowPathPart>,
     function: &mut Function,
     query: Vec<RequestParameter>,
-    query_struct_name: &str,
+    query_variables: QueryVariables,
     request_body: Option<NestedNode<ResponseAlias>>,
+    request_body_local_variable: String,
 ) {
     let path_parameters_info: Vec<(String, String)> = path_parts
         .iter()
@@ -45,12 +54,14 @@ fn create_function_arguments(
         function.arg(&name, schema_type);
     }
 
-    // TODO: generate aliases and pass them in for these two parameters.
     if query.len() > 0 {
-        function.arg("parameters", query_struct_name);
+        function.arg(&query_variables.local_variable, query_variables.struct_name);
     }
 
     if let Some(nested_response_alias) = request_body {
-        function.arg("body", nested_response_alias.current.variable_alias);
+        function.arg(
+            &request_body_local_variable,
+            nested_response_alias.current.variable_alias,
+        );
     };
 }

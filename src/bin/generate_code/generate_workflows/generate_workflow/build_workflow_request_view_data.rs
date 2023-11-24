@@ -11,8 +11,7 @@ use oas3::spec::SchemaType;
 
 use super::{
     build_service_call_view_data::generate_response_variables::ResponseAlias,
-    create_request_aliases::create_request_aliases,
-    create_response_aliases::create_response_aliases, variables::VariableAliases,
+    create_request_aliases::create_request_aliases, variables::VariableAliases,
 };
 
 #[derive(Debug, Clone)]
@@ -33,7 +32,14 @@ pub struct WorkflowRequestSpec {
     pub query: Vec<RequestParameter>,
     pub path: Vec<WorkflowPathPart>,
     pub body: Option<NestedNode<ResponseAlias>>,
-    pub query_struct_name: String,
+    pub body_local_variable: String,
+    pub query_variables: QueryVariables,
+}
+
+#[derive(Debug, Clone)]
+pub struct QueryVariables {
+    pub local_variable: String,
+    pub struct_name: String,
 }
 
 #[derive(Debug, Clone)]
@@ -72,7 +78,11 @@ pub fn build_workflow_request_view_data(
         query: workflow_query,
         path: workflow_path,
         body: workflow_body,
-        query_struct_name: variable_aliases.create_alias(),
+        body_local_variable: variable_aliases.create_alias(),
+        query_variables: QueryVariables {
+            local_variable: variable_aliases.create_alias(),
+            struct_name: variable_aliases.create_alias(),
+        },
     }
 }
 
