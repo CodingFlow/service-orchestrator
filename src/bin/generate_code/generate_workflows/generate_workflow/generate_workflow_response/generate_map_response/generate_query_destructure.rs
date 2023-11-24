@@ -8,13 +8,15 @@ pub fn generate_query_destructure(
     query_struct_name: &str,
     query_parameters: Vec<RequestParameter>,
 ) {
-    function.line(format_query_destructure(
-        query_struct_name,
-        query_parameters.to_vec(),
-    ));
+    if query_parameters.len() > 0 {
+        function.line(format_query_destructure(
+            query_struct_name,
+            query_parameters.to_vec(),
+        ));
 
-    for parameter in query_parameters {
-        function.line(format_default_values(parameter));
+        for parameter in query_parameters {
+            function.line(format_default_values(parameter));
+        }
     }
 }
 

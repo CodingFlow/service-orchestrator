@@ -1,12 +1,14 @@
 mod get_info;
-pub mod variable_aliases;
+mod variable_aliases;
 
+use self::variable_aliases::AliasKey;
+pub use self::variable_aliases::Location;
 use serde_json::Value;
 use std::collections::BTreeMap;
 
 pub struct InputMap {
     input_map_config: Value,
-    alias_lookup: BTreeMap<String, String>,
+    alias_lookup: BTreeMap<AliasKey, String>,
     last_created_alias: u32,
 }
 
@@ -16,10 +18,18 @@ pub struct Variable {
     pub alias: String,
 }
 
-fn is_service_name(map_key: String) -> bool {
-    let third_part = map_key.split("/").nth(2);
+impl InputMap {
+    fn is_service_name(&self, map_key: String) -> bool {
+        let mut split = map_key.split(":");
+        let namespace_part = split.next().unwrap();
+        let split = namespace_part.split("/");
 
-    third_part.is_some() && third_part.unwrap() != "response"
+        match split.count().cmp(&1) {
+            std::cmp::Ordering::Less => panic!("Unexpectedly got less than one part in namespace"),
+            std::cmp::Ordering::Equal => false,
+            std::cmp::Ordering::Greater => true,
+        }
+    }
 }
 
 pub fn create_input_map() -> InputMap {

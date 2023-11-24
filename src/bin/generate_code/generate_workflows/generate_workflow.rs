@@ -4,6 +4,7 @@ mod build_workflow_response_view_data;
 mod create_request_aliases;
 mod create_response_aliases;
 mod create_workflow_response_aliases;
+mod generate_structs;
 mod generate_workflow_request;
 mod generate_workflow_response;
 mod variables;
@@ -45,6 +46,7 @@ pub fn generate_workflow(
     let response_aliases =
         build_workflow_response_view_data(&operation_spec, input_map, &mut variable_aliases);
 
+    // TODO: Create request_module_name in view data and pass it in.
     let request_module_name = generate_workflow_request(
         request_spec.clone(),
         operation_spec.operation_id.to_string(),

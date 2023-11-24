@@ -1,8 +1,8 @@
 use super::generate_response_variables::ResponseAlias;
 use crate::generate_workflows::generate_workflow::create_response_aliases::create_response_aliases;
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
-use crate::generate_workflows::input_map::variable_aliases::Location;
 use crate::generate_workflows::input_map::InputMap;
+use crate::generate_workflows::input_map::Location;
 use crate::parse_specs::OperationSpec;
 use crate::traversal::NestedNode;
 use http::Method;

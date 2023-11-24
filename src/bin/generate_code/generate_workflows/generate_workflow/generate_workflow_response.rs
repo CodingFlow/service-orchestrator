@@ -3,17 +3,11 @@ mod generate_map_response;
 mod generate_response_structs;
 
 use super::{
-    build_service_call_view_data::{
-        generate_response_variables::ResponseAlias, ServiceCallGenerationInfo,
-    },
+    build_service_call_view_data::ServiceCallGenerationInfo,
     build_workflow_request_view_data::WorkflowRequestSpec,
-    build_workflow_response_view_data::WorkflowResponseGenerationInfo,
-    variables::VariableAliases,
+    build_workflow_response_view_data::WorkflowResponseGenerationInfo, variables::VariableAliases,
 };
-use crate::{
-    generate_re_exports::{ReExports, ReExportsBehavior},
-    traversal::NestedNode,
-};
+use crate::generate_re_exports::{ReExports, ReExportsBehavior};
 use codegen::Scope;
 use generate_imports::generate_imports;
 use generate_map_response::generate_map_response;
@@ -33,7 +27,7 @@ pub fn generate_workflow_response(
         query_struct_name, ..
     } = workflow_request_spec.clone();
 
-    generate_imports(&mut scope, &query_struct_name, request_module_name);
+    generate_imports(&mut scope, request_module_name);
 
     generate_map_response(
         &mut scope,

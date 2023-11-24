@@ -1,5 +1,5 @@
 use crate::{
-    generate_workflows::input_map::{variable_aliases::Location, InputMap, Variable},
+    generate_workflows::input_map::{InputMap, Location, Variable},
     parse_specs::{
         parse_schema::{to_string_schema, ParsedSchema},
         OperationSpec, RequestSpec,
@@ -88,7 +88,7 @@ fn create_workflow_body(
                 body,
                 input_map,
                 variable_aliases,
-                (operation_id, "resonse".to_string(), None, Location::Body),
+                (operation_id, "response".to_string(), None, Location::Body),
             );
 
             Some(aliases)

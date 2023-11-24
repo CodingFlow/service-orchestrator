@@ -1,7 +1,6 @@
-use super::{is_service_name, InputMap, Variable};
+use super::{InputMap, Variable};
 
-#[derive(Debug, Clone)]
-
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Location {
     Query,
     Path,
@@ -10,6 +9,9 @@ pub enum Location {
     Body,
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
+pub struct AliasKey((String, String, Option<String>, Location), Vec<String>);
+
 impl InputMap {
     /// Make source value available at specific location.
     pub fn create_variable_alias(
@@ -17,14 +19,11 @@ impl InputMap {
         namespace: (String, String, Option<String>, Location),
         map_to_key: Vec<String>,
     ) -> Variable {
-        let map_pointer = create_map_pointer(
-            (namespace.0, namespace.1, namespace.2, Some(namespace.3)),
-            &map_to_key,
-        );
+        let alias_key = create_alias_key(namespace, map_to_key.to_vec());
 
         Variable {
             original_name: map_to_key.last().unwrap().to_string(),
-            alias: self.create_alias(map_pointer),
+            alias: self.create_alias(alias_key),
         }
     }
 
@@ -32,7 +31,7 @@ impl InputMap {
     pub fn get_variable_alias(
         &self,
         namespace: (String, String, Option<String>, Location),
-        map_to_key: Vec<String>,
+        destination_key: Vec<String>,
     ) -> String {
         let map_pointer = create_map_pointer(
             (
@@ -41,37 +40,72 @@ impl InputMap {
                 namespace.2,
                 Some(namespace.3),
             ),
-            &map_to_key,
+            &destination_key,
         );
-        let map_from_value = match self.input_map_config.pointer(&map_pointer) {
+        let source_key_raw = match self.input_map_config.pointer(&map_pointer) {
             Some(value) => value.as_str().unwrap(),
-            None => panic!("No mapped value found for key '{}'", map_to_key.join("/")),
+            None => panic!(
+                "No mapped value found for key '{}'",
+                destination_key.join("/")
+            ),
         };
 
         let (workflow_name, _, _, _) = namespace;
 
-        let alias_lookup_value = match is_service_name(map_from_value.to_string()) {
-            true => format!("/{}/{}", workflow_name, map_from_value),
-            false => format!("/{}/response/{}", workflow_name, map_from_value.to_string()),
+        self.get_alias(source_key_raw, workflow_name)
+    }
+
+    fn get_alias(&self, source_key_raw: &str, workflow_name: String) -> String {
+        let mut split = source_key_raw.split(":");
+        let namespace_part = split.next().unwrap();
+        let key_part = split.next().unwrap();
+
+        let mut split = namespace_part.split("/");
+
+        let alias_key = match self.is_service_name(source_key_raw.to_string()) {
+            true => AliasKey(
+                (
+                    workflow_name,
+                    split.next().unwrap().to_string(),
+                    Some(split.next().unwrap().to_string()),
+                    string_to_location(split.next().unwrap()),
+                ),
+                key_part.split("/").map(String::from).collect(),
+            ),
+            false => AliasKey(
+                (
+                    workflow_name,
+                    "response".to_string(),
+                    None,
+                    string_to_location(split.next().unwrap()),
+                ),
+                key_part.split("/").map(String::from).collect(),
+            ),
         };
 
-        match self.alias_lookup.get(&alias_lookup_value) {
+        match self.alias_lookup.get(&alias_key) {
             Some(alias) => alias.to_string(),
-            None => panic!("Alias not found for key '{}'", map_to_key.join("/")),
+            None => panic!("Alias not found for source key '{}'", source_key_raw),
         }
     }
 
-    fn create_alias(&mut self, original_name: String) -> String {
+    fn create_alias(&mut self, alias_key: AliasKey) -> String {
         let new_value = self.last_created_alias + 1;
         let new_alias = format!("a{}", new_value);
 
         self.last_created_alias = new_value;
 
-        self.alias_lookup
-            .insert(original_name, new_alias.to_string());
+        self.alias_lookup.insert(alias_key, new_alias.to_string());
 
         new_alias.to_string()
     }
+}
+
+fn create_alias_key(
+    namespace: (String, String, Option<String>, Location),
+    map_to_key: Vec<String>,
+) -> AliasKey {
+    AliasKey(namespace, map_to_key)
 }
 
 fn create_map_pointer(
@@ -111,4 +145,15 @@ fn location_to_string(location: Location) -> String {
         Location::Body => "body",
     }
     .to_string()
+}
+
+fn string_to_location(string: &str) -> Location {
+    match string {
+        "query" => Location::Query,
+        "path" => Location::Path,
+        "header" => Location::Header,
+        "cookie" => Location::Cookie,
+        "body" => Location::Body,
+        _ => panic!("Unsupported location string used: {}", string),
+    }
 }

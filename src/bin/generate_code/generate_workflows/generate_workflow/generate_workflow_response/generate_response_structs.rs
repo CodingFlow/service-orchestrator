@@ -1,8 +1,6 @@
 use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::ResponseAlias;
-use crate::parse_specs::parse_schema::to_string_schema;
-use crate::traversal::traverse_nested_node;
+use crate::generate_workflows::generate_workflow::generate_structs::generate_structs;
 use crate::traversal::NestedNode;
-use codegen::Field;
 use codegen::Scope;
 use codegen::Struct;
 
@@ -34,60 +32,7 @@ fn create_structs(
 }
 
 fn nested_process(nested_response_alias_node: NestedNode<ResponseAlias>) -> (String, Vec<Struct>) {
-    let structs = &mut vec![];
-
-    traverse_nested_node(
-        nested_response_alias_node.clone(),
-        process_parent,
-        process_child,
-        process_after_children,
-        structs,
-    );
+    let structs = generate_structs(nested_response_alias_node);
 
     ("200".to_string(), structs.to_vec())
-}
-
-fn process_parent<'a>(
-    parent_node: NestedNode<ResponseAlias>,
-    _: &'a mut Vec<Struct>,
-) -> Option<Struct> {
-    match parent_node.children.is_some() {
-        true => {
-            let struct_name = parent_node.current.variable_alias;
-            let mut new_struct = Struct::new(&struct_name);
-
-            new_struct
-                .derive("Serialize")
-                .derive("Deserialize")
-                .derive("Clone")
-                .derive("Debug");
-
-            Some(new_struct)
-        }
-        false => None,
-    }
-}
-
-fn process_child<'a>(
-    child_node: NestedNode<ResponseAlias>,
-    parent_struct: &'a mut Option<Struct>,
-    _: &'a mut Vec<Struct>,
-) {
-    if let Some(parent_struct) = parent_struct {
-        let field = Field::new(
-            &child_node.current.name.clone().unwrap(),
-            to_string_schema(
-                child_node.current.schema_type,
-                Some(child_node.current.variable_alias),
-            ),
-        );
-
-        parent_struct.push_field(field.clone());
-    };
-}
-
-fn process_after_children(parent_struct: Option<Struct>, struct_accumulator: &mut Vec<Struct>) {
-    if let Some(parent_struct) = parent_struct {
-        struct_accumulator.push(parent_struct);
-    }
 }

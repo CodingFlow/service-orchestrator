@@ -1,10 +1,7 @@
-use std::collections::BTreeMap;
-
-use serde_json::{Map, Value};
-
+use super::InputMap;
 use crate::traversal::{convert_to_nested_node, traverse_nested_node, NestedNode};
-
-use super::{is_service_name, InputMap};
+use serde_json::{Map, Value};
+use std::collections::BTreeMap;
 
 impl InputMap {
     pub fn get_workflow_response_dependencies_ids(
@@ -33,7 +30,7 @@ impl InputMap {
 
         dependencies_properties
             .into_iter()
-            .filter(|dependency_id| is_service_name(dependency_id.to_string()))
+            .filter(|dependency_id| self.is_service_name(dependency_id.to_string()))
             .map(|property_name| {
                 let split = &mut property_name.split("/");
                 (
@@ -72,16 +69,17 @@ impl InputMap {
             let mut service_property_names = vec![];
             traverse_nested_node(
                 service.clone(),
-                |parent_node, service_properties| {
+                |parent_node, (me, service_properties)| {
                     let (_, value) = parent_node.current;
 
-                    if !value.is_object() && is_service_name(value.as_str().unwrap().to_string()) {
+                    if !value.is_object() && me.is_service_name(value.as_str().unwrap().to_string())
+                    {
                         service_properties.push(value.as_str().unwrap().to_string())
                     }
                 },
                 |_, _, _| {},
                 |_, _| {},
-                &mut service_property_names,
+                &mut (self, &mut service_property_names),
             );
 
             all_service_property_names.push((service.current.0, service_property_names));
