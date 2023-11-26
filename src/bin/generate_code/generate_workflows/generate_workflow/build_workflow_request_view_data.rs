@@ -10,7 +10,7 @@ use http::Method;
 use oas3::spec::SchemaType;
 
 use super::{
-    build_service_call_view_data::generate_response_variables::ResponseAlias,
+    build_service_call_view_data::generate_body_variables::BodyPropertyAlias,
     create_workflow_request_aliases::create_workflow_request_aliases, variables::VariableAliases,
 };
 
@@ -31,7 +31,7 @@ pub struct WorkflowRequestSpec {
     pub method: Method,
     pub query: Vec<RequestParameter>,
     pub path: Vec<WorkflowPathPart>,
-    pub body: Option<NestedNode<ResponseAlias>>,
+    pub body: Option<NestedNode<BodyPropertyAlias>>,
     pub body_local_variable: String,
     pub query_variables: QueryVariables,
 }
@@ -91,7 +91,7 @@ fn create_workflow_body(
     input_map: &mut InputMap,
     variable_aliases: &mut VariableAliases,
     operation_id: String,
-) -> Option<NestedNode<ResponseAlias>> {
+) -> Option<NestedNode<BodyPropertyAlias>> {
     match body {
         Some(body) => {
             let aliases =

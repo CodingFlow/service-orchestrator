@@ -178,7 +178,7 @@ impl InputMap {
 
     fn get_all_workflow_services(&self, workflow_name: String) -> Map<String, Value> {
         self.get_next_level(
-            self.input_map_config.as_object().unwrap().clone(),
+            self.input_map_config_pointer.as_object().unwrap().clone(),
             workflow_name,
         )
     }

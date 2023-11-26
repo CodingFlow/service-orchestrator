@@ -1,6 +1,6 @@
 use crate::{
     generate_workflows::generate_workflow::{
-        build_service_call_view_data::generate_response_variables::ResponseAlias,
+        build_service_call_view_data::generate_body_variables::BodyPropertyAlias,
         build_workflow_request_view_data::{RequestParameter, WorkflowPathPart},
     },
     traversal::NestedNode,
@@ -12,7 +12,7 @@ pub fn generate_signature(
     path_parameters: Vec<WorkflowPathPart>,
     query: Vec<RequestParameter>,
     query_struct_name: &str,
-    body: Option<NestedNode<ResponseAlias>>,
+    body: Option<NestedNode<BodyPropertyAlias>>,
 ) {
     let mut parameters: Vec<String> = path_parameters
         .iter()

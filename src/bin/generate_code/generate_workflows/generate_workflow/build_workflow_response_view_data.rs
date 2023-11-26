@@ -1,5 +1,5 @@
 use super::super::input_map::InputMap;
-use super::build_service_call_view_data::generate_response_variables::ResponseAlias;
+use super::build_service_call_view_data::generate_body_variables::BodyPropertyAlias;
 use super::create_workflow_response_aliases::create_workflow_response_aliases;
 use super::variables::VariableAliases;
 use crate::generate_workflows::input_map::Location;
@@ -13,7 +13,7 @@ pub struct WorkflowResponseGenerationInfo {
 
 #[derive(Debug, Clone)]
 pub struct ResponseGenerationInfo {
-    pub body: NestedNode<ResponseAlias>,
+    pub body: NestedNode<BodyPropertyAlias>,
     pub headers: Vec<Header>,
 }
 
@@ -74,7 +74,7 @@ fn create_workflow_headers(
 }
 
 fn create_generation_infos(
-    bodies: Vec<NestedNode<ResponseAlias>>,
+    bodies: Vec<NestedNode<BodyPropertyAlias>>,
     headers: Vec<Vec<Header>>,
 ) -> Vec<ResponseGenerationInfo> {
     let mut bodies_iter = bodies.iter();

@@ -1,4 +1,4 @@
-use super::super::generate_response_variables::ResponseAlias;
+use super::super::generate_body_variables::BodyPropertyAlias;
 use super::ServiceCodeGenerationInfo;
 use super::ServiceRequest;
 use crate::parse_specs::OperationSpec;
@@ -11,7 +11,7 @@ pub fn create_service_code_generation_infos(
     future_variable_names: Vec<String>,
     enum_names: Vec<String>,
     stream_variable_names: Vec<String>,
-    response_aliases: Vec<NestedNode<ResponseAlias>>,
+    response_aliases: Vec<NestedNode<BodyPropertyAlias>>,
     dependencies: BTreeMap<(String, String), Vec<(String, String)>>,
     requests: Vec<ServiceRequest>,
     service_urls: BTreeMap<String, Url>,

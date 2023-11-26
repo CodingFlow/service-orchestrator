@@ -1,8 +1,10 @@
-use super::super::build_service_call_view_data::generate_response_variables::ResponseAlias;
-use crate::traversal::NestedNode;
+use crate::{
+    generate_workflows::generate_workflow::build_service_call_view_data::generate_body_variables::BodyPropertyAlias,
+    traversal::NestedNode,
+};
 use codegen::Function;
 
-pub fn generate_body(function: &mut Function, body: Option<NestedNode<ResponseAlias>>) {
+pub fn generate_body(function: &mut Function, body: Option<NestedNode<BodyPropertyAlias>>) {
     if let Some(_) = body {
         function.line(".and(warp::body::json())");
     }

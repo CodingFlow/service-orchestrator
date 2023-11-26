@@ -5,8 +5,8 @@ mod generate_streams;
 
 use crate::generate_workflows::generate_workflow::build_service_call_view_data::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
 use crate::generate_workflows::generate_workflow::build_service_call_view_data::build_workflow_response_lookup_map::WorkflowResponseCodeGenerationInfo;
-use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::ResponseAlias;
-use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::generate_response_variables;
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_body_variables::BodyPropertyAlias;
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_body_variables::generate_body_variables;
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::traversal::NestedNode;
 use codegen::Function;
@@ -38,9 +38,9 @@ pub fn generate_calls(
 
 pub fn generate_response_variables_assigned(
     function: &mut Function,
-    response_aliases: &NestedNode<ResponseAlias>,
+    response_aliases: &NestedNode<BodyPropertyAlias>,
 ) {
     function.line("let ");
 
-    generate_response_variables(function, response_aliases);
+    generate_body_variables(function, response_aliases, false);
 }

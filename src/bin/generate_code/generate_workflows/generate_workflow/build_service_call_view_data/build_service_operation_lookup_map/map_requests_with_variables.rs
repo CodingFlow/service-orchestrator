@@ -47,7 +47,7 @@ pub fn map_requests_with_variables(
     .collect()
 }
 
-fn create_body(request_spec: RequestSpec, workflow_name: String, operation_spec: &OperationSpec, input_map: &mut InputMap, variable_aliases: &mut VariableAliases) -> Option<crate::traversal::NestedNode<crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::ResponseAlias>>{
+fn create_body(request_spec: RequestSpec, workflow_name: String, operation_spec: &OperationSpec, input_map: &mut InputMap, variable_aliases: &mut VariableAliases) -> Option<crate::traversal::NestedNode<crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_body_variables::BodyPropertyAlias>>{
     match request_spec.body {
         Some(body) => {
             let namespace = (

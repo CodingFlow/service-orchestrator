@@ -2,7 +2,7 @@ use codegen::Function;
 
 use crate::{
     generate_workflows::generate_workflow::{
-        build_service_call_view_data::generate_response_variables::ResponseAlias,
+        build_service_call_view_data::generate_body_variables::BodyPropertyAlias,
         build_workflow_request_view_data::{QueryVariables, RequestParameter, WorkflowPathPart},
     },
     traversal::NestedNode,
@@ -13,7 +13,7 @@ pub fn generate_function_signature(
     path_parts: Vec<WorkflowPathPart>,
     query: Vec<RequestParameter>,
     query_variables: QueryVariables,
-    request_body: Option<NestedNode<ResponseAlias>>,
+    request_body: Option<NestedNode<BodyPropertyAlias>>,
     request_body_local_variable: String,
 ) {
     function.vis("pub");
@@ -36,7 +36,7 @@ fn create_function_arguments(
     function: &mut Function,
     query: Vec<RequestParameter>,
     query_variables: QueryVariables,
-    request_body: Option<NestedNode<ResponseAlias>>,
+    request_body: Option<NestedNode<BodyPropertyAlias>>,
     request_body_local_variable: String,
 ) {
     let path_parameters_info: Vec<(String, String)> = path_parts

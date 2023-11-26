@@ -1,4 +1,4 @@
-use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::{ResponseAlias, AliasType};
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_body_variables::{BodyPropertyAlias, AliasType};
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::generate_workflows::input_map::InputMap;
 use crate::generate_workflows::input_map::Location;
@@ -10,7 +10,7 @@ pub fn create_workflow_response_aliases(
     iter: std::slice::Iter<'_, OperationSpec>,
     input_map: &mut InputMap,
     variable_aliases: &mut VariableAliases,
-) -> Vec<NestedNode<ResponseAlias>> {
+) -> Vec<NestedNode<BodyPropertyAlias>> {
     iter.clone()
         .map(|operation_spec| {
             let workflow_name = operation_spec.operation_id.to_string();

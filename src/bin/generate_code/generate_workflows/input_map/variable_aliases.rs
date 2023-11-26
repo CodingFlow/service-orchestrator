@@ -41,7 +41,7 @@ impl InputMap {
         destination_key: Vec<String>,
     ) -> String {
         let map_pointer = create_map_pointer(namespace.clone(), &destination_key);
-        let source_key_raw = match self.input_map_config.pointer(&map_pointer) {
+        let source_key_raw = match self.input_map_config_pointer.pointer(&map_pointer) {
             Some(value) => value.as_str().unwrap(),
             None => panic!(
                 "No mapped value found for key '{}'",

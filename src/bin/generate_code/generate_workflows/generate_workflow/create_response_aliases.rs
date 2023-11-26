@@ -1,4 +1,4 @@
-use super::build_service_call_view_data::generate_response_variables::ResponseAlias;
+use super::build_service_call_view_data::generate_body_variables::BodyPropertyAlias;
 use super::create_body_aliases::create_body_aliases;
 use super::create_body_aliases::AliasLocation;
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
@@ -12,7 +12,7 @@ pub fn create_response_aliases(
     input_map: &mut InputMap,
     variable_aliases: &mut VariableAliases,
     workflow_name: String,
-) -> Vec<NestedNode<ResponseAlias>> {
+) -> Vec<NestedNode<BodyPropertyAlias>> {
     iter.clone()
         .map(|operation_spec| {
             let namespace = (

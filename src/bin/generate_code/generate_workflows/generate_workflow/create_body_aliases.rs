@@ -1,5 +1,5 @@
-use super::build_service_call_view_data::generate_response_variables::AliasType;
-use super::build_service_call_view_data::generate_response_variables::ResponseAlias;
+use super::build_service_call_view_data::generate_body_variables::AliasType;
+use super::build_service_call_view_data::generate_body_variables::BodyPropertyAlias;
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::generate_workflows::input_map::InputMap;
 use crate::generate_workflows::input_map::Location;
@@ -18,7 +18,7 @@ pub fn create_body_aliases(
     variable_aliases: &mut VariableAliases,
     namespace: (String, String, Option<String>, Location),
     alias_location: AliasLocation,
-) -> NestedNode<ResponseAlias> {
+) -> NestedNode<BodyPropertyAlias> {
     // TODO: handle more than one status code
 
     map_nested_node(
@@ -43,7 +43,7 @@ pub fn create_body_aliases(
                     }
                 };
 
-                ResponseAlias {
+                BodyPropertyAlias {
                     name,
                     variable_alias,
                     schema_type,
@@ -56,7 +56,7 @@ pub fn create_body_aliases(
 
                 let variable_alias = variable_aliases.create_alias();
 
-                ResponseAlias {
+                BodyPropertyAlias {
                     name,
                     variable_alias,
                     schema_type,

@@ -3,7 +3,7 @@ mod generate_signature_and_dependencies_variables;
 use crate::generate_workflows::generate_workflow::{
     build_service_call_view_data::{
         build_service_operation_lookup_map::ServiceCodeGenerationInfo,
-        generate_response_variables::generate_response_variables,
+        generate_body_variables::generate_body_variables,
     },
     variables::VariableAliases,
 };
@@ -97,7 +97,7 @@ fn generate_future(
     if let Some(body) = request.body.clone() {
         function.line(".json(&");
 
-        generate_response_variables(function, &body);
+        generate_body_variables(function, &body, true);
 
         function.line(")");
     }

@@ -4,7 +4,7 @@ mod create_variable_names;
 mod map_requests_with_variables;
 mod order_by_dependencies;
 
-use super::generate_response_variables::ResponseAlias;
+use super::generate_body_variables::BodyPropertyAlias;
 use crate::generate_workflows::generate_workflow::create_response_aliases::create_response_aliases;
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::generate_workflows::input_map::InputMap;
@@ -24,7 +24,7 @@ pub struct ServiceRequest {
     pub method: Method,
     pub query: BTreeMap<String, String>,
     pub path: Vec<ServiceRequestPath>,
-    pub body: Option<NestedNode<ResponseAlias>>,
+    pub body: Option<NestedNode<BodyPropertyAlias>>,
 }
 
 #[derive(Debug, Clone)]
@@ -38,7 +38,7 @@ pub struct ServiceCodeGenerationInfo {
     pub future_variable_name: String,
     pub enum_name: String,
     pub stream_variable_name: String,
-    pub response_aliases: NestedNode<ResponseAlias>,
+    pub response_aliases: NestedNode<BodyPropertyAlias>,
     pub dependencies_service_operation_names: Vec<(String, String)>,
     pub request: ServiceRequest,
     pub service_url: Url,

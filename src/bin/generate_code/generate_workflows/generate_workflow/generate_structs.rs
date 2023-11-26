@@ -2,10 +2,10 @@ use crate::parse_specs::parse_schema::to_string_schema;
 use codegen::Field;
 use crate::traversal::traverse_nested_node;
 use codegen::Struct;
-use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::ResponseAlias;
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_body_variables::BodyPropertyAlias;
 use crate::traversal::NestedNode;
 
-pub fn generate_structs(nested_response_alias_node: NestedNode<ResponseAlias>) -> Vec<Struct> {
+pub fn generate_structs(nested_response_alias_node: NestedNode<BodyPropertyAlias>) -> Vec<Struct> {
     let structs = &mut vec![];
 
     traverse_nested_node(
@@ -20,7 +20,7 @@ pub fn generate_structs(nested_response_alias_node: NestedNode<ResponseAlias>) -
 }
 
 fn process_parent<'a>(
-    parent_node: NestedNode<ResponseAlias>,
+    parent_node: NestedNode<BodyPropertyAlias>,
     _: &'a mut Vec<Struct>,
 ) -> Option<Struct> {
     match parent_node.children.is_some() {
@@ -42,7 +42,7 @@ fn process_parent<'a>(
 }
 
 fn process_child<'a>(
-    child_node: NestedNode<ResponseAlias>,
+    child_node: NestedNode<BodyPropertyAlias>,
     parent_struct: &'a mut Option<Struct>,
     _: &'a mut Vec<Struct>,
 ) {
