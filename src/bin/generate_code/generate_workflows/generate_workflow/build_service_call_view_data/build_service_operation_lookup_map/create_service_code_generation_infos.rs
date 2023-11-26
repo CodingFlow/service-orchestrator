@@ -12,7 +12,7 @@ pub fn create_service_code_generation_infos(
     enum_names: Vec<String>,
     stream_variable_names: Vec<String>,
     response_aliases: Vec<NestedNode<ResponseAlias>>,
-    dependencies: BTreeMap<String, Vec<(String, String)>>,
+    dependencies: BTreeMap<(String, String), Vec<(String, String)>>,
     requests: Vec<ServiceRequest>,
     service_urls: BTreeMap<String, Url>,
 ) -> BTreeMap<(String, String), ServiceCodeGenerationInfo> {
@@ -28,7 +28,7 @@ pub fn create_service_code_generation_infos(
         let enum_name = enum_names_iter.next().unwrap().to_string();
         let stream_variable_name = stream_variable_names_iter.next().unwrap().to_string();
         let response_aliases = response_aliases_iter.next().unwrap().clone();
-        let dependencies_service_names = dependencies_iter.next().unwrap().to_vec();
+        let dependencies_service_operation_names = dependencies_iter.next().unwrap().to_vec();
         let request = requests_iter.next().unwrap().clone();
         let service_url = service_urls.get(&operation_spec.spec_name).unwrap().clone();
 
@@ -42,7 +42,7 @@ pub fn create_service_code_generation_infos(
                 enum_name,
                 stream_variable_name,
                 response_aliases,
-                dependencies_service_names,
+                dependencies_service_operation_names,
                 request,
                 service_url,
             },

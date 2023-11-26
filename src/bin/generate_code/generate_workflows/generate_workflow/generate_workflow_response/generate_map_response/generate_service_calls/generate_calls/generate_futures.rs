@@ -1,10 +1,12 @@
 mod generate_signature_and_dependencies_variables;
 
 use crate::generate_workflows::generate_workflow::{
-    build_service_call_view_data::build_service_operation_lookup_map::ServiceCodeGenerationInfo,
+    build_service_call_view_data::{
+        build_service_operation_lookup_map::ServiceCodeGenerationInfo,
+        generate_response_variables::generate_response_variables,
+    },
     variables::VariableAliases,
 };
-
 use codegen::Function;
 use generate_signature_and_dependencies_variables::generate_signature_and_dependencies_variables;
 use std::collections::BTreeMap;
@@ -38,7 +40,7 @@ fn generate_future(
     let ServiceCodeGenerationInfo {
         future_variable_name,
         response_aliases,
-        dependencies_service_names,
+        dependencies_service_operation_names: dependencies_service_names,
         request,
         service_url,
         ..
@@ -90,6 +92,14 @@ fn generate_future(
 
     if query_parameters.len() > 0 {
         function.line(format!(r#".query(&[{}])"#, query_parameters));
+    }
+
+    if let Some(body) = request.body.clone() {
+        function.line(".json(&");
+
+        generate_response_variables(function, &body);
+
+        function.line(")");
     }
 
     function.line(".send()").line(".await").line(".unwrap()");

@@ -60,17 +60,18 @@ impl InputMap {
     pub fn get_service_dependencies(
         &self,
         workflow_name: String,
-    ) -> BTreeMap<String, Vec<(String, String)>> {
-        let services = self.get_workflow_services_nested(workflow_name);
+    ) -> BTreeMap<(String, String), Vec<(String, String)>> {
+        let services_operations = self.get_workflow_services_operations_nested(workflow_name);
 
         let mut all_service_property_names = vec![];
 
-        for service in services {
+        for service_operation in services_operations {
             let mut service_property_names = vec![];
+
             traverse_nested_node(
-                service.clone(),
+                service_operation.1.clone(),
                 |parent_node, (me, service_properties)| {
-                    let (_, value) = parent_node.current;
+                    let value = parent_node.current;
 
                     if !value.is_object() && me.is_service_name(value.as_str().unwrap().to_string())
                     {
@@ -82,12 +83,12 @@ impl InputMap {
                 &mut (self, &mut service_property_names),
             );
 
-            all_service_property_names.push((service.current.0, service_property_names));
+            all_service_property_names.push((service_operation.0, service_property_names));
         }
 
         all_service_property_names
             .into_iter()
-            .map(|(service_name, property_names)| {
+            .map(|(service_operation_name, property_names)| {
                 let mut dependencies_service_names: Vec<(String, String)> = property_names
                     .iter()
                     .map(|name| {
@@ -99,10 +100,12 @@ impl InputMap {
                     })
                     .collect();
 
-                dependencies_service_names.sort_unstable();
+                // TODO: use service_name/operation_id key pair instead of just service_name.
+
+                dependencies_service_names.sort_unstable(); // sort to dedup
                 dependencies_service_names.dedup();
 
-                (service_name, dependencies_service_names)
+                (service_operation_name, dependencies_service_names)
             })
             .collect()
     }
@@ -111,24 +114,24 @@ impl InputMap {
         value.get(&key).unwrap().as_object().unwrap().clone()
     }
 
-    fn get_workflow_services_nested(
+    fn get_workflow_services_operations_nested(
         &self,
         workflow_name: String,
-    ) -> Vec<NestedNode<(String, Value)>> {
-        self.get_workflow_services(workflow_name)
+    ) -> Vec<((String, String), NestedNode<Value>)> {
+        self.get_workflow_services_operations(workflow_name)
             .into_iter()
-            .map(|item| {
-                convert_to_nested_node(
-                    item,
+            .map(|(service_operation_name, value)| {
+                let nested_value = convert_to_nested_node(
+                    value,
                     |item, _| item,
-                    |(_, value), _| {
+                    |value, _| {
                         if value.is_object() {
                             Some(
                                 value
                                     .as_object()
                                     .unwrap()
                                     .iter()
-                                    .map(|(key, value)| (key.to_string(), value.clone()))
+                                    .map(|(_, value)| value.clone())
                                     .collect(),
                             )
                         } else {
@@ -136,7 +139,31 @@ impl InputMap {
                         }
                     },
                     &mut (),
-                )
+                );
+
+                (service_operation_name, nested_value)
+            })
+            .collect()
+    }
+
+    fn get_workflow_services_operations(
+        &self,
+        workflow_name: String,
+    ) -> BTreeMap<(String, String), Value> {
+        self.get_workflow_services(workflow_name)
+            .into_iter()
+            .flat_map(|(service_name, value)| {
+                value
+                    .as_object()
+                    .unwrap()
+                    .iter()
+                    .map(|(operation_name, value)| {
+                        (
+                            (service_name.to_string(), operation_name.to_string()),
+                            value.clone(),
+                        )
+                    })
+                    .collect::<BTreeMap<(String, String), Value>>()
             })
             .collect()
     }

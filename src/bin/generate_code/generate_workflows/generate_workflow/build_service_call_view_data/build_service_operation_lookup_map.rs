@@ -24,6 +24,7 @@ pub struct ServiceRequest {
     pub method: Method,
     pub query: BTreeMap<String, String>,
     pub path: Vec<ServiceRequestPath>,
+    pub body: Option<NestedNode<ResponseAlias>>,
 }
 
 #[derive(Debug, Clone)]
@@ -38,7 +39,7 @@ pub struct ServiceCodeGenerationInfo {
     pub enum_name: String,
     pub stream_variable_name: String,
     pub response_aliases: NestedNode<ResponseAlias>,
-    pub dependencies_service_names: Vec<(String, String)>,
+    pub dependencies_service_operation_names: Vec<(String, String)>,
     pub request: ServiceRequest,
     pub service_url: Url,
 }
@@ -70,7 +71,8 @@ pub fn build_service_operation_lookup_map(
 
     let dependencies = create_dependencies(input_map, workflow_name.to_string());
 
-    let requests = map_requests_with_variables(iter.clone(), input_map, workflow_name);
+    let requests =
+        map_requests_with_variables(iter.clone(), input_map, variable_aliases, workflow_name);
 
     let code_generation_infos = create_service_code_generation_infos(
         iter,
