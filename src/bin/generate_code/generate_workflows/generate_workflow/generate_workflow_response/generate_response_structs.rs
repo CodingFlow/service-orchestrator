@@ -1,5 +1,5 @@
 use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_body_variables::BodyPropertyAlias;
-use crate::generate_workflows::generate_workflow::generate_structs::create_structs;
+use crate::generate_workflows::generate_workflow::create_structs::create_structs;
 use crate::traversal::NestedNode;
 use codegen::Scope;
 use codegen::Struct;

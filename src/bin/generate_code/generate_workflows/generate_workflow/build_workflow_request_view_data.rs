@@ -1,3 +1,7 @@
+use super::{
+    build_service_call_view_data::generate_body_variables::BodyPropertyAlias,
+    create_workflow_request_aliases::create_workflow_request_aliases, variables::VariableAliases,
+};
 use crate::{
     generate_workflows::input_map::{InputMap, Location, Variable},
     parse_specs::{
@@ -8,11 +12,6 @@ use crate::{
 };
 use http::Method;
 use oas3::spec::SchemaType;
-
-use super::{
-    build_service_call_view_data::generate_body_variables::BodyPropertyAlias,
-    create_workflow_request_aliases::create_workflow_request_aliases, variables::VariableAliases,
-};
 
 #[derive(Debug, Clone)]
 pub struct RequestParameters {

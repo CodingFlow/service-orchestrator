@@ -6,11 +6,10 @@ use crate::generate_workflows::generate_workflow::{
     build_service_call_view_data::{
         build_service_operation_lookup_map::ServiceCodeGenerationInfo, ServiceCallGenerationInfo,
     },
-    generate_structs::create_structs,
+    create_structs::create_structs,
     variables::VariableAliases,
 };
 use codegen::{Function, Scope};
-
 use generate_calls::generate_calls;
 use generate_service_response_structs::generate_service_response_structs;
 use generate_stream_enum::generate_stream_enum;
