@@ -29,14 +29,12 @@ pub fn generate_body_variables(
         response_aliases.clone(),
         |parent_node: NestedNode<BodyPropertyAlias>,
          (function, should_clone_strings): &mut (&mut &mut Function, bool)| {
-            if let Some(_) = parent_node.current.name.clone() {
+            if let Some(name) = parent_node.current.name.clone() {
+                let BodyPropertyAlias { variable_alias, .. } = parent_node.current;
+
                 let line = match parent_node.children.is_some() {
                     true => {
-                        format!(
-                            "{}: {} {{",
-                            parent_node.current.name.clone().unwrap(),
-                            parent_node.current.variable_alias
-                        )
+                        format!("{}: {} {{", name, variable_alias)
                     }
                     false => {
                         let clone = match should_clone_strings {
@@ -47,12 +45,7 @@ pub fn generate_body_variables(
                             false => String::new(),
                         };
 
-                        format!(
-                            "{}: {}{},",
-                            parent_node.current.name.clone().unwrap(),
-                            parent_node.current.variable_alias,
-                            clone
-                        )
+                        format!("{}: {}{},", name, variable_alias, clone)
                     }
                 };
 
