@@ -13,7 +13,11 @@ getCat:
   cow_service:
     getCow:
       path:
-        id: query:maxResults
+        id: cow_service/createCow/body:id
+    createCow:
+      body:
+        color: query:eyeColor
+        numberHorns: query:maxResults
   oven_service:
     getOven:
       path:

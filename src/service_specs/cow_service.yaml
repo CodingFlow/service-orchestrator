@@ -28,3 +28,35 @@ paths:
                   numberHorns:
                     description: number of horns on cow
                     type: number
+  /cow:
+    post:
+      operationId: createCow
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                color:
+                  description: color of cow
+                  type: string
+                numberHorns:
+                  description: number of horns on cow
+                  type: number
+      responses:
+        200:
+          description: Create a cow
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: id of the created cow
+                    type: number
+                  color:
+                    description: color of cow
+                    type: string
+                  numberHorns:
+                    description: number of horns on cow
+                    type: number
