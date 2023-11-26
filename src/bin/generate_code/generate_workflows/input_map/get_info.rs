@@ -100,8 +100,6 @@ impl InputMap {
                     })
                     .collect();
 
-                // TODO: use service_name/operation_id key pair instead of just service_name.
-
                 dependencies_service_names.sort_unstable(); // sort to dedup
                 dependencies_service_names.dedup();
 

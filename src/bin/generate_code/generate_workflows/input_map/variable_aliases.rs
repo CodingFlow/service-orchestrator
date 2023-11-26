@@ -25,7 +25,8 @@ impl InputMap {
         namespace: (String, String, Option<String>, Location),
         map_to_key: Vec<String>,
     ) -> Variable {
-        let alias_key = create_alias_key(namespace, map_to_key.to_vec());
+        let map_to_key = map_to_key.to_vec();
+        let alias_key = AliasKey(namespace, map_to_key.clone());
 
         Variable {
             original_name: map_to_key.last().unwrap().to_string(),
@@ -39,15 +40,7 @@ impl InputMap {
         namespace: (String, String, Option<String>, Location),
         destination_key: Vec<String>,
     ) -> String {
-        let map_pointer = create_map_pointer(
-            (
-                namespace.0.to_string(),
-                namespace.1,
-                namespace.2,
-                Some(namespace.3),
-            ),
-            &destination_key,
-        );
+        let map_pointer = create_map_pointer(namespace.clone(), &destination_key);
         let source_key_raw = match self.input_map_config.pointer(&map_pointer) {
             Some(value) => value.as_str().unwrap(),
             None => panic!(
@@ -107,19 +100,12 @@ impl InputMap {
     }
 }
 
-fn create_alias_key(
-    namespace: (String, String, Option<String>, Location),
-    map_to_key: Vec<String>,
-) -> AliasKey {
-    AliasKey(namespace, map_to_key)
-}
-
 fn create_map_pointer(
     (workflow_name, service_name, service_operation_name, location): (
         String,
         String,
         Option<String>,
-        Option<Location>,
+        Location,
     ),
     map_to_key: &Vec<String>,
 ) -> String {
@@ -133,10 +119,7 @@ fn create_map_pointer(
         None => vec![String::new(), workflow_name, service_name],
     };
 
-    if let Some(location) = location {
-        namespace.push(location_to_string(location));
-    }
-
+    namespace.push(location_to_string(location));
     namespace.push(String::new());
 
     format!("{}{}", namespace.join("/"), map_to_key.join("/"))
