@@ -1,8 +1,7 @@
 use codegen::Function;
-
 use crate::generate_workflows::generate_workflow::build_service_call_view_data::build_service_operation_lookup_map::ServiceCodeGenerationInfo;
 
-pub(crate) fn generate_streams(
+pub fn generate_streams(
     function: &mut Function,
     generation_infos_with_ids: Vec<((String, String), ServiceCodeGenerationInfo)>,
 ) {

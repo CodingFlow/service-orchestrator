@@ -6,7 +6,7 @@ use crate::generate_workflows::generate_workflow::{
     build_service_call_view_data::{
         build_service_operation_lookup_map::ServiceCodeGenerationInfo, ServiceCallGenerationInfo,
     },
-    generate_structs::generate_structs,
+    generate_structs::create_structs,
     variables::VariableAliases,
 };
 use codegen::{Function, Scope};
@@ -47,14 +47,14 @@ fn generate_service_request_body_structs(
 ) {
     for (_, info) in generation_infos.to_vec() {
         if let Some(body) = info.request.body {
-            generate_structs(body);
+            create_structs(body);
         }
     }
 
     let structs_iter = generation_infos
         .iter()
         .filter(|(_, info)| info.request.body.is_some())
-        .flat_map(|(_, info)| generate_structs(info.request.body.clone().unwrap()));
+        .flat_map(|(_, info)| create_structs(info.request.body.clone().unwrap()));
 
     for new_struct in structs_iter {
         scope.push_struct(new_struct);

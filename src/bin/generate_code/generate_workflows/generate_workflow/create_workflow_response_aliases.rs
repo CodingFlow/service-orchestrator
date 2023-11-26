@@ -1,4 +1,4 @@
-use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_body_variables::{BodyPropertyAlias, AliasType};
+use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_body_variables::BodyPropertyAlias;
 use crate::generate_workflows::generate_workflow::variables::VariableAliases;
 use crate::generate_workflows::input_map::InputMap;
 use crate::generate_workflows::input_map::Location;

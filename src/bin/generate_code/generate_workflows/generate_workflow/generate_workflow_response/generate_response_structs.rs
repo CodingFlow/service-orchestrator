@@ -1,5 +1,5 @@
 use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_body_variables::BodyPropertyAlias;
-use crate::generate_workflows::generate_workflow::generate_structs::generate_structs;
+use crate::generate_workflows::generate_workflow::generate_structs::create_structs;
 use crate::traversal::NestedNode;
 use codegen::Scope;
 use codegen::Struct;
@@ -12,7 +12,7 @@ pub fn generate_response_structs(
         .iter()
         .flat_map(|nested_response_alias_node| {
             // TODO: handle multiple status codes
-            create_structs(nested_response_alias_node.clone())
+            create_response_structs(nested_response_alias_node.clone())
         })
         .collect();
 
@@ -23,7 +23,7 @@ pub fn generate_response_structs(
     }
 }
 
-fn create_structs(
+fn create_response_structs(
     nested_response_alias_node: NestedNode<BodyPropertyAlias>,
 ) -> Vec<(String, Vec<Struct>)> {
     // TODO: handle more than one status code
@@ -34,7 +34,7 @@ fn create_structs(
 fn nested_process(
     nested_response_alias_node: NestedNode<BodyPropertyAlias>,
 ) -> (String, Vec<Struct>) {
-    let structs = generate_structs(nested_response_alias_node);
+    let structs = create_structs(nested_response_alias_node);
 
     ("200".to_string(), structs.to_vec())
 }

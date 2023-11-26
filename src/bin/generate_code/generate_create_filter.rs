@@ -1,6 +1,5 @@
-use codegen::{Function, Scope};
-
 use crate::generate_re_exports::{ReExports, ReExportsBehavior};
+use codegen::{Function, Scope};
 
 pub struct WorkflowDefinitionNames {
     pub request_name: String,

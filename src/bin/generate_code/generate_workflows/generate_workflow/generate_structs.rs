@@ -5,7 +5,7 @@ use codegen::Struct;
 use crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_body_variables::BodyPropertyAlias;
 use crate::traversal::NestedNode;
 
-pub fn generate_structs(nested_response_alias_node: NestedNode<BodyPropertyAlias>) -> Vec<Struct> {
+pub fn create_structs(nested_response_alias_node: NestedNode<BodyPropertyAlias>) -> Vec<Struct> {
     let structs = &mut vec![];
 
     traverse_nested_node(
