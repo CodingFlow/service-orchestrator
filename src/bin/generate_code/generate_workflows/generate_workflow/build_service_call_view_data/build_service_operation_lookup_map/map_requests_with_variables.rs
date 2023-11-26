@@ -29,27 +29,13 @@ pub fn map_requests_with_variables(
             operation_spec,
         );
 
-        let body = match request_spec.body {
-            Some(body) => {
-                let namespace = (
-                    workflow_name.to_string(),
-                    operation_spec.spec_name.to_string(),
-                    Some(operation_spec.operation_id.to_string()),
-                    Location::Body,
-                );
-
-                let body_aliases = create_body_aliases(
-                    body,
-                    input_map,
-                    variable_aliases,
-                    namespace,
-                    AliasLocation::Destination,
-                );
-
-                Some(body_aliases)
-            }
-            None => None,
-        };
+        let body = create_body(
+            request_spec.clone(),
+            workflow_name.to_string(),
+            operation_spec,
+            input_map,
+            variable_aliases,
+        );
 
         ServiceRequest {
             method: request_spec.method,
@@ -59,6 +45,30 @@ pub fn map_requests_with_variables(
         }
     })
     .collect()
+}
+
+fn create_body(request_spec: RequestSpec, workflow_name: String, operation_spec: &OperationSpec, input_map: &mut InputMap, variable_aliases: &mut VariableAliases) -> Option<crate::traversal::NestedNode<crate::generate_workflows::generate_workflow::build_service_call_view_data::generate_response_variables::ResponseAlias>>{
+    match request_spec.body {
+        Some(body) => {
+            let namespace = (
+                workflow_name.to_string(),
+                operation_spec.spec_name.to_string(),
+                Some(operation_spec.operation_id.to_string()),
+                Location::Body,
+            );
+
+            let body_aliases = create_body_aliases(
+                body,
+                input_map,
+                variable_aliases,
+                namespace,
+                AliasLocation::Destination,
+            );
+
+            Some(body_aliases)
+        }
+        None => None,
+    }
 }
 
 fn create_path(
