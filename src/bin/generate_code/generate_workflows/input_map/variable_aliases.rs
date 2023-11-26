@@ -41,7 +41,7 @@ impl InputMap {
         destination_key: Vec<String>,
     ) -> String {
         let map_pointer = create_map_pointer(namespace.clone(), &destination_key);
-        let source_key_raw = match self.input_map_config_pointer.pointer(&map_pointer) {
+        let source_key_raw = match self.input_map_config.pointer(&map_pointer) {
             Some(value) => value.as_str().unwrap(),
             None => panic!(
                 "No mapped value found for key '{}'",
@@ -54,37 +54,33 @@ impl InputMap {
         self.get_alias(source_key_raw, workflow_name)
     }
 
-    fn get_alias(&self, source_key_raw: &str, workflow_name: String) -> String {
-        let mut split = source_key_raw.split(":");
-        let namespace_part = split.next().unwrap();
-        let key_part = split.next().unwrap();
+    fn get_alias(&self, raw_source_key: &str, workflow_name: String) -> String {
+        let source_key = self.parse_source_key(raw_source_key);
 
-        let mut split = namespace_part.split("/");
-
-        let alias_key = match self.is_service_name(source_key_raw.to_string()) {
+        let alias_key = match self.is_service_name(raw_source_key.to_string()) {
             true => AliasKey(
                 (
                     workflow_name,
-                    split.next().unwrap().to_string(),
-                    Some(split.next().unwrap().to_string()),
-                    string_to_location(split.next().unwrap()),
+                    source_key.service.unwrap(),
+                    source_key.operation,
+                    source_key.location,
                 ),
-                key_part.split("/").map(String::from).collect(),
+                source_key.property_path,
             ),
             false => AliasKey(
                 (
                     workflow_name,
                     "response".to_string(),
                     None,
-                    string_to_location(split.next().unwrap()),
+                    source_key.location,
                 ),
-                key_part.split("/").map(String::from).collect(),
+                source_key.property_path,
             ),
         };
 
         match self.alias_lookup.get(&alias_key) {
             Some(alias) => alias.to_string(),
-            None => panic!("Alias not found for source key '{}'", source_key_raw),
+            None => panic!("Alias not found for source key '{}'", raw_source_key),
         }
     }
 
@@ -136,7 +132,7 @@ fn location_to_string(location: Location) -> String {
     .to_string()
 }
 
-fn string_to_location(string: &str) -> Location {
+pub fn string_to_location(string: &str) -> Location {
     match string {
         "query" => Location::Query,
         "path" => Location::Path,

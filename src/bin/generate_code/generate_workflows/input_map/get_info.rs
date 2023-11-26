@@ -31,12 +31,10 @@ impl InputMap {
         dependencies_properties
             .into_iter()
             .filter(|dependency_id| self.is_service_name(dependency_id.to_string()))
-            .map(|property_name| {
-                let split = &mut property_name.split("/");
-                (
-                    split.nth(0).unwrap().to_string(),
-                    split.nth(0).unwrap().to_string(),
-                )
+            .map(|raw_source_key| {
+                let source_key = self.parse_source_key(&raw_source_key);
+
+                (source_key.service.unwrap(), source_key.operation.unwrap())
             })
             .collect()
     }
@@ -91,12 +89,10 @@ impl InputMap {
             .map(|(service_operation_name, property_names)| {
                 let mut dependencies_service_names: Vec<(String, String)> = property_names
                     .iter()
-                    .map(|name| {
-                        let split = &mut name.split("/");
-                        (
-                            split.nth(0).unwrap().to_string(),
-                            split.nth(0).unwrap().to_string(),
-                        )
+                    .map(|raw_source_key| {
+                        let source_key = self.parse_source_key(raw_source_key);
+
+                        (source_key.service.unwrap(), source_key.operation.unwrap())
                     })
                     .collect();
 
@@ -178,7 +174,7 @@ impl InputMap {
 
     fn get_all_workflow_services(&self, workflow_name: String) -> Map<String, Value> {
         self.get_next_level(
-            self.input_map_config_pointer.as_object().unwrap().clone(),
+            self.input_map_config.as_object().unwrap().clone(),
             workflow_name,
         )
     }
